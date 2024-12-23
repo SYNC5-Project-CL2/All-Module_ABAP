@@ -1,0 +1,597 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBPP0020_O01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBPP0020_O01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBPP0020_O01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBPP0020_O01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0100 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0100 OUTPUT.
+  SET PF-STATUS 'S100'.
+  SET TITLEBAR 'T100'.
+
+<font color ="#0000FF">* RADIO BUTTON 초기화</font>
+  IF ZSBPP0070-ALL IS INITIAL AND ZSBPP0070-VALID IS INITIAL AND ZSBPP0070-DELETED IS INITIAL.
+    ZSBPP0070-VALID = 'X'.
+  ENDIF.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module CLEAR_OK_CODE OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE CLEAR_OK_CODE OUTPUT.
+<font color ="#0000FF">*  OK_CODE 초기화</font>
+  CLEAR: OK_CODE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module INIT_ALV OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE INIT_ALV1 OUTPUT.
+
+<font color ="#0000FF">* HEADER 정보 보여줄 ALV 초기 설정</font>
+  IF GO_CONT1 IS INITIAL.
+
+    CREATE OBJECT GO_CONT1
+      EXPORTING
+<font color ="#0000FF">*       PARENT                      =</font>
+        CONTAINER_NAME              = 'AREA1'
+<font color ="#0000FF">*       STYLE                       =</font>
+<font color ="#0000FF">*       LIFETIME                    = lifetime_default</font>
+<font color ="#0000FF">*       REPID                       =</font>
+<font color ="#0000FF">*       DYNNR                       =</font>
+<font color ="#0000FF">*       NO_AUTODEF_PROGID_DYNNR     =</font>
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        OTHERS                      = 6.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+    CREATE OBJECT GO_ALV1
+      EXPORTING
+<font color ="#0000FF">*       I_SHELLSTYLE      = 0</font>
+<font color ="#0000FF">*       I_LIFETIME        =</font>
+        I_PARENT          = GO_CONT1
+<font color ="#0000FF">*       I_APPL_EVENTS     = SPACE</font>
+<font color ="#0000FF">*       I_PARENTDBG       =</font>
+<font color ="#0000FF">*       I_APPLOGPARENT    =</font>
+<font color ="#0000FF">*       I_GRAPHICSPARENT  =</font>
+<font color ="#0000FF">*       I_NAME            =</font>
+<font color ="#0000FF">*       I_FCAT_COMPLETE   = SPACE</font>
+<font color ="#0000FF">*       O_PREVIOUS_SRAL_HANDLER =</font>
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+<font color ="#0000FF">* SORTING, CATALOG, LAYOUT 설정</font>
+    PERFORM SET_LAYOUT1.
+    PERFORM SET_FCAT1.
+    PERFORM SET_SORT1.
+
+
+<font color ="#0000FF">* TOOLBAR 버튼 이벤트, HOTSPOT 클릭 이벤트 설정</font>
+    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_TOOLBAR FOR GO_ALV1.
+    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_USER_COMMAND FOR GO_ALV1.
+    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_HOTSPOT_CLICK FOR GO_ALV1.
+
+
+
+
+    CALL METHOD GO_ALV1-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+<font color ="#0000FF">*       I_BUFFER_ACTIVE               =</font>
+<font color ="#0000FF">*       I_BYPASSING_BUFFER            =</font>
+<font color ="#0000FF">*       I_CONSISTENCY_CHECK           =</font>
+        I_STRUCTURE_NAME              = 'ZTBPP0070'
+<font color ="#0000FF">*       IS_VARIANT                    =</font>
+<font color ="#0000FF">*       I_SAVE                        =</font>
+<font color ="#0000FF">*       I_DEFAULT                     = 'X'</font>
+        IS_LAYOUT                     = GS_LAYO1
+<font color ="#0000FF">*       IS_PRINT                      =</font>
+<font color ="#0000FF">*       IT_SPECIAL_GROUPS             =</font>
+<font color ="#0000FF">*       IT_TOOLBAR_EXCLUDING          =</font>
+<font color ="#0000FF">*       IT_HYPERLINK                  =</font>
+<font color ="#0000FF">*       IT_ALV_GRAPHICS               =</font>
+<font color ="#0000FF">*       IT_EXCEPT_QINFO               =</font>
+<font color ="#0000FF">*       IR_SALV_ADAPTER               =</font>
+      CHANGING
+        IT_OUTTAB                     = GT_ZTBPP0070_PLUS
+        IT_FIELDCATALOG               = GT_FCAT1
+        IT_SORT                       = GT_SORT1
+<font color ="#0000FF">*       IT_FILTER                     =</font>
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+  ELSE.
+
+    CALL METHOD GO_ALV1-&gt;REFRESH_TABLE_DISPLAY
+      EXCEPTIONS
+        FINISHED = 1
+        OTHERS   = 2.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+  ENDIF.
+
+
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module INIT_ALV2 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE INIT_ALV2 OUTPUT.
+
+<font color ="#0000FF">* ITEM 정보 보여줄 ALV 초기 설정</font>
+
+  IF GO_CONT2 IS INITIAL.
+
+    CREATE OBJECT GO_CONT2
+      EXPORTING
+<font color ="#0000FF">*       PARENT                      =</font>
+        CONTAINER_NAME              = 'AREA2'
+<font color ="#0000FF">*       STYLE                       =</font>
+<font color ="#0000FF">*       LIFETIME                    = lifetime_default</font>
+<font color ="#0000FF">*       REPID                       =</font>
+<font color ="#0000FF">*       DYNNR                       =</font>
+<font color ="#0000FF">*       NO_AUTODEF_PROGID_DYNNR     =</font>
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        OTHERS                      = 6.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+    CREATE OBJECT GO_ALV2
+      EXPORTING
+<font color ="#0000FF">*       I_SHELLSTYLE      = 0</font>
+<font color ="#0000FF">*       I_LIFETIME        =</font>
+        I_PARENT          = GO_CONT2
+<font color ="#0000FF">*       I_APPL_EVENTS     = SPACE</font>
+<font color ="#0000FF">*       I_PARENTDBG       =</font>
+<font color ="#0000FF">*       I_APPLOGPARENT    =</font>
+<font color ="#0000FF">*       I_GRAPHICSPARENT  =</font>
+<font color ="#0000FF">*       I_NAME            =</font>
+<font color ="#0000FF">*       I_FCAT_COMPLETE   = SPACE</font>
+<font color ="#0000FF">*       O_PREVIOUS_SRAL_HANDLER =</font>
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+<font color ="#0000FF">* SORTING, CATALOG, LAYOUT 설정</font>
+    PERFORM SET_LAYOUT2.
+    PERFORM SET_FCAT2.
+    PERFORM SET_SORT2.
+
+
+
+
+    CALL METHOD GO_ALV2-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+<font color ="#0000FF">*       I_BUFFER_ACTIVE               =</font>
+<font color ="#0000FF">*       I_BYPASSING_BUFFER            =</font>
+<font color ="#0000FF">*       I_CONSISTENCY_CHECK           =</font>
+<font color ="#0000FF">*       I_STRUCTURE_NAME              =</font>
+<font color ="#0000FF">*       IS_VARIANT                    =</font>
+<font color ="#0000FF">*       I_SAVE                        =</font>
+<font color ="#0000FF">*       I_DEFAULT                     = 'X'</font>
+        IS_LAYOUT                     = GS_LAYO2
+<font color ="#0000FF">*       IS_PRINT                      =</font>
+<font color ="#0000FF">*       IT_SPECIAL_GROUPS             =</font>
+<font color ="#0000FF">*       IT_TOOLBAR_EXCLUDING          =</font>
+<font color ="#0000FF">*       IT_HYPERLINK                  =</font>
+<font color ="#0000FF">*       IT_ALV_GRAPHICS               =</font>
+<font color ="#0000FF">*       IT_EXCEPT_QINFO               =</font>
+<font color ="#0000FF">*       IR_SALV_ADAPTER               =</font>
+      CHANGING
+        IT_OUTTAB                     = GT_INFO_ZTBPP0071
+        IT_FIELDCATALOG               = GT_FCAT2
+        IT_SORT                       = GT_SORT2
+<font color ="#0000FF">*       IT_FILTER                     =</font>
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+  ELSE.
+
+    CALL METHOD GO_ALV2-&gt;REFRESH_TABLE_DISPLAY
+      EXCEPTIONS
+        FINISHED = 1
+        OTHERS   = 2.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+  ENDIF.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0200 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0200 OUTPUT.
+  SET PF-STATUS 'S200'.
+  SET TITLEBAR 'T200'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module INIT_ALV3 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE INIT_ALV3 OUTPUT.
+
+<font color ="#0000FF">* 생성 화면 ITEM ALV 초기 설정</font>
+  IF GO_CONT3 IS INITIAL.
+
+    CREATE OBJECT GO_CONT3
+      EXPORTING
+<font color ="#0000FF">*       PARENT                      =</font>
+        CONTAINER_NAME              = 'AREA3'
+<font color ="#0000FF">*       STYLE                       =</font>
+<font color ="#0000FF">*       LIFETIME                    = lifetime_default</font>
+<font color ="#0000FF">*       REPID                       =</font>
+<font color ="#0000FF">*       DYNNR                       =</font>
+<font color ="#0000FF">*       NO_AUTODEF_PROGID_DYNNR     =</font>
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        OTHERS                      = 6.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+    CREATE OBJECT GO_ALV3
+      EXPORTING
+<font color ="#0000FF">*       I_SHELLSTYLE      = 0</font>
+<font color ="#0000FF">*       I_LIFETIME        =</font>
+        I_PARENT          = GO_CONT3
+<font color ="#0000FF">*       I_APPL_EVENTS     = SPACE</font>
+<font color ="#0000FF">*       I_PARENTDBG       =</font>
+<font color ="#0000FF">*       I_APPLOGPARENT    =</font>
+<font color ="#0000FF">*       I_GRAPHICSPARENT  =</font>
+<font color ="#0000FF">*       I_NAME            =</font>
+<font color ="#0000FF">*       I_FCAT_COMPLETE   = SPACE</font>
+<font color ="#0000FF">*       O_PREVIOUS_SRAL_HANDLER =</font>
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+<font color ="#0000FF">* SORTING, CATALOG, LAYOUT 설정</font>
+    PERFORM SET_LAYOUT3.
+    PERFORM SET_FCAT3.
+    PERFORM SET_TOOLBAR_EXCLUDING3.
+
+<font color ="#0000FF">* INPUT 값 받아올 수 있도록 설정</font>
+    GO_ALV3-&gt;SET_READY_FOR_INPUT(
+      I_READY_FOR_INPUT = 1
+    ).
+
+<font color ="#0000FF">* TOOLBAR 이벤트 처리를 위한 이벤트 설정</font>
+    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_TOOLBAR2 FOR GO_ALV3.
+    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_USER_COMMAND2 FOR GO_ALV3.
+
+
+    CALL METHOD GO_ALV3-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+<font color ="#0000FF">*       I_BUFFER_ACTIVE               =</font>
+<font color ="#0000FF">*       I_BYPASSING_BUFFER            =</font>
+<font color ="#0000FF">*       I_CONSISTENCY_CHECK           =</font>
+        I_STRUCTURE_NAME              = 'ZSBPP0071'
+<font color ="#0000FF">*       IS_VARIANT                    =</font>
+<font color ="#0000FF">*       I_SAVE                        =</font>
+<font color ="#0000FF">*       I_DEFAULT                     = 'X'</font>
+        IS_LAYOUT                     = GS_LAYO3
+<font color ="#0000FF">*       IS_PRINT                      =</font>
+<font color ="#0000FF">*       IT_SPECIAL_GROUPS             =</font>
+        IT_TOOLBAR_EXCLUDING          = GT_TOOLBAR3
+<font color ="#0000FF">*       IT_HYPERLINK                  =</font>
+<font color ="#0000FF">*       IT_ALV_GRAPHICS               =</font>
+<font color ="#0000FF">*       IT_EXCEPT_QINFO               =</font>
+<font color ="#0000FF">*       IR_SALV_ADAPTER               =</font>
+      CHANGING
+        IT_OUTTAB                     = GT_EDIT_ZTBPP0071
+        IT_FIELDCATALOG               = GT_FCAT3
+<font color ="#0000FF">*       IT_SORT                       = GT_SORT3</font>
+<font color ="#0000FF">*       IT_FILTER                     =</font>
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+  ELSE.
+
+    CALL METHOD GO_ALV3-&gt;REFRESH_TABLE_DISPLAY
+      EXCEPTIONS
+        FINISHED = 1
+        OTHERS   = 2.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+  ENDIF.
+
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0300 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0300 OUTPUT.
+  SET PF-STATUS 'S300'.
+  SET TITLEBAR 'T300'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module INIT_FIELD OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE INIT_FIELD OUTPUT.
+<font color ="#0000FF">* 선택한 ROW 정보 화면 필드에 넘겨주기</font>
+  MOVE-CORRESPONDING GS_ZTBPP0070 TO ZTBPP0070.
+
+  IF GT_EDIT_ZTBPP0071 IS INITIAL.
+
+    SELECT *
+      FROM ZTBPP0071 AS A JOIN ZTBMM1011 AS B
+      ON A~MATCODE = B~MATCODE
+      WHERE A~BOMID = @GS_ZTBPP0070-BOMID
+       AND A~DELFLG &lt;&gt; 'X'
+      INTO CORRESPONDING FIELDS OF TABLE @GT_EDIT_ZTBPP0071.
+
+    LOOP AT GT_EDIT_ZTBPP0071 INTO GS_EDIT_ZTBPP0071.
+<font color ="#0000FF">*   ALV Cell Edit 기능 설정 할 필드.</font>
+      GS_CELL-FIELDNAME = 'MATQUAN'.
+<font color ="#0000FF">*   ALV Cell Edit 여부. MC_STYLE_ENABLED(가능), MC_STYLE_DISABLED(불가능)</font>
+      GS_CELL-STYLE = CL_GUI_ALV_GRID=&gt;MC_STYLE_ENABLED.
+
+      INSERT GS_CELL INTO TABLE GS_EDIT_ZTBPP0071-IT_CELL.
+
+      MODIFY GT_EDIT_ZTBPP0071 FROM GS_EDIT_ZTBPP0071 TRANSPORTING IT_CELL.
+
+      CLEAR: GS_EDIT_ZTBPP0071, GS_CELL.
+    ENDLOOP.
+  ENDIF.
+
+
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module INIT_ALV4 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE INIT_ALV4 OUTPUT.
+
+<font color ="#0000FF">* 수정 화면 ITEM ALV 초기 설정</font>
+  IF GO_CONT4 IS INITIAL.
+
+    CREATE OBJECT GO_CONT4
+      EXPORTING
+<font color ="#0000FF">*       PARENT                      =</font>
+        CONTAINER_NAME              = 'AREA4'
+<font color ="#0000FF">*       STYLE                       =</font>
+<font color ="#0000FF">*       LIFETIME                    = lifetime_default</font>
+<font color ="#0000FF">*       REPID                       =</font>
+<font color ="#0000FF">*       DYNNR                       =</font>
+<font color ="#0000FF">*       NO_AUTODEF_PROGID_DYNNR     =</font>
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        OTHERS                      = 6.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+    CREATE OBJECT GO_ALV4
+      EXPORTING
+<font color ="#0000FF">*       I_SHELLSTYLE      = 0</font>
+<font color ="#0000FF">*       I_LIFETIME        =</font>
+        I_PARENT          = GO_CONT4
+<font color ="#0000FF">*       I_APPL_EVENTS     = SPACE</font>
+<font color ="#0000FF">*       I_PARENTDBG       =</font>
+<font color ="#0000FF">*       I_APPLOGPARENT    =</font>
+<font color ="#0000FF">*       I_GRAPHICSPARENT  =</font>
+<font color ="#0000FF">*       I_NAME            =</font>
+<font color ="#0000FF">*       I_FCAT_COMPLETE   = SPACE</font>
+<font color ="#0000FF">*       O_PREVIOUS_SRAL_HANDLER =</font>
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+<font color ="#0000FF">* SORTING, CATALOG, LAYOUT 설정</font>
+    PERFORM SET_LAYOUT4.
+    PERFORM SET_FCAT4.
+    PERFORM SET_TOOLBAR_EXCLUDING4.
+
+
+<font color ="#0000FF">* INPUT 값 받아올 수 있도록 설정</font>
+    GO_ALV4-&gt;SET_READY_FOR_INPUT(
+    I_READY_FOR_INPUT = 1
+).
+
+
+<font color ="#0000FF">* TOOLBAR 이벤트 처리를 위한 이벤트 설정</font>
+    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_TOOLBAR2 FOR GO_ALV4.
+    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_USER_COMMAND3 FOR GO_ALV4.
+
+
+    CALL METHOD GO_ALV4-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+<font color ="#0000FF">*       I_BUFFER_ACTIVE               =</font>
+<font color ="#0000FF">*       I_BYPASSING_BUFFER            =</font>
+<font color ="#0000FF">*       I_CONSISTENCY_CHECK           =</font>
+        I_STRUCTURE_NAME              = 'ZSBPP0071'
+<font color ="#0000FF">*       IS_VARIANT                    =</font>
+<font color ="#0000FF">*       I_SAVE                        =</font>
+<font color ="#0000FF">*       I_DEFAULT                     = 'X'</font>
+        IS_LAYOUT                     = GS_LAYO4
+<font color ="#0000FF">*       IS_PRINT                      =</font>
+<font color ="#0000FF">*       IT_SPECIAL_GROUPS             =</font>
+        IT_TOOLBAR_EXCLUDING          = GT_TOOLBAR4
+<font color ="#0000FF">*       IT_HYPERLINK                  =</font>
+<font color ="#0000FF">*       IT_ALV_GRAPHICS               =</font>
+<font color ="#0000FF">*       IT_EXCEPT_QINFO               =</font>
+<font color ="#0000FF">*       IR_SALV_ADAPTER               =</font>
+      CHANGING
+        IT_OUTTAB                     = GT_EDIT_ZTBPP0071
+        IT_FIELDCATALOG               = GT_FCAT4
+<font color ="#0000FF">*       IT_SORT                       = GT_SORT4</font>
+<font color ="#0000FF">*       IT_FILTER                     =</font>
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+  ELSE.
+
+
+    CALL METHOD GO_ALV4-&gt;REFRESH_TABLE_DISPLAY
+      EXCEPTIONS
+        FINISHED = 1
+        OTHERS   = 2.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+
+  ENDIF.
+
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0110 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0110 OUTPUT.
+  SET PF-STATUS 'S110'.
+  SET TITLEBAR 'T110'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module GET_EMPDATA OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE GET_EMPDATA OUTPUT.
+
+  SELECT SINGLE *
+    FROM ZTBSD1030
+    WHERE EMPID = GV_EMPID.
+
+  SELECT SINGLE *
+    FROM ZTBSD1020
+    WHERE DEPCODE = ZTBSD1030-DEPCODE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module SET_MATMAST OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE SET_MATMAST OUTPUT.
+<font color ="#0000FF">* DOMAIN의 FIXED VALUE 가지고 올 변수 선언</font>
+    DATA: LT_D TYPE TABLE OF DD07V,
+          LS_D TYPE DD07V.
+
+<font color ="#0000FF">* LT_D에 DOMAIN 정보 받아오기</font>
+    CALL FUNCTION 'GET_DOMAIN_VALUES'
+      EXPORTING
+        DOMNAME               = 'ZDB_ROUTTYPE'
+<font color ="#0000FF">*       TEXT                  = 'X'</font>
+<font color ="#0000FF">*       FILL_DD07L_TAB        = ' '</font>
+     TABLES
+       VALUES_TAB            = LT_D
+<font color ="#0000FF">*       VALUES_DD07L          =</font>
+     EXCEPTIONS
+       NO_VALUES_FOUND       = 1
+       OTHERS                = 2
+              .
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+<font color ="#0000FF">* ALV에 띄울 ITAB 수정 - BOMTYPE의 Short Description 가져와서 넣어주기</font>
+  LOOP AT GT_ZTBPP0070_PLUS INTO GS_ZTBPP0070_PLUS.
+    READ TABLE LT_D WITH KEY DOMVALUE_L = GS_ZTBPP0070_PLUS-BOMTYPE INTO LS_D.
+
+    GS_ZTBPP0070_PLUS-BOMTYPE_TXT = LS_D-DDTEXT.
+    MODIFY GT_ZTBPP0070_PLUS FROM GS_ZTBPP0070_PLUS TRANSPORTING BOMTYPE_TXT.
+  ENDLOOP.
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

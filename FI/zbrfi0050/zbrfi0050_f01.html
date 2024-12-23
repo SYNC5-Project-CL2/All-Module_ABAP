@@ -1,0 +1,425 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0050_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0050_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZPRAC3_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZPRAC3_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ALV</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_ALV .
+
+  IF GO_CONT IS INITIAL.
+
+    PERFORM CREATE_OBJECT.
+    PERFORM SET_LAYOUT.
+    PERFORM SET_FCAT.
+    PERFORM SET_HANDLER.
+    PERFORM SET_SORT.
+    PERFORM ALV_DISPLAY.
+  ELSE.
+    PERFORM ALV_REFRESH.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJECT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_OBJECT .
+
+  CREATE OBJECT GO_CONT
+    EXPORTING
+      CONTAINER_NAME              = 'AREA'
+    EXCEPTIONS
+      CNTL_ERROR                  = 1
+      CNTL_SYSTEM_ERROR           = 2
+      CREATE_ERROR                = 3
+      LIFETIME_ERROR              = 4
+      LIFETIME_DYNPRO_DYNPRO_LINK = 5
+      OTHERS                      = 6.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  CREATE OBJECT GO_ALV
+    EXPORTING
+      I_PARENT          = GO_CONT
+    EXCEPTIONS
+      ERROR_CNTL_CREATE = 1
+      ERROR_CNTL_INIT   = 2
+      ERROR_CNTL_LINK   = 3
+      ERROR_DP_CREATE   = 4
+      OTHERS            = 5.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT .
+
+  GS_LAYOUT-CWIDTH_OPT = 'A'.
+  GS_LAYOUT-ZEBRA = 'X'.
+  GS_LAYOUT-TOTALS_BEF = 'X'. "소계를 상단으로
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT .
+
+  REFRESH GT_FCAT.
+
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'CURP'.
+  GS_FCAT-COLTEXT = '당기'.
+  GS_FCAT-DO_SUM = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'PRVP'.
+  GS_FCAT-COLTEXT = '전기'.
+  GS_FCAT-DO_SUM = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'RATE'.
+  GS_FCAT-COLTEXT = '증감율(%)'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'CATCODE'.
+  GS_FCAT-NO_OUT = 'X'.
+<font color ="#0000FF">*  GS_FCAT-DO_SUM = 'X'.</font>
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'SORT'.
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+<font color ="#0000FF">*  Domain Fixed Value 값</font>
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'ZSORT_T'.
+  GS_FCAT-NO_OUT = 'X'.
+  GS_FCAT-DO_SUM = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ALV_DISPLAY</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ALV_DISPLAY .
+
+  CALL METHOD GO_ALV-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+      I_STRUCTURE_NAME              = 'ZSBFI0050'
+      IS_LAYOUT                     = GS_LAYOUT
+<font color ="#0000FF">*     IT_TOOLBAR_EXCLUDING          = GT_TOOLBAR</font>
+    CHANGING
+      IT_OUTTAB                     = GT_LIST "GT_ZSBFI0050
+      IT_FIELDCATALOG               = GT_FCAT
+      IT_SORT                       = GT_SORT
+    EXCEPTIONS
+      INVALID_PARAMETER_COMBINATION = 1
+      PROGRAM_ERROR                 = 2
+      TOO_MANY_LINES                = 3
+      OTHERS                        = 4.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ALV_REFRESH</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ALV_REFRESH .
+  GO_ALV-&gt;REFRESH_TABLE_DISPLAY(
+   EXCEPTIONS
+     FINISHED       = 1                " Display was Ended (by Export)
+     OTHERS         = 2
+ ).
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_DATA .
+
+  SELECT A~ACODE, B~ANAME, A~CATCODE
+    INTO TABLE @DATA(LT_ACODE)
+    FROM ZTBFI0010 AS A
+    INNER JOIN ZTBFI0011 AS B
+    ON A~ACODE = B~ACODE
+    WHERE A~RTYPE = 'PL'
+    AND A~DELFLG = ''.
+
+  LOOP AT  LT_ACODE INTO DATA(LS_ACODE).
+    CLEAR GS_ZSBFI0050.
+    GS_ZSBFI0050-CATCODE = LS_ACODE-CATCODE.
+    GS_ZSBFI0050-ACODE = LS_ACODE-ACODE.
+    GS_ZSBFI0050-ANAME = LS_ACODE-ANAME.
+    APPEND GS_ZSBFI0050 TO GT_ZSBFI0050.
+  ENDLOOP.
+
+  LOOP AT GT_ZSBFI0050 INTO GS_ZSBFI0050.
+    IF GS_ZSBFI0050-CATCODE = 'RV_01'.
+      GS_ZSBFI0050-SORT = 1.
+    ELSEIF GS_ZSBFI0050-CATCODE = 'EXP_01'.
+      GS_ZSBFI0050-SORT = 2.
+    ELSEIF GS_ZSBFI0050-CATCODE = 'EXP_02'.
+      GS_ZSBFI0050-SORT = 4.
+    ELSEIF GS_ZSBFI0050-CATCODE = 'RV_02'.
+      GS_ZSBFI0050-SORT = 7.
+    ELSEIF GS_ZSBFI0050-CATCODE = 'EXP_03'.
+      GS_ZSBFI0050-SORT = 8.
+    ELSEIF GS_ZSBFI0050-CATCODE = 'RV_03'.
+      GS_ZSBFI0050-SORT = 9.
+    ELSEIF GS_ZSBFI0050-CATCODE = 'EXP_04'.
+      GS_ZSBFI0050-SORT = 10.
+    ELSEIF GS_ZSBFI0050-CATCODE = 'EXP_05'.
+      GS_ZSBFI0050-SORT = 12.
+    ENDIF.
+
+    MODIFY GT_ZSBFI0050 FROM GS_ZSBFI0050.
+  ENDLOOP.
+
+<font color ="#0000FF">**********************************************************************</font>
+  DATA: LT_DD07V TYPE STANDARD TABLE OF DD07V,
+        LS_DD07V TYPE DD07V.
+
+<font color ="#0000FF">*  Domain 값 가져오는 CALL FUNCTION</font>
+  CALL FUNCTION 'GET_DOMAIN_VALUES'
+    EXPORTING
+      DOMNAME         = 'ZDB_PL_SORT'    " Domain 값을 넣으면 된다. "
+      TEXT            = 'X'
+    TABLES
+      VALUES_TAB      = LT_DD07V    " Function Module Table에서 선언된 타입으로 선언 "
+    EXCEPTIONS
+      VALUE_NOT_FOUND = 1
+      OTHERS          = 2.
+<font color ="#0000FF">**********************************************************************</font>
+<font color ="#0000FF">* GT_LIST에 원하는 TEXT 넣기</font>
+  GT_LIST[] = GT_ZSBFI0050[].
+
+  LOOP AT GT_LIST INTO GS_LIST.
+    READ TABLE LT_DD07V INTO LS_DD07V WITH KEY DOMVALUE_L = GS_LIST-SORT.
+    IF SY-SUBRC = 0.
+      GS_LIST-ZSORT_T = LS_DD07V-DDTEXT.
+    ENDIF.
+
+    MODIFY GT_LIST FROM GS_LIST.
+  ENDLOOP.
+
+<font color ="#0000FF">**********************************************************************</font>
+  DATA: LT_RANGE TYPE RANGE OF CHAR2,
+        LS_RANGE LIKE LINE OF LT_RANGE.
+
+  LOOP AT SO_DAT INTO LS_RANGE.
+    APPEND LS_RANGE TO LT_RANGE.
+  ENDLOOP.
+
+<font color ="#0000FF">**********************************************************************</font>
+  " --당기--
+  LOOP AT GT_LIST INTO GS_LIST.
+
+    DATA: LV_SSUM TYPE ZTBFI0031-WRBTR,
+          LV_HSUM TYPE ZTBFI0031-WRBTR.
+
+<font color ="#0000FF">**********************************************************************</font>
+
+    "계정과목별 차변 합계
+    SELECT SUM( WRBTR )
+      FROM ZVBFI0050
+      WHERE ACODE = @GS_LIST-ACODE
+      AND SHKZG = 'S'
+      AND GJAHR = @PA_GJAHR
+      AND SUBSTRING( BUDAT,5,2 ) IN @LT_RANGE
+      INTO @LV_SSUM.
+
+    "계정과목별 대변 합계
+    SELECT SUM( WRBTR )
+      FROM ZVBFI0050
+      WHERE ACODE = @GS_LIST-ACODE
+      AND SHKZG = 'H'
+      AND GJAHR = @PA_GJAHR
+      AND SUBSTRING( BUDAT,5,2 ) IN @LT_RANGE
+      INTO @LV_HSUM.
+
+    GS_LIST-CURP = LV_HSUM - LV_SSUM.
+    GS_LIST-CURR = 'KRW'.
+    MODIFY GT_LIST FROM GS_LIST.
+
+  ENDLOOP.
+<font color ="#0000FF">**********************************************************************</font>
+  " --전기--
+  LOOP AT GT_LIST INTO GS_LIST.
+
+    DATA: LV_SSUM2     TYPE ZTBFI0031-WRBTR,
+          LV_HSUM2     TYPE ZTBFI0031-WRBTR,
+          LV_PRV_GJAHR TYPE ZTBFI0030-GJAHR.
+
+    LV_PRV_GJAHR = PA_GJAHR - 1.
+
+    "계정과목별 차변 합계
+    SELECT SUM( WRBTR )
+      FROM ZVBFI0050
+      WHERE ACODE = @GS_LIST-ACODE
+      AND SHKZG = 'S'
+      AND GJAHR = @LV_PRV_GJAHR
+      AND SUBSTRING( BUDAT,5,2 ) IN @LT_RANGE
+      INTO @LV_SSUM2.
+
+    "계정과목별 대변 합계
+    SELECT SUM( WRBTR )
+      FROM ZVBFI0050
+      WHERE ACODE = @GS_LIST-ACODE
+      AND SHKZG = 'H'
+      AND GJAHR = @LV_PRV_GJAHR
+      AND SUBSTRING( BUDAT,5,2 ) IN @LT_RANGE
+      INTO @LV_HSUM2.
+
+    GS_LIST-PRVP = LV_HSUM2 - LV_SSUM2.
+
+    "전기 금액이 0이면 증감율 계산 불가
+    IF GS_LIST-PRVP = 0.
+      GS_LIST-RATE = 0.
+    ELSE.
+      GS_LIST-RATE = ( GS_LIST-CURP - GS_LIST-PRVP ) / GS_LIST-PRVP * 100.
+    ENDIF.
+
+    MODIFY GT_LIST FROM GS_LIST.
+
+  ENDLOOP.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_SORT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_SORT .
+
+  CLEAR GS_SORT.
+  GS_SORT-FIELDNAME = 'SORT'.
+  GS_SORT-UP = 'X'.
+  APPEND GS_SORT TO GT_SORT.
+
+<font color ="#0000FF">*  SUBTOTAL 기준</font>
+  CLEAR GS_SORT.
+  GS_SORT-FIELDNAME = 'ZSORT_T'. "도메인값
+  GS_SORT-SUBTOT = 'X'.
+  APPEND GS_SORT TO GT_SORT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_HANDLER</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_HANDLER .
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form PA_OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM PA_OUTPUT .
+
+  LOOP AT SCREEN.
+    IF SCREEN-NAME EQ 'PA_COMC'.
+      SCREEN-INPUT = 0.
+    ENDIF.
+    MODIFY SCREEN.
+  ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CHECK_DAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CHECK_DAT .
+
+  LOOP AT SO_DAT INTO DATA(LS_MON).
+    " LOW 값 검증
+    IF LS_MON-LOW IS NOT INITIAL AND
+       ( LS_MON-LOW &lt; '01' OR LS_MON-LOW &gt; '12' ).
+      MESSAGE '월은 01에서 12 사이 값만 입력 가능합니다.' TYPE 'E'.
+    ENDIF.
+
+    " HIGH 값 검증
+    IF LS_MON-HIGH IS NOT INITIAL AND
+       ( LS_MON-HIGH &lt; '01' OR LS_MON-HIGH &gt; '12' ).
+      MESSAGE '월은 01에서 12 사이 값만 입력 가능합니다.' TYPE 'E'.
+    ENDIF.
+
+  ENDLOOP.
+
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

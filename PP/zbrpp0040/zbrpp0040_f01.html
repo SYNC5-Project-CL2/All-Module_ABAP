@@ -1,0 +1,439 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRPP0040_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRPP0040_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRPP0040_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRPP0040_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_DATA .
+
+  SELECT *
+    FROM ZTBPP0020
+    WHERE PREQNUM IN @SO_PNUM
+      AND PREQDAT IN @SO_PDAT
+    INTO TABLE @GT_ZTBPP0020.
+
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '015' DISPLAY LIKE 'E'. " 이미 소요량 계산해서 더 계산 안된다는 메세지
+  ELSE.
+    CALL SCREEN 100.
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ALV</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_ALV .
+
+
+  IF GO_DOCKING IS INITIAL.
+
+<font color ="#0000FF">*   DOCKING CONTAINER 생성</font>
+    CREATE OBJECT GO_DOCKING
+      EXPORTING
+        REPID                       = SY-REPID
+        DYNNR                       = SY-DYNNR
+<font color ="#0000FF">*       SIDE                        = CL_GUI_DOCKING_CONTAINER=&gt;DOCK_AT_LEFT</font>
+        EXTENSION                   = 1500
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        OTHERS                      = 6.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+<font color ="#0000FF">*   DOCKING CONTAINER SPLIT 하기</font>
+    CREATE OBJECT GO_SPLIT
+      EXPORTING
+        PARENT            = GO_DOCKING
+        ROWS              = 1 " 위아래로 2개의 컨테이너
+        COLUMNS           = 2
+      EXCEPTIONS
+        CNTL_ERROR        = 1
+        CNTL_SYSTEM_ERROR = 2
+        OTHERS            = 3.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+<font color ="#0000FF">*    SPLIT한 자리에 컨테이너 할당해주기??</font>
+    CALL METHOD GO_SPLIT-&gt;GET_CONTAINER
+      EXPORTING
+        ROW       = 1
+        COLUMN    = 1
+      RECEIVING
+        CONTAINER = GO_CONT1.
+
+<font color ="#0000FF">*    SPLIT한 자리에 컨테이너 할당해주기??</font>
+    CALL METHOD GO_SPLIT-&gt;GET_CONTAINER
+      EXPORTING
+        ROW       = 1
+        COLUMN    = 2
+      RECEIVING
+        CONTAINER = GO_CONT2.
+
+<font color ="#0000FF">**********************************************************************</font>
+<font color ="#0000FF">*  1번째 ALV</font>
+
+<font color ="#0000FF">*   ALV 생성하고 설정해주기</font>
+    CREATE OBJECT GO_ALV1
+      EXPORTING
+        I_PARENT          = GO_CONT1
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_TOOLBAR FOR GO_ALV1.
+    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_USER_COMMAND FOR GO_ALV1.
+
+    PERFORM SET_LAYOUT1.
+<font color ="#0000FF">*    PERFORM SET_FCAT1.</font>
+<font color ="#0000FF">*    PERFORM SET_SORT1.</font>
+
+    CALL METHOD GO_ALV1-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+<font color ="#0000FF">*       I_BUFFER_ACTIVE               =</font>
+<font color ="#0000FF">*       I_BYPASSING_BUFFER            =</font>
+<font color ="#0000FF">*       I_CONSISTENCY_CHECK           =</font>
+        I_STRUCTURE_NAME              = 'ZTBPP0020'
+<font color ="#0000FF">*       IS_VARIANT                    =</font>
+<font color ="#0000FF">*       I_SAVE                        =</font>
+<font color ="#0000FF">*       I_DEFAULT                     = 'X'</font>
+        IS_LAYOUT                     = GS_LAYO1
+<font color ="#0000FF">*       IS_PRINT                      =</font>
+<font color ="#0000FF">*       IT_SPECIAL_GROUPS             =</font>
+<font color ="#0000FF">*       IT_TOOLBAR_EXCLUDING          =</font>
+<font color ="#0000FF">*       IT_HYPERLINK                  =</font>
+<font color ="#0000FF">*       IT_ALV_GRAPHICS               =</font>
+<font color ="#0000FF">*       IT_EXCEPT_QINFO               =</font>
+<font color ="#0000FF">*       IR_SALV_ADAPTER               =</font>
+      CHANGING
+        IT_OUTTAB                     = GT_ZTBPP0020
+<font color ="#0000FF">*       IT_FIELDCATALOG               =</font>
+<font color ="#0000FF">*       IT_SORT                       =</font>
+<font color ="#0000FF">*       IT_FILTER                     =</font>
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+<font color ="#0000FF">**********************************************************************</font>
+<font color ="#0000FF">*  2번째 ALV</font>
+<font color ="#0000FF">*   ALV 생성하고 설정해주기</font>
+    CREATE OBJECT GO_ALV2
+      EXPORTING
+        I_PARENT          = GO_CONT2
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+    PERFORM SET_LAYOUT2.
+    PERFORM SET_FCAT2.
+    PERFORM SET_SORT2.
+
+
+    CALL METHOD GO_ALV2-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+<font color ="#0000FF">*       I_BUFFER_ACTIVE               =</font>
+<font color ="#0000FF">*       I_BYPASSING_BUFFER            =</font>
+<font color ="#0000FF">*       I_CONSISTENCY_CHECK           =</font>
+        I_STRUCTURE_NAME              = 'ZTBPP0021'
+<font color ="#0000FF">*       IS_VARIANT                    =</font>
+<font color ="#0000FF">*       I_SAVE                        =</font>
+<font color ="#0000FF">*       I_DEFAULT                     = 'X'</font>
+        IS_LAYOUT                     = GS_LAYO2
+<font color ="#0000FF">*       IS_PRINT                      =</font>
+<font color ="#0000FF">*       IT_SPECIAL_GROUPS             =</font>
+<font color ="#0000FF">*       IT_TOOLBAR_EXCLUDING          =</font>
+<font color ="#0000FF">*       IT_HYPERLINK                  =</font>
+<font color ="#0000FF">*       IT_ALV_GRAPHICS               =</font>
+<font color ="#0000FF">*       IT_EXCEPT_QINFO               =</font>
+<font color ="#0000FF">*       IR_SALV_ADAPTER               =</font>
+      CHANGING
+        IT_OUTTAB                     = GT_NM_ZTBPP0021
+        IT_FIELDCATALOG               = GT_FCAT2
+        IT_SORT                       = GT_SORT2
+<font color ="#0000FF">*       IT_FILTER                     =</font>
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT1 .
+
+  GS_LAYO1-ZEBRA = 'X'.
+  GS_LAYO1-CWIDTH_OPT = 'A'.
+  GS_LAYO1-GRID_TITLE = '생산 요청 리스트'.
+  GS_LAYO1-SEL_MODE = 'B'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT2 .
+
+  GS_LAYO2-ZEBRA = 'X'.
+  GS_LAYO2-CWIDTH_OPT = 'A'.
+  GS_LAYO2-GRID_TITLE = '생산 요청 DATA 상세 정보'.
+  GS_LAYO2-SEL_MODE = 'B'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_SORT2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_SORT2 .
+
+  DATA: LS_SORT TYPE LVC_S_SORT.
+
+  LS_SORT-FIELDNAME = 'MATCODE'.
+
+  APPEND LS_SORT TO GT_SORT2.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT2 .
+
+  DATA: LS_FCAT TYPE LVC_S_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MATNAME'.
+  LS_FCAT-COLTEXT = '자재 이름'.
+  LS_FCAT-COL_POS = '4'.
+  APPEND LS_FCAT TO GT_FCAT2.
+  CLEAR: LS_FCAT.
+
+  LS_FCAT-FIELDNAME = 'PRDAMT'.
+  LS_FCAT-QFIELDNAME = 'UNITCODE'.
+  APPEND LS_FCAT TO GT_FCAT2.
+  CLEAR: LS_FCAT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form MK_PRO</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM MK_PRO.
+
+  DATA: LV_TODAY TYPE KWEEK,
+        LV_SLDAT TYPE KWEEK.
+
+<font color ="#0000FF">*  선택한 ROW 없으면 행 선택해달라는 에러메세지</font>
+  GO_ALV1-&gt;GET_SELECTED_ROWS(
+     IMPORTING
+     ET_INDEX_ROWS = ET_INDEX_ROW                " Indexes of Selected Rows
+  ).
+
+
+  IF ET_INDEX_ROW IS INITIAL.
+    MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '003' DISPLAY LIKE 'E'.
+  ELSE.
+
+    READ TABLE ET_INDEX_ROW INTO ES_INDEX_ROW INDEX 1.
+    SEL_IDX = ES_INDEX_ROW-INDEX.
+    READ TABLE GT_ZTBPP0020 INTO GS_ZTBPP0020 INDEX SEL_IDX.
+
+<font color ="#0000FF">* 오늘 날짜 주차 구하기</font>
+    CALL FUNCTION 'DATE_GET_WEEK'
+      EXPORTING
+        DATE         = SY-DATUM
+      IMPORTING
+        WEEK         = LV_TODAY
+      EXCEPTIONS
+        DATE_INVALID = 1
+        OTHERS       = 2.
+
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+<font color ="#0000FF">* 선택한 데이터의 주차 구하기</font>
+    CALL FUNCTION 'DATE_GET_WEEK'
+      EXPORTING
+        DATE         = GS_ZTBPP0020-SALESDATE
+      IMPORTING
+        WEEK         = LV_SLDAT
+      EXCEPTIONS
+        DATE_INVALID = 1
+        OTHERS       = 2.
+
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+<font color ="#0000FF">*  선택한 요청 데이터의 생산예정일이 현재 주차와 맞지 않으면 에러메세지</font>
+    IF LV_TODAY &lt;&gt; LV_SLDAT.
+      MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '316' DISPLAY LIKE 'E'.
+    ELSE.
+    ENDIF.
+
+
+      CALL SCREEN 110
+      STARTING AT 5 5.
+
+
+
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SAVE_PO</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SAVE_PO .
+<font color ="#0000FF">* 오더 테이블로 데이터 넘겨주고 현재 테이블에서 해당 데이터는 '생산오더 완료'로 상태 변경해주기</font>
+<font color ="#0000FF">* 넘길 때 생산오더일 = SY-DATUM / STATUS = '생산전'.</font>
+
+  DATA: LV_NR TYPE NUM7.
+
+  SELECT *
+    FROM ZTBPP0021
+   WHERE PREQNUM = @GS_ZTBPP0020-PREQNUM
+    INTO TABLE @GT_ZTBPP0021.
+
+  CLEAR: GS_ZTBPP0030.
+  MOVE-CORRESPONDING GS_ZTBPP0020 TO GS_ZTBPP0030.
+
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      NR_RANGE_NR             = '01'
+      OBJECT                  = 'ZBBPP0030'
+<font color ="#0000FF">*     QUANTITY                = '1'</font>
+<font color ="#0000FF">*     SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*     TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*     IGNORE_BUFFER           = ' '</font>
+    IMPORTING
+      NUMBER                  = LV_NR
+<font color ="#0000FF">*     QUANTITY                =</font>
+<font color ="#0000FF">*     RETURNCODE              =</font>
+    EXCEPTIONS
+      INTERVAL_NOT_FOUND      = 1
+      NUMBER_RANGE_NOT_INTERN = 2
+      OBJECT_NOT_FOUND        = 3
+      QUANTITY_IS_0           = 4
+      QUANTITY_IS_NOT_1       = 5
+      INTERVAL_OVERFLOW       = 6
+      BUFFER_OVERFLOW         = 7
+      OTHERS                  = 8.
+  IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  GS_ZTBPP0030-PORDNUM = 'PRO' && LV_NR.
+  GS_ZTBPP0030-STATUS = '생산전'.
+  GS_ZTBPP0030-PRDCRDAT = SY-DATUM.
+
+  INSERT ZTBPP0030 FROM GS_ZTBPP0030.
+
+  LOOP AT GT_ZTBPP0021 INTO GS_ZTBPP0021.
+    CLEAR: GS_ZTBPP0031.
+    MOVE-CORRESPONDING GS_ZTBPP0021 TO GS_ZTBPP0031.
+    GS_ZTBPP0031-PRDQUAN = GS_ZTBPP0021-PRDAMT.
+    GS_ZTBPP0031-PORDNUM = GS_ZTBPP0030-PORDNUM.
+    GS_ZTBPP0031-STATUS = '생산전'.
+
+    INSERT ZTBPP0031 FROM GS_ZTBPP0031.
+
+  ENDLOOP.
+
+  GS_ZTBPP0020-STATUS = '생산오더완료'.
+  GS_ZTBPP0020-EMPCODE = ZTBSD1030-EMPID.
+  UPDATE ZTBPP0020 FROM GS_ZTBPP0020.
+
+  IF SY-SUBRC = 0.
+    MODIFY GT_ZTBPP0020 FROM GS_ZTBPP0020 INDEX SEL_IDX.
+    MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '317'.
+  ENDIF.
+
+
+  GO_ALV1-&gt;REFRESH_TABLE_DISPLAY(
+    EXCEPTIONS
+      FINISHED       = 1                " Display was Ended (by Export)
+      OTHERS         = 2
+  ).
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+
+  LEAVE TO SCREEN 0.
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

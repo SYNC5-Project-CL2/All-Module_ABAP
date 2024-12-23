@@ -1,0 +1,28 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBBFI0010_S01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBBFI0010_S01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBBFI0010_S01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBBFI0010_S01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+" 엑셀파일 경로 입력 파라미터.
+SELECTION-SCREEN BEGIN OF BLOCK BLK1 WITH FRAME TITLE TEXT-T01.
+  PARAMETERS: PA_FILE TYPE RLGRAP-FILENAME DEFAULT 'C:\'.
+SELECTION-SCREEN END OF BLOCK BLK1.
+
+SELECTION-SCREEN FUNCTION KEY 1.  "Selection Screen에 사용자 정의 버튼 추가 (KEY 1 : F1~F20)
+"사용자가 이 버튼을 클릭하면, SY-UCOMM 필드에 해당 키의 이름(예: FC01, FC02 등)이 저장
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

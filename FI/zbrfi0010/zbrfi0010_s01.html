@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0010_S01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0010_S01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRFI0010_S01</b></font>
+<hr>
+<pre width="100">
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRFI0020_S01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+SELECTION-SCREEN BEGIN OF BLOCK B01 WITH FRAME TITLE TEXT-B01.
+
+  SELECT-OPTIONS: SO_BPCO FOR ZTBSD1050-BPCODE. " 회사 코드
+  SELECT-OPTIONS: SO_BUDT FOR ZTBFI0030-BUDAT. " 전기일(전표 생성일)
+
+SELECTION-SCREEN END OF BLOCK B01.
+
+INITIALIZATION.
+
+AT SELECTION-SCREEN.
+
+START-OF-SELECTION.
+
+END-OF-SELECTION.
+  CALL SCREEN '0100'.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

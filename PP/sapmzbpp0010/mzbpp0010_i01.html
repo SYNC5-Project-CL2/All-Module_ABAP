@@ -1,0 +1,1011 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBPP0010_I01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBPP0010_I01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBPP0010_I01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBPP0010_I01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0100  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0100 INPUT.
+
+
+  CASE ok_code.
+    WHEN 'BACK'.
+      LEAVE TO SCREEN 0.
+
+    WHEN 'REFRESH'.
+
+      CLEAR: chk1, chk2, ztbpp0060-routid, routid2, gt_ztbpp0060, gt_ztbpp0061.
+
+      all = ''.           "100
+      val = 'X'.
+      del = ''.
+
+      s = ''.
+      c = ''.
+      a = 'X'.
+
+
+    WHEN 'PUSHBTN2'. " 조회
+
+      CLEAR: gt_ztbpp0061, gt_ztbpp0060, rt_routid, rs_roitid.
+
+<font color ="#0000FF">*      IF chk1 IS INITIAL AND chk2 IS INITIAL.</font>
+<font color ="#0000FF">*        MESSAGE s015(zcommon_msg) DISPLAY LIKE 'E'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      ELSE.</font>
+
+
+
+      IF ztbpp0060-routid IS INITIAL AND routid2 IS INITIAL.
+
+
+      ELSEIF routid2 IS INITIAL.
+
+        rs_roitid-sign = 'I'.
+        rs_roitid-option = 'EQ'.
+        rs_roitid-low = ztbpp0060-routid.
+
+        APPEND rs_roitid TO rt_routid.
+
+
+      ELSEIF routid2 IS NOT INITIAL.
+
+        rs_roitid-sign = 'I'.
+        rs_roitid-option = 'BT'.
+        rs_roitid-low = ztbpp0060-routid.
+        rs_roitid-high = routid2.
+
+        APPEND rs_roitid TO rt_routid.
+
+      ENDIF.
+
+
+      DATA: lv_rad7 TYPE char1.
+
+      CASE 'X'.
+        WHEN c.
+          lv_rad7 = 'C'.
+        WHEN s.
+          lv_rad7 = 'S'.
+        WHEN a.
+          lv_rad7 = '%'. """""""""""""""""""""""""""""""""""
+      ENDCASE.
+
+
+      DATA: lv_rad TYPE char1.
+
+      CASE 'X'.
+        WHEN all.
+          lv_rad = '%'. """""""""""""""""""""""""""""""""""
+        WHEN val.
+          lv_rad = ''.
+        WHEN del.
+          lv_rad = 'X'.
+
+      ENDCASE.
+
+      SELECT *
+        FROM ztbpp0060
+        INTO CORRESPONDING FIELDS OF TABLE gt_ztbpp0060
+        WHERE routid IN rt_routid
+          AND routtype LIKE lv_rad7 """""""""""""""""""""""""""""""""""
+          AND delflg LIKE lv_rad. """"""""""""""""""""""""""""""""""""
+
+      IF gt_ztbpp0060 IS INITIAL.
+
+        MESSAGE s015(zcommon_msg) DISPLAY LIKE 'E'.
+
+      ENDIF.
+
+      CLEAR: ztbpp0060, routid2.
+
+<font color ="#0000FF">*      ENDIF.</font>
+
+    WHEN 'CREATE'.
+
+      CLEAR: gt_ztbpp0061. "생성 또하고 또할때 전거랑 안겹치게
+
+      go_alv2-&gt;refresh_table_display(
+              " Without Sort, Filter, etc.
+        EXCEPTIONS
+          finished       = 1                " Display was Ended (by Export)
+          OTHERS         = 2
+      ).
+      IF sy-subrc &lt;&gt; 0.
+
+      ENDIF.
+
+      CALL SCREEN 110 STARTING AT 5 5.
+
+      CLEAR: ztbpp0060, gt_ztbpp00612.
+
+      go_alv3-&gt;refresh_table_display(
+
+        EXCEPTIONS
+          finished       = 1                " Display was Ended (by Export)
+          OTHERS         = 2
+      ).
+      IF sy-subrc &lt;&gt; 0.
+
+      ENDIF.
+
+    WHEN 'MODIFY'.
+
+      DATA: lt_rows2   TYPE lvc_t_row,
+            ls_rows2   TYPE lvc_s_row,
+
+            lv_answer2 TYPE c.
+
+      go_alv1-&gt;get_selected_rows(
+        IMPORTING
+          et_index_rows =        lt_rows2         " Indexes of Selected Rows
+
+      ).
+
+      IF sy-subrc = 0.
+
+        READ TABLE lt_rows2 INTO ls_rows2 INDEX 1.
+
+        gs_rows2 = ls_rows2.
+
+        IF gs_rows2 IS INITIAL.
+
+          MESSAGE  s008(zcommon_msg) DISPLAY LIKE 'E'.
+
+        ELSEIF gs_rows2 IS NOT INITIAL.
+
+<font color ="#0000FF">*          CLEAR GS_ZTBPP0060.""""""""""""""""""""""""""""""""""""""""""""""""</font>
+          READ TABLE gt_ztbpp0060 INTO gs_ztbpp0060 INDEX gs_rows2-index.
+
+          IF gs_ztbpp0060-delflg = 'X'.
+
+            MESSAGE s014(zcommon_msg) DISPLAY LIKE 'E'.
+
+          ELSE.
+
+
+            IF gs_ztbpp0060-routtype = 'R'. "선택한 데이터에 따라 라디오 버튼 와리가리
+
+              half = ''.
+              comp = 'X'.
+
+            ELSEIF gs_ztbpp0060-routtype = 'S'.
+
+              half = 'X'.
+              comp = ''.
+
+            ENDIF.
+
+            PERFORM data_init. """""""""""""""""""""""""""""""""""""""""""""""""
+
+            CALL SCREEN 120 STARTING AT 5 5.
+
+            CLEAR: lt_rows2, gs_rows2, ls_rows2. "선택안했는데도 수정 화면에 정보 뜨는거 막을려고
+
+          ENDIF.
+
+        ENDIF.
+
+      ENDIF.
+
+    WHEN 'DELETE'.
+
+
+
+      DATA: lt_rows   TYPE lvc_t_row,
+            ls_rows   TYPE lvc_s_row,
+
+            lv_answer TYPE c,
+
+            lv_empid2 TYPE char15.
+
+      go_alv1-&gt;get_selected_rows(
+        IMPORTING
+          et_index_rows =        lt_rows         " Indexes of Selected Rows
+<font color ="#0000FF">*          et_row_no     =                  " Numeric IDs of Selected Rows</font>
+      ).
+
+      IF lt_rows IS INITIAL.
+        MESSAGE s008(zcommon_msg) DISPLAY LIKE 'E'.
+
+      ELSE.
+
+        READ TABLE lt_rows INTO ls_rows INDEX 1.
+
+        READ TABLE gt_ztbpp0060 INTO gs_ztbpp0060 INDEX ls_rows-index.
+
+        IF gs_ztbpp0060-delflg = 'X'.
+
+          MESSAGE s014(zcommon_msg) DISPLAY LIKE 'E'.
+
+        ELSE.
+
+          CALL FUNCTION 'POPUP_TO_CONFIRM'
+            EXPORTING
+              titlebar              = 'ROUTING MASTER 데이터 삭제'
+              text_question         = '데이터를 삭제하시겠습니까?'
+              icon_button_1         = 'ICON_OKAY'
+              icon_button_2         = 'ICON_CANCEL'
+              display_cancel_button = ''
+            IMPORTING
+              answer                = lv_answer
+            EXCEPTIONS
+              text_not_found        = 1
+              OTHERS                = 2.
+          IF lv_answer = 1.
+
+
+            READ TABLE lt_rows INTO ls_rows INDEX 1.
+
+            IF sy-subrc = 0.
+
+              READ TABLE gt_ztbpp0060 INTO gs_ztbpp0060 INDEX ls_rows-index.
+
+
+              IF gs_ztbpp0060-delflg = ''.
+
+                READ TABLE gt_ztbpp0060 INTO gs_ztbpp0060 INDEX ls_rows-index.
+
+                IF sy-subrc = 0.
+
+                  SELECT SINGLE empid
+                    FROM ztbsd1030
+                    INTO lv_empid2
+                    WHERE logid = sy-uname.
+
+
+                  UPDATE ztbpp0060
+                     SET delflg = 'X'
+                         stamp_date_l = sy-datum
+                         stamp_time_l = sy-uzeit
+                         stamp_user_l = lv_empid2
+                     WHERE routid = gs_ztbpp0060-routid.
+
+
+
+                  IF sy-subrc = 0.
+
+                    gs_ztbpp0060-delflg = 'X'.
+                    gs_ztbpp0060-stamp_date_l = sy-datum.
+                    gs_ztbpp0060-stamp_time_l = sy-uzeit.
+                    gs_ztbpp0060-stamp_user_l = lv_empid2.
+
+                    IF del = 'X' OR all = 'X'.
+
+                      MODIFY gt_ztbpp0060 FROM gs_ztbpp0060 INDEX ls_rows-index.
+                    ELSE.
+
+                      DELETE gt_ztbpp0060 INDEX ls_rows-index.
+
+                    ENDIF.
+
+
+                  ENDIF.
+
+                  UPDATE ztbpp0061
+                     SET delflg = 'X'
+                     WHERE routid = gs_ztbpp0060-routid.
+
+                  IF sy-subrc = 0.
+
+
+
+
+                    LOOP AT gt_ztbpp0061 INTO gs_ztbpp0061 WHERE routid = gs_ztbpp0060-routid.
+
+                      gs_ztbpp0061-delflg = 'X'.
+
+                      MODIFY gt_ztbpp0061 FROM gs_ztbpp0061.
+
+                    ENDLOOP.
+
+
+
+
+
+                  ENDIF.
+
+                ENDIF.
+
+                MESSAGE s095(zcommon_msg) WITH  '삭제'.
+
+              ENDIF.
+
+            ENDIF.
+
+          ELSEIF lv_answer = 2.
+
+          ENDIF.
+
+        ENDIF.
+
+      ENDIF.
+
+
+
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE exit INPUT.
+
+  CASE ok_code.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+    WHEN 'CANCEL'.
+      LEAVE TO SCREEN 0.
+    WHEN OTHERS.
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  REFRESH_ALV  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE refresh_alv INPUT.
+
+  go_alv1-&gt;refresh_table_display(
+
+    EXCEPTIONS
+      finished       = 1                " Display was Ended (by Export)
+      OTHERS         = 2
+  ).
+  IF sy-subrc &lt;&gt; 0.
+
+  ENDIF.
+
+  go_alv2-&gt;refresh_table_display(
+
+    EXCEPTIONS
+      finished       = 1                " Display was Ended (by Export)
+      OTHERS         = 2
+  ).
+  IF sy-subrc &lt;&gt; 0.
+
+  ENDIF.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  GET_SELECTED_ROWS  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE get_selected_rows INPUT.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0110  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0110 INPUT.
+
+  DATA: lt_rows4         TYPE lvc_t_row,
+        ls_rows4         TYPE lvc_s_row,
+
+        lv_num           TYPE char10,
+
+        lv_rsrc          TYPE char2,
+
+        lv_answer3       TYPE c,
+
+        lv_check2        TYPE char1,
+
+        lv_empid         TYPE char15,
+
+        lt_matcode       TYPE TABLE OF ztbpp0061, "alv 입력값 input cheak
+        ls_matcode       LIKE LINE OF lt_matcode,
+
+        lv_count_matcode TYPE int4.
+
+
+  CASE ok_code.
+    WHEN 'OKAY'.
+
+      IF ztbpp0060-prctime IS INITIAL OR
+         ztbpp0060-labcost IS INITIAL OR
+         ztbpp0060-prdquan IS INITIAL OR
+         ztbpp0060-unitcode IS INITIAL.
+
+        MESSAGE s009(zcommon_msg) DISPLAY LIKE 'E'.
+
+      ELSE.
+
+<font color ="#0000FF">**********       if gv_app_check2 = 'X'.""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""dhasjkdhaskjdhaskjdhajk</font>
+
+        CALL FUNCTION 'POPUP_TO_CONFIRM'
+          EXPORTING
+            titlebar              = 'ROUTING MASTER 데이터 생성'
+            text_question         = '데이터를 생성하시겠습니까?'
+            text_button_1         = 'YES'
+            text_button_2         = 'NO'
+            display_cancel_button = ''
+          IMPORTING
+            answer                = lv_answer3
+          EXCEPTIONS
+            text_not_found        = 1
+            OTHERS                = 2.
+        IF sy-subrc &lt;&gt; 0.
+        ENDIF.
+
+        IF lv_answer3 = 1.
+
+          CALL FUNCTION 'NUMBER_GET_NEXT'
+            EXPORTING
+              nr_range_nr             = '01'
+              object                  = 'ZBBPP0060'
+<font color ="#0000FF">*             QUANTITY                = '1'</font>
+<font color ="#0000FF">*             SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*             TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*             IGNORE_BUFFER           = ' '</font>
+            IMPORTING
+              number                  = lv_num
+<font color ="#0000FF">*             QUANTITY                =</font>
+<font color ="#0000FF">*             RETURNCODE              =</font>
+            EXCEPTIONS
+              interval_not_found      = 1
+              number_range_not_intern = 2
+              object_not_found        = 3
+              quantity_is_0           = 4
+              quantity_is_not_1       = 5
+              interval_overflow       = 6
+              buffer_overflow         = 7
+              OTHERS                  = 8.
+          IF sy-subrc = 0.
+
+            ztbpp0060-routid = 'R' && lv_num.
+
+            ztbpp0060-stamp_date_f = sy-datum.
+            ztbpp0060-stamp_time_f = sy-uzeit.
+
+            SELECT SINGLE empid
+              FROM ztbsd1030
+              INTO lv_empid
+              WHERE logid = sy-uname.
+
+            ztbpp0060-stamp_user_f = lv_empid.
+
+            ztbpp0060-stamp_date_l = sy-datum.
+            ztbpp0060-stamp_time_l = sy-uzeit.
+
+
+            ztbpp0060-stamp_user_l = lv_empid.
+
+          ENDIF.
+
+
+          MOVE-CORRESPONDING ztbpp0060 TO gs_ztbpp00602.
+
+          IF sy-subrc = 0.
+
+            INSERT ztbpp0060 FROM gs_ztbpp00602.
+
+            IF sy-subrc = 0.
+
+              IF del = 'X'.
+
+              ELSE.
+
+                APPEND gs_ztbpp00602 TO gt_ztbpp0060.
+
+                MESSAGE s095(zcommon_msg) WITH '생성'.
+
+                lv_check2 = 1.
+
+              ENDIF.
+
+            ELSE.
+
+              MESSAGE s097(zcommon_msg) WITH '생성' DISPLAY LIKE 'E'.
+
+            ENDIF.
+
+          ENDIF.
+
+
+<font color ="#0000FF">**********************************************************************헤더 위까지</font>
+          SELECT matcode
+            FROM ztbmm1010
+            INTO CORRESPONDING FIELDS OF TABLE lt_matcode
+            WHERE mattype = 'C' or mattype = 'S'.
+
+<font color ="#0000FF">*          LOOP AT gt_ztbpp00612 INTO gs_ztbpp00612.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*            READ TABLE lt_matcode INTO ls_matcode WITH KEY matcode = gs_ztbpp00612-matcode .</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*            IF sy-subrc &lt;&gt; 0. " 즉 없을 때 없는 거 있을 떄 lv_count_matcode + 1.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*              lv_count_matcode += 1.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*            ELSE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*            ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*          ENDLOOP.</font>
+
+
+          LOOP AT gt_matcode INTO gs_matcode.
+
+            READ TABLE lt_matcode INTO ls_matcode WITH KEY matcode = gs_matcode-matcode.
+
+            IF sy-subrc &lt;&gt; 0. " 즉 없을 때 없는 거 있을 떄 lv_count_matcode + 1.
+
+              lv_count_matcode += 1.
+
+            ELSE.
+
+            ENDIF.
+
+          ENDLOOP.
+
+
+          IF lv_count_matcode = 0.
+
+
+<font color ="#0000FF">*            LOOP AT gt_ztbpp00612 INTO gs_ztbpp00612.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**           READ TABLE lt_matcode into ls_matcode with key matcode = gs_ztbpp00612-matcode.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*              IF gs_ztbpp00612-matcode IS NOT INITIAL.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*                gs_ztbpp00612-routid = 'R' && lv_num.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*                INSERT ztbpp0061 FROM gs_ztbpp00612.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*                IF del = 'X'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*                ELSE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*                  APPEND gs_ztbpp00612 TO gt_ztbpp0061.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*                ENDIF.</font>
+<font color ="#0000FF">**            ENDIF.</font>
+<font color ="#0000FF">*              ELSE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*              ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*            ENDLOOP.</font>
+
+             LOOP AT gt_matcode INTO gs_matcode.
+<font color ="#0000FF">*</font>
+                READ TABLE lt_matcode into ls_matcode with key matcode = gs_matcode-matcode.
+
+
+              IF gs_matcode-matcode IS NOT INITIAL.
+
+                gs_ztbpp00612-routid = 'R' && lv_num.
+                GS_ZTBPP00612-matcode = gs_matcode-MATCODE.
+
+                INSERT ztbpp0061 FROM gs_ztbpp00612.
+
+                IF del = 'X'.
+
+                ELSE.
+
+                  APPEND gs_ztbpp00612 TO gt_ztbpp0061.
+
+                ENDIF.
+<font color ="#0000FF">*            ENDIF.</font>
+              ELSE.
+
+              ENDIF.
+
+            ENDLOOP.
+
+            IF lv_check2 = 1.
+
+              SELECT COUNT( * )
+                FROM ztbpp0061
+                WHERE routid = gs_ztbpp00602-routid.
+
+              IF sy-subrc &lt;&gt; 0.
+
+                DELETE FROM ztbpp0060 WHERE routid = gs_ztbpp00602-routid.
+                DELETE gt_ztbpp0060 WHERE routid = gs_ztbpp00602-routid.
+
+                MESSAGE s097(zcommon_msg) WITH '생성' DISPLAY LIKE 'E'.
+
+              ELSE.
+
+                MESSAGE s095(zcommon_msg) WITH '생성'.
+                CLEAR lv_check2.
+
+                 clear gv_app_check2. """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+                LEAVE TO SCREEN 0.
+
+
+              ENDIF.
+
+            ELSE.
+
+              MESSAGE s097(zcommon_msg) WITH '생성' DISPLAY LIKE 'E'.
+
+            ENDIF.
+
+            CLEAR ztbpp0060-routid.
+
+          ELSE.
+
+            DELETE FROM ztbpp0060 WHERE routid = gs_ztbpp00602-routid.
+            DELETE gt_ztbpp0060 WHERE routid = gs_ztbpp00602-routid.
+
+            MESSAGE s310(zcommon_msg) DISPLAY LIKE 'E'.
+
+            CLEAR lv_count_matcode. """"""""""""""""""""""
+             clear gv_app_check2. """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+          ENDIF.
+
+        ENDIF.
+
+<font color ="#0000FF">*        ELSE.</font>
+
+<font color ="#0000FF">*          clear gv_app_check2. """"""""""""""""""""""""""""""""""""""""</font>
+
+<font color ="#0000FF">**********        else. """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""" "</font>
+<font color ="#0000FF">**********</font>
+<font color ="#0000FF">**********          MESSAGE s309(zcommon_msg) DISPLAY LIKE 'E'. """"""""""""""""""""""""""""""""""""</font>
+<font color ="#0000FF">**********          clear gv_app_check2.</font>
+<font color ="#0000FF">**********</font>
+<font color ="#0000FF">**********        endif. """"""""""""""""""""""""""""""""""""""""""""""""""""""""""</font>
+
+      ENDIF.
+
+<font color ="#0000FF">*      ELSE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*        MESSAGE '없는 자재코들 입력했습니다' TYPE 'S' DISPLAY LIKE 'E'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      ENDIF.</font>
+
+
+    WHEN 'ROUTT'.
+
+      CASE 'X'.
+        WHEN rs.
+
+<font color ="#0000FF">*          CLEAR: ztbpp0060-routtype = 'S', ztbpp0060-unitcode = 'L'.</font>
+
+          ztbpp0060-unitcode = 'L'.
+          ztbpp0060-routtype = 'S'.
+        WHEN rc.
+
+<font color ="#0000FF">*          CLEAR: ztbpp0060-routtype, ztbpp0060-unitcode .</font>
+
+          ztbpp0060-unitcode = 'EA'.
+          ztbpp0060-routtype = 'C'.
+        WHEN OTHERS.
+
+
+
+      ENDCASE.
+
+
+
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT2  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE exit2 INPUT.
+
+  CASE ok_code.
+    WHEN 'CANCEL'.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  REFRESH_ALV3  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE refresh_alv3 INPUT.
+
+  go_alv3-&gt;refresh_table_display(
+
+    EXCEPTIONS
+      finished       = 1                " Display was Ended (by Export)
+      OTHERS         = 2
+  ).
+  IF sy-subrc &lt;&gt; 0.
+
+  ENDIF.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT3  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE exit3 INPUT.
+
+  CASE ok_code.
+    WHEN 'CANCEL'.
+
+      CLEAR: ztbpp0060, gt_ztbpp00613.
+
+      LEAVE TO SCREEN 0.
+
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0120  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0120 INPUT.
+
+  DATA: ls_check1         TYPE char1, " 헤더만 수정시 확인 용
+        lv_empid4         TYPE char15,
+        lv_empid5         TYPE char15,
+
+        lv_count1         TYPE int4,
+        lv_count2         TYPE int4,
+
+        ls_inztbpp0061    TYPE ztbpp0061,
+
+        lv_count_matcode2 TYPE int4,
+        lv_check_mat      TYPE int4,
+
+        lt_matcode2       TYPE TABLE OF ztbpp0061,
+        ls_matcode2       LIKE LINE OF lt_matcode2.
+
+  CASE ok_code.
+    WHEN 'OKAY'.
+
+<font color ="#0000FF">*******************************      IF gv_app_check &lt;&gt; 'X'. """"""""""""""""""""""""""""""""""""""""""""""""""""""""</font>
+<font color ="#0000FF">*******************************</font>
+<font color ="#0000FF">*******************************</font>
+<font color ="#0000FF">*******************************        MESSAGE s009(zcommon_msg) DISPLAY LIKE 'E'.</font>
+<font color ="#0000FF">*******************************        CLEAR gv_app_check.</font>
+<font color ="#0000FF">*******************************</font>
+<font color ="#0000FF">*******************************</font>
+<font color ="#0000FF">*******************************      ELSE.</font>
+
+        CLEAR gv_app_check. """""""""""""""""""""""""""""""""""""""""""""""""""""""" 매번 누르게
+
+
+        CALL FUNCTION 'POPUP_TO_CONFIRM'
+          EXPORTING
+            titlebar              = 'ROUTING HEADER MASTER 데이터 수정'
+            text_question         = '데이터를 수정하시겠습니까?'
+            text_button_1         = 'YES'
+            text_button_2         = 'NO'
+            display_cancel_button = ''
+          IMPORTING
+            answer                = lv_answer
+          EXCEPTIONS
+            text_not_found        = 1
+            OTHERS                = 2.
+        IF sy-subrc &lt;&gt; 0.
+        ENDIF.
+
+        IF lv_answer = 1.
+
+          IF gv_add = 1 OR gv_del = 1.
+
+            SELECT matcode       """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+             FROM ztbmm1010
+             INTO CORRESPONDING FIELDS OF TABLE lt_matcode2
+             WHERE mattype = 'C' or mattype = 'S'.
+
+            LOOP AT gt_ztbpp00613 INTO gs_ztbpp00613.
+
+              READ TABLE lt_matcode2 INTO ls_matcode2 WITH KEY matcode = gs_ztbpp00613-matcode .
+
+              IF sy-subrc &lt;&gt; 0. " 즉 없을 때 없는 거 있을 떄 lv_count_matcode + 1.
+
+                lv_count_matcode2 += 1.
+
+              ELSE.
+
+              ENDIF.
+            ENDLOOP.
+
+<font color ="#0000FF">*****            LOOP AT gt_matcode2 INTO gs_matcode2.</font>
+<font color ="#0000FF">*****</font>
+<font color ="#0000FF">*****              READ TABLE lt_matcode2 INTO ls_matcode2 WITH KEY matcode = gs_matcode-matcode .</font>
+<font color ="#0000FF">*****</font>
+<font color ="#0000FF">*****              IF sy-subrc &lt;&gt; 0. " 즉 없을 때 없는 거 있을 떄 lv_count_matcode + 1.</font>
+<font color ="#0000FF">*****</font>
+<font color ="#0000FF">*****                lv_count_matcode2 += 1.</font>
+<font color ="#0000FF">*****</font>
+<font color ="#0000FF">*****              ELSE.</font>
+<font color ="#0000FF">*****</font>
+<font color ="#0000FF">*****              ENDIF.</font>
+<font color ="#0000FF">*****            ENDLOOP.</font>
+
+
+
+            IF lv_count_matcode2 = 0. """"""""""""""""""""""""""""""""""""""""""""""""""
+
+
+              LOOP AT gt_ztbpp00613 INTO gs_ztbpp00613. "아이템 업뎃  "WHERE routid = ztbpp0060-routid.
+
+                gs_ztbpp00613-routid = ztbpp0060-routid.
+
+                MOVE-CORRESPONDING gs_ztbpp00613 TO ls_inztbpp0061.
+
+                IF ls_inztbpp0061-matcode = ''. " 로우에 자재코드 비어 있으면 안드가게
+
+                ELSE.
+
+                  INSERT ztbpp0061 FROM ls_inztbpp0061.
+
+                  IF sy-subrc IS NOT INITIAL.
+
+                    UPDATE ztbpp0061 FROM ls_inztbpp0061.
+
+                  ENDIF.
+
+                  MOVE-CORRESPONDING gs_ztbpp00613 TO gs_ztbpp0061.
+
+                ENDIF.
+
+                MODIFY gt_ztbpp00613 FROM gs_ztbpp00613. "바로 120 아이템 alv 업뎃 보이게
+
+              ENDLOOP.
+
+
+<font color ="#0000FF">*******             LOOP AT gt_ztbpp00613 INTO gs_ztbpp00613. "아이템 업뎃  "WHERE routid = ztbpp0060-routid.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******                gs_ztbpp00613-routid = ztbpp0060-routid.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******                MOVE-CORRESPONDING gs_ztbpp00613 TO ls_inztbpp0061.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******                IF ls_inztbpp0061-matcode = ''. " 로우에 자재코드 비어 있으면 안드가게</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******                ELSE.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******                  INSERT ztbpp0061 FROM ls_inztbpp0061.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******                  IF sy-subrc IS NOT INITIAL.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******                    UPDATE ztbpp0061 FROM ls_inztbpp0061.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******                  ENDIF.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******                  MOVE-CORRESPONDING gs_ztbpp00613 TO gs_ztbpp0061.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******                ENDIF.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******                MODIFY gt_ztbpp00613 FROM gs_ztbpp00613. "바로 120 아이템 alv 업뎃 보이게</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******              ENDLOOP.</font>
+
+
+              SELECT *     ""바로 100 아이템 alv 업뎃 보이게
+                FROM ztbpp0061
+                INTO CORRESPONDING FIELDS OF TABLE gt_ztbpp0061
+                WHERE routid = gs_ztbpp00613-routid.
+<font color ="#0000FF">*              AND delflg = ''.</font>
+
+              ztbpp0060-stamp_date_l = sy-datum.
+              ztbpp0060-stamp_time_l = sy-uzeit.
+
+              SELECT SINGLE empid
+                FROM ztbsd1030
+                INTO lv_empid4
+                WHERE logid = sy-uname.
+
+              ztbpp0060-stamp_user_l = lv_empid4.
+
+              MESSAGE s095(zcommon_msg) WITH '수정'.
+
+<font color ="#0000FF">*        ELSE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*          MESSAGE s097(zcommon_msg) WITH '수정' DISPLAY LIKE 'E'.</font>
+
+<font color ="#0000FF">*        ENDIF.</font>
+
+
+
+            ELSE. """""""""""""""""""""""""""""""""""""
+
+<font color ="#0000FF">*        clear lv_count_matcode2.</font>
+              MESSAGE s310(zcommon_msg) DISPLAY LIKE 'E'.
+              CLEAR lv_count_matcode2.
+
+              lv_check_mat = 1.
+
+            ENDIF. """""""""""""""""""""""""""""""""""""""""""""""""""""
+
+          ENDIF.
+
+<font color ="#0000FF">*        ENDIF. """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""</font>
+
+
+
+          IF lv_check_mat = 1.
+
+            CLEAR lv_check_mat.
+
+          ELSE.
+
+            ztbpp0060-stamp_date_l = sy-datum.
+            ztbpp0060-stamp_time_l = sy-uzeit.
+
+            SELECT SINGLE empid
+              FROM ztbsd1030
+              INTO lv_empid5
+              WHERE logid = sy-uname.
+
+            ztbpp0060-stamp_user_l = lv_empid5.
+
+            UPDATE ztbpp0060 FROM ztbpp0060. "헤더 업뎃
+            IF sy-subrc = 0.
+
+              MODIFY gt_ztbpp0060 FROM ztbpp0060 INDEX gs_rows2-index. "헤더 업뎃 후 바로 보이게
+
+              MESSAGE s095(zcommon_msg) WITH '수정'.
+
+              clear gv_app_clear. """""""""""""""""""""""""""""""""""""" 수정 두번 할 떄 값이 안 변했는데 이제 변함 이 친구 덕에
+              CLEAR ztbpp0060."""""""""""""""""""""""""""""""""""""""
+
+              LEAVE TO SCREEN 0.
+
+<font color ="#0000FF">*              clear ZTBPP0060.</font>
+
+            ELSE.
+
+              MESSAGE s097(zcommon_msg) WITH '수정' DISPLAY LIKE 'E'.
+
+            ENDIF.
+
+<font color ="#0000FF">*      ELSE.</font>
+
+          ENDIF.
+
+<font color ="#0000FF">*          CLEAR gs_ztbpp00613-it_cell. """""""""""""""""""""""""""""""""""""""""""""""""""""""""" 수정 후에도 바로 output</font>
+
+<font color ="#0000FF">*           clear ZTBPP0060.</font>
+
+        ELSE. " 즉 lv_answer 가 1이 아닐 때
+
+<font color ="#0000FF">***************************        CLEAR ztbpp0060. " 생성 시 수정 했던거 안드가게 ???????????</font>
+
+        ENDIF.   """"""""""""""""""""""""""""""""""""""""""""""""""
+
+
+<font color ="#0000FF">******************************************************************************************************************      ENDIF. """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+<font color ="#0000FF">*      else.</font>
+
+<font color ="#0000FF">*      endif. """"""""""""""""""""""""""""""""""""</font>
+
+<font color ="#0000FF">*      ENDIF.</font>
+
+<font color ="#0000FF">*            LEAVE TO SCREEN 0.</font>
+
+
+  ENDCASE.
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

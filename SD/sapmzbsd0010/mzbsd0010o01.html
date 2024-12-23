@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBSD0010O01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBSD0010O01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0010O01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBFI0010O01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0100 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE status_0100 OUTPUT.
+ SET PF-STATUS 'S100'.
+ SET TITLEBAR 'T100'.
+
+  IF zsbsd0040-rad_val IS INITIAL AND zsbsd0040-rad_all IS INITIAL AND zsbsd0040-rad_del IS INITIAL.
+    zsbsd0040-rad_val = 'X'.
+  ENDIF.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module CLEAR_OK_CODE OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE clear_ok_code OUTPUT.
+CLEAR ok_code.
+CLEAR: zsbsd0020.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module DISPLAY_ALV OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE display_alv OUTPUT.
+
+  IF go_cont IS INITIAL.
+    CREATE OBJECT go_cont
+      EXPORTING
+        container_name              = 'AREA'
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5
+        OTHERS                      = 6.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+
+
+    CREATE OBJECT go_alv
+      EXPORTING
+        i_parent          = go_cont
+      EXCEPTIONS
+        error_cntl_create = 1
+        error_cntl_init   = 2
+        error_cntl_link   = 3
+        error_dp_create   = 4
+        OTHERS            = 5.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+
+    PERFORM set_layout.
+    PERFORM set_fcat.
+    PERFORM set_sort.
+
+
+    CALL METHOD go_alv-&gt;set_table_for_first_display
+      EXPORTING
+        i_structure_name              = 'ZSBSD0030'
+        is_layout                     = gs_layout
+
+      CHANGING
+        it_outtab                     = gt_zsbsd0030
+        it_sort                       = gt_sort
+        it_fieldcatalog               = gt_fcat
+
+      EXCEPTIONS
+        invalid_parameter_combination = 1
+        program_error                 = 2
+        too_many_lines                = 3
+        OTHERS                        = 4.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+
+  ELSE.
+
+    CALL METHOD go_alv-&gt;refresh_table_display
+      EXCEPTIONS
+        finished = 1
+        OTHERS   = 2.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+
+  ENDIF.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0110 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE status_0110 OUTPUT.
+ SET PF-STATUS 'S110'.
+ SET TITLEBAR 'T110'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0120 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE status_0120 OUTPUT.
+ SET PF-STATUS 'S120'.
+ SET TITLEBAR 'T120'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module SET_POPUP_FIELD OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE set_popup_field OUTPUT.
+<font color ="#0000FF">*alv str의 데이터를 popup str에 전달</font>
+MOVE-CORRESPONDING zsbsd0030 TO zsbsd0020.
+
+PERFORM set_tel_field. "전화번호 데이터를 3 필드에 나눠 넣기
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

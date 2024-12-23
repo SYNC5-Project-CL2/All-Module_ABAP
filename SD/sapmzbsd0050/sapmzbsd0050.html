@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>SAPMZBSD0050</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: SAPMZBSD0050</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  판매오더 생성 프로그램</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module Pool      SAPMZBSD0050</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&    [SD]</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&    개발자                 : CL2 KDT-B-02 강현준</font>
+<font color ="#0000FF">*&    프로그램 개요           : 판매오더 생성 프로그램</font>
+<font color ="#0000FF">*&    개발 시작일            : 2024.11.03</font>
+<font color ="#0000FF">*&    개발 완료일            : 2024.11.11</font>
+<font color ="#0000FF">*&    개발 상태             : 개발완료</font>
+<font color ="#0000FF">*&    단위테스트 여부</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+INCLUDE sapmzbsd0050_top                        .  " Global Data
+INCLUDE sapmzbsd0050_c01                        .  " CLASS
+INCLUDE sapmzbsd0050_o01                        .  " PBO-Modules
+INCLUDE sapmzbsd0050_i01                        .  " PAI-Modules
+INCLUDE sapmzbsd0050_f01                        .  " FORM-Routines
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* T100 --&gt; 판매오더 생성 프로그램</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: ZCOMMON_MSG</font>
+<font color ="#0000FF">*045   소수점 입력 불가능합니다.</font>
+<font color ="#0000FF">*096   &1(이)가 성공적으로 &2되었습니다.</font>
+<font color ="#0000FF">*097   &1 &2을(를) 실패했습니다.</font>
+<font color ="#0000FF">*193   배송 리드타임을 고려해서 다시 입력하세요.</font>
+<font color ="#0000FF">*194   재고수량 부족이 해결되지 않았습니다.</font>
+<font color ="#0000FF">*195   재고 부족수량: &1개                       재고이동 가능수량: &2개</font>
+<font color ="#0000FF">*196   재고 부족수량: &1개                       재고이동 가능수량: &2개</font>
+<font color ="#0000FF">*197   판매오더 아이템에 수량을 입력하세요.</font>
+<font color ="#0000FF">*198   판매오더 데이터가 없습니다.</font>
+<font color ="#0000FF">*199   BP코드와 납품처코드가 일치하지 않습니다.</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

@@ -1,0 +1,825 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRSD0030_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRSD0030_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRSD0030_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRSD0030_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form search_help</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM search_help .
+  TYPES: BEGIN OF p_yr,
+          year TYPE apyear,
+         END OF p_yr.
+
+  DATA: lt_p_yr TYPE STANDARD TABLE OF p_yr WITH HEADER LINE,
+        lv_pmy TYPE spmon.
+  DATA: lv_return TYPE ddshretval OCCURS 0 WITH HEADER LINE,
+        lv_c TYPE c VALUE 'S'.
+
+  lt_p_yr-year = '2023'.
+    DO 40 TIMES.
+      APPEND lt_p_yr TO lt_p_yr.
+      ADD 1 TO lt_p_yr.
+    ENDDO.
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      retfield    = 'PA_YR'
+      dynpprog    = sy-repid
+      dynpnr      = sy-dynnr
+      dynprofield = 'crid'
+      value_org   = lv_c
+    TABLES
+      value_tab   = lt_p_yr
+      return_tab  = lv_return.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat1 .
+
+gs_fcat1-fieldname = 'PRICE'.
+gs_fcat1-no_out = 'X'.
+APPEND gs_fcat1 TO gt_fcat1.
+CLEAR gs_fcat1.
+
+gs_fcat1-fieldname = 'MATTYPE'.
+gs_fcat1-no_out = 'X'.
+APPEND gs_fcat1 TO gt_fcat1.
+CLEAR gs_fcat1.
+
+gs_fcat1-fieldname = 'MATCODE'.
+gs_fcat1-emphasize = 'C410'.
+APPEND gs_fcat1 TO gt_fcat1.
+CLEAR gs_fcat1.
+
+gs_fcat1-fieldname = 'MATNAME'.
+gs_fcat1-emphasize = 'C411'.
+APPEND gs_fcat1 TO gt_fcat1.
+CLEAR gs_fcat1.
+
+
+gs_fcat1-fieldname = 'PRODTYPE'.
+gs_fcat1-coltext = '제품군'.
+APPEND gs_fcat1 TO gt_fcat1.
+CLEAR gs_fcat1.
+
+gs_fcat1-fieldname = 'SALES_PERC'.
+gs_fcat1-coltext = '판매수량 비중(%)'.
+gs_fcat1-emphasize = 'C311'.
+APPEND gs_fcat1 TO gt_fcat1.
+CLEAR gs_fcat1.
+
+gs_fcat1-fieldname = 'REVENUE_PERC'.
+gs_fcat1-coltext = '매출 비중(%)'.
+gs_fcat1-emphasize = 'C511'.
+APPEND gs_fcat1 TO gt_fcat1.
+CLEAR gs_fcat1.
+
+gs_fcat1-fieldname = 'SODAT'.
+gs_fcat1-no_out = 'X'.
+APPEND gs_fcat1 TO gt_fcat1.
+CLEAR gs_fcat1.
+
+gs_fcat1-fieldname = 'CURRENCY'.
+gs_fcat1-coltext = '화폐단위'.
+APPEND gs_fcat1 TO gt_fcat1.
+CLEAR gs_fcat1.
+
+gs_fcat1-fieldname = 'UNITCODE'.
+gs_fcat1-coltext = '단위'.
+APPEND gs_fcat1 TO gt_fcat1.
+CLEAR gs_fcat1.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout2 .
+
+  gs_layout2-zebra = 'X'.
+  gs_layout2-cwidth_opt = 'A'.
+  gs_layout2-grid_title = '완제품별 월별 매출'.
+  gs_layout2-sel_mode = 'B'.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat2 .
+
+gs_fcat2-fieldname = 'PRODTYPE'.
+gs_fcat2-coltext = '제품군'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MATTYPE'.
+gs_fcat2-no_out = 'X'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MATCODE'.
+gs_fcat2-emphasize = 'C410'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MATNAME'.
+gs_fcat2-emphasize = 'C411'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON1'.
+gs_fcat2-coltext = '1월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON2'.
+gs_fcat2-coltext = '2월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON3'.
+gs_fcat2-coltext = '3월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON4'.
+gs_fcat2-coltext = '4월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON5'.
+gs_fcat2-coltext = '5월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON6'.
+gs_fcat2-coltext = '6월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON7'.
+gs_fcat2-coltext = '7월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON8'.
+gs_fcat2-coltext = '8월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON9'.
+gs_fcat2-coltext = '9월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON10'.
+gs_fcat2-coltext = '10월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON11'.
+gs_fcat2-coltext = '11월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'MON12'.
+gs_fcat2-coltext = '12월 매출'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+gs_fcat2-fieldname = 'CURRENCY'.
+gs_fcat2-coltext = '화폐단위'.
+APPEND gs_fcat2 TO gt_fcat2.
+CLEAR gs_fcat2.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat3 .
+
+gs_fcat3-fieldname = 'PRODTYPE'.
+gs_fcat3-coltext = '제품군'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MATTYPE'.
+gs_fcat3-no_out = 'X'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MATCODE'.
+gs_fcat3-emphasize = 'C410'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MATNAME'.
+gs_fcat3-emphasize = 'C411'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'UNITCODE'.
+gs_fcat3-coltext = '단위'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON1'.
+gs_fcat3-coltext = '1월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON2'.
+gs_fcat3-coltext = '2월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON3'.
+gs_fcat3-coltext = '3월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON4'.
+gs_fcat3-coltext = '4월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON5'.
+gs_fcat3-coltext = '5월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON6'.
+gs_fcat3-coltext = '6월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON7'.
+gs_fcat3-coltext = '7월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON8'.
+gs_fcat3-coltext = '8월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON9'.
+gs_fcat3-coltext = '9월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON10'.
+gs_fcat3-coltext = '10월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON11'.
+gs_fcat3-coltext = '11월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+gs_fcat3-fieldname = 'MON12'.
+gs_fcat3-coltext = '12월 판매량'.
+APPEND gs_fcat3 TO gt_fcat3.
+CLEAR gs_fcat3.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout3 .
+
+  gs_layout3-zebra = 'X'.
+  gs_layout3-cwidth_opt = 'A'.
+  gs_layout3-grid_title = '완제품별 월별 판매량'.
+  gs_layout3-sel_mode = 'B'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_alv1_data</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_alv1_data TABLES lt_group STRUCTURE zsbsd0070
+                   CHANGING ls_group TYPE zsbsd0070.
+<font color ="#0000FF">*price 빼고 다른 데이터들 가져옴</font>
+SELECT *
+  FROM ztbsd0030 INNER JOIN ztbsd0031 "판매오더 헤더 + 아이템 join
+    ON ztbsd0030~sonum = ztbsd0031~sonum
+                 INNER JOIN ztbmm1010 "판매오더 아이템 + 자재 헤더 join
+    ON ztbsd0031~matcode = ztbmm1010~matcode
+                 INNER JOIN ztbmm1011 "자재 헤더 + 자재 아이템 join
+    ON ztbmm1011~matcode = ztbmm1010~matcode
+  WHERE ztbsd0031~MATCODE in @so_mat
+  INTO CORRESPONDING FIELDS OF TABLE @lt_group.
+
+DELETE lt_group WHERE sodat+0(4) &lt;&gt; pa_yr. "연도 파라미터 값과 다른 경우 삭제
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_exchange_rate</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; LT_EXCHANGE_RATE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_exchange_rate USING     p_p_ls_exchange_rate STRUCTURE ztbfi0050
+                       CHANGING  p_p_ls_group STRUCTURE zsbsd0070.
+DATA: lv_bkpr TYPE ztbsd0030-currency. "waers 타입의 환율 가격
+
+
+SELECT SINGLE * "판매오더 날짜 + 통화의 환율 가져옴.
+  FROM ztbfi0050
+  INTO  p_p_ls_exchange_rate
+  WHERE cur_date = p_p_ls_group-sodat
+    AND cur_unit = p_p_ls_group-currency.
+
+PERFORM char_to_curr USING p_p_ls_exchange_rate "char에서 curr로 장부가격 바꾸기
+                     CHANGING lv_bkpr.
+p_p_ls_group-currency = 'KRW'. "통화를 원화로 다시 설정
+p_p_ls_group-price = lv_bkpr. "환율 고려한 장부가격으로 설정
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CNY_TO_CNH</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM cny_to_cnh TABLES p_p_lt_group STRUCTURE zsbsd0070
+                CHANGING p_p_ls_group TYPE zsbsd0070.
+<font color ="#0000FF">*CNY 에서 CNH로 바꾸기</font>
+IF p_p_ls_group-currency = 'CNY'.
+  p_p_ls_group-currency = 'CNH'.
+ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form char_to_curr</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      &lt;-- LV_BKPR</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM char_to_curr USING p_p_p_ls_exchange_rate TYPE ztbfi0050
+                  CHANGING p_lv_bkpr.
+
+CALL FUNCTION 'HRCM_STRING_TO_AMOUNT_CONVERT'
+  EXPORTING
+    string                    = p_p_p_ls_exchange_rate-bkpr
+   decimal_separator         = '.'
+   thousands_separator       = ','
+ IMPORTING
+   betrg                     = p_lv_bkpr.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form calc_TOTALPRD</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM calc_TOTALPRD CHANGING p_p_ls_group STRUCTURE zsbsd0070.
+
+ p_p_ls_group-totalprd =  p_p_ls_group-price *  p_p_ls_group-amountprd.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form group_material</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; LT_GROUP</font>
+<font color ="#0000FF">*&      --&gt; LS_GROUP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM group_material  USING p_lt_group LIKE gt_zsbsd0070
+                           p_ls_group TYPE zsbsd0070.
+
+DATA: lv_count TYPE zsbsd0070-amountprd, "제품별 총수량
+      lv_amount TYPE zsbsd0070-totalprd, "제품별 총금액
+      lv_index TYPE i VALUE 1.
+
+PERFORM get_9_products1 USING p_lt_group."9개 제품을 gt_zsbsd0070에 옮김
+
+DO 9 TIMES.
+READ TABLE gt_zsbsd0070 INTO zsbsd0070 INDEX lv_index. "첫 row부터 read
+   PERFORM fill_fields1 USING p_lt_group "선택한 row의 필수 필드값들 채우기
+                              p_ls_group.
+   PERFORM get_count_amount1 USING    p_lt_group "총금액 + 총수량 계산
+                                     p_ls_group
+                            CHANGING lv_count
+                                     lv_amount.
+   MODIFY gt_zsbsd0070 FROM zsbsd0070 INDEX lv_index.
+   lv_index = lv_index + 1.
+   CLEAR: zsbsd0070, lv_count, lv_amount.
+ENDDO.
+
+PERFORM get_percentage1. "완제품별 판매량 비중 + 매출 비중 계산
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form curr_exch_alv1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; LT_GROUP</font>
+<font color ="#0000FF">*&      &lt;-- LS_GROUP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM curr_exch_alv1  TABLES   p_lt_group STRUCTURE zsbsd0070
+                     USING    p_ls_exchange_rate TYPE ztbfi0050
+                     CHANGING p_ls_group TYPE zsbsd0070.
+
+DATA: lt_price TYPE TABLE OF ztbsd0080, "완제품 판매가 담을 인터널 테이블
+      ls_price LIKE LINE OF lt_price.
+
+SELECT *
+  FROM ztbsd0080
+  INTO TABLE lt_price.
+
+<font color ="#0000FF">*price + salesyr 값 추가 + 원화 아니면 krw로 바꾸고 환율 곱하기</font>
+LOOP AT p_lt_group INTO p_ls_group.
+  READ TABLE lt_price INTO ls_price WITH KEY matcode = p_ls_group-matcode
+                                             currency = p_ls_group-currency.
+  p_ls_group-price = ls_price-price.
+  p_ls_group-salesyr = p_ls_group-sodat+0(4).
+  "해외 통화 -&gt; 원화로 금액 계산
+  IF p_ls_group-currency &lt;&gt; 'KRW'. "해외 통화 -&gt; 원화 제품 단가 재설정
+    PERFORM cny_to_cnh TABLES p_lt_group
+                     CHANGING p_ls_group.
+    PERFORM get_exchange_rate USING     p_ls_exchange_rate
+                              CHANGING  p_ls_group.
+    PERFORM calc_TOTALPRD CHANGING p_ls_group. "원화로 환율 변화된 후 제품 총금액 계산
+  ENDIF.
+
+  MODIFY p_lt_group FROM p_ls_group.
+  CLEAR: p_ls_group.
+ENDLOOP.
+
+
+ENDFORM.
+<font color ="#0000FF">*s*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fields1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fields1   USING    p_p_lt_group LIKE gt_zsbsd0070
+                             p_p_ls_group TYPE zsbsd0070.
+
+READ TABLE p_p_lt_group INTO p_p_ls_group WITH KEY matcode = zsbsd0070-matcode.
+
+  zsbsd0070-matname = p_p_ls_group-matname.
+  zsbsd0070-mattype = p_p_ls_group-mattype.
+  zsbsd0070-prodtype = p_p_ls_group-prodtype.
+  zsbsd0070-salesyr = p_p_ls_group-salesyr.
+  zsbsd0070-unitcode = p_p_ls_group-unitcode.
+<font color ="#0000FF">*  zsbsd0070-price = p_p_ls_group-price.</font>
+  zsbsd0070-currency = p_p_ls_group-currency.
+
+CLEAR: p_p_ls_group.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_9_products</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_LT_GROUP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_9_products1  USING   p_p_lt_group LIKE gt_zsbsd0070.
+
+SELECT DISTINCT matcode "9개 제품을 gt_zsbsd0070에 옮김
+  FROM @p_p_lt_group AS a
+  ORDER BY matcode ASCENDING
+  INTO CORRESPONDING FIELDS OF TABLE @gt_zsbsd0070.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_count_amount</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_LT_GROUP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_count_amount1  USING    p_p_lt_group LIKE gt_zsbsd0070
+                                p_p_ls_group TYPE zsbsd0070
+                       CHANGING p_lv_count
+                                p_lv_amount.
+
+LOOP AT p_p_lt_group INTO p_p_ls_group WHERE matcode = zsbsd0070-matcode.
+  p_lv_count = p_lv_count + p_p_ls_group-amountprd.
+  p_lv_amount = p_lv_amount + p_p_ls_group-totalprd.
+ENDLOOP.
+
+zsbsd0070-totalprd = p_lv_amount.
+zsbsd0070-amountprd = p_lv_count.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_percentage1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_percentage1 .
+DATA: lv_count_total TYPE i, "총 제품 판매량
+      lv_amount_total TYPE zsbsd0070-totalprd. " 총 제품 매출액
+
+LOOP AT gt_zsbsd0070 INTO zsbsd0070.
+  lv_count_total = lv_count_total + zsbsd0070-amountprd.
+  lv_amount_total = lv_amount_total + zsbsd0070-totalprd.
+ENDLOOP.
+
+
+LOOP AT gt_zsbsd0070 INTO zsbsd0070. "각 제품별로 판매량 비중 + 매출 비중 계산
+  zsbsd0070-revenue_perc = zsbsd0070-totalprd / lv_amount_total * 100.
+  zsbsd0070-sales_perc = zsbsd0070-amountprd / lv_count_total * 100.
+  MODIFY gt_zsbsd0070 FROM zsbsd0070.
+ENDLOOP.
+
+CLEAR zsbsd0070.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_gt_group</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; LT_GROUP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_gt_group  USING    p_lt_group LIKE gt_zsbsd0070.
+
+SELECT *
+  FROM @p_lt_group AS a
+  INTO CORRESPONDING FIELDS OF TABLE @gt_group.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form calc_monthly_sales</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_monthly_revenue .
+DATA: lv_index TYPE i VALUE 1.
+
+<font color ="#0000FF">*각 제품마다 월별 매출액 계산</font>
+DO 9 TIMES.
+  READ TABLE gt_zsbsd0072 INTO zsbsd0072 INDEX lv_index.
+  PERFORM calc_monthly_revenue.
+  MODIFY gt_zsbsd0072 FROM zsbsd0072 INDEX lv_index.
+  lv_index = lv_index + 1.
+  CLEAR: zsbsd0072, gs_group.
+ENDDO.
+
+CLEAR: lv_index.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form calc_monthly_sales</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM calc_monthly_revenue .
+
+DATA: lv_month TYPE c LENGTH 2. "판매오더 데이터의 월 값 담는 변수
+
+LOOP AT gt_group INTO gs_group WHERE matcode = zsbsd0072-matcode.
+  lv_month = gs_group-sodat+4(2).
+  CASE lv_month.
+    WHEN '01'.
+      zsbsd0072-mon1 = zsbsd0072-mon1 + gs_group-totalprd.
+    WHEN '02'.
+      zsbsd0072-mon2 = zsbsd0072-mon2 + gs_group-totalprd.
+    WHEN '03'.
+      zsbsd0072-mon3 = zsbsd0072-mon3 + gs_group-totalprd.
+    WHEN '04'.
+      zsbsd0072-mon4 = zsbsd0072-mon4 + gs_group-totalprd.
+    WHEN '05'.
+      zsbsd0072-mon5 = zsbsd0072-mon5 + gs_group-totalprd.
+    WHEN '06'.
+      zsbsd0072-mon6 = zsbsd0072-mon6 + gs_group-totalprd.
+    WHEN '07'.
+      zsbsd0072-mon7 = zsbsd0072-mon7 + gs_group-totalprd.
+    WHEN '08'.
+      zsbsd0072-mon8 = zsbsd0072-mon8 + gs_group-totalprd.
+    WHEN '09'.
+      zsbsd0072-mon9 = zsbsd0072-mon9 + gs_group-totalprd.
+    WHEN '10'.
+      zsbsd0072-mon10 = zsbsd0072-mon10 + gs_group-totalprd.
+    WHEN '11'.
+       zsbsd0072-mon11 = zsbsd0072-mon11 + gs_group-totalprd.
+    WHEN '12'.
+       zsbsd0072-mon12 = zsbsd0072-mon12 + gs_group-totalprd.
+  ENDCASE.
+
+ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_monthly_revenue</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_monthly_sales .
+
+DATA: lv_index TYPE i VALUE 1.
+
+<font color ="#0000FF">*각 제품마다 월별 판매량 계산</font>
+DO 9 TIMES.
+  READ TABLE gt_zsbsd0071 INTO zsbsd0071 INDEX lv_index.
+  PERFORM calc_monthly_sales.
+  MODIFY gt_zsbsd0071 FROM zsbsd0071 INDEX lv_index.
+  lv_index = lv_index + 1.
+  CLEAR: zsbsd0071, gs_group.
+ENDDO.
+
+CLEAR: lv_index.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form calc_monthly_revenue</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM calc_monthly_sales .
+
+DATA: lv_month TYPE c LENGTH 2. "판매오더 데이터의 월 값 담는 변수
+
+LOOP AT gt_group INTO gs_group WHERE matcode = zsbsd0071-matcode.
+  lv_month = gs_group-sodat+4(2).
+  CASE lv_month.
+    WHEN '01'.
+      zsbsd0071-mon1 = zsbsd0071-mon1 + gs_group-amountprd.
+    WHEN '02'.
+      zsbsd0071-mon2 = zsbsd0071-mon2 + gs_group-amountprd.
+    WHEN '03'.
+      zsbsd0071-mon3 = zsbsd0071-mon3 + gs_group-amountprd.
+    WHEN '04'.
+      zsbsd0071-mon4 = zsbsd0071-mon4 + gs_group-amountprd.
+    WHEN '05'.
+      zsbsd0071-mon5 = zsbsd0071-mon5 + gs_group-amountprd.
+    WHEN '06'.
+      zsbsd0071-mon6 = zsbsd0071-mon6 + gs_group-amountprd.
+    WHEN '07'.
+      zsbsd0071-mon7 = zsbsd0071-mon7 + gs_group-amountprd.
+    WHEN '08'.
+      zsbsd0071-mon8 = zsbsd0071-mon8 + gs_group-amountprd.
+    WHEN '09'.
+      zsbsd0071-mon9 = zsbsd0071-mon9 + gs_group-amountprd.
+    WHEN '10'.
+      zsbsd0071-mon10 = zsbsd0071-mon10 + gs_group-amountprd.
+    WHEN '11'.
+       zsbsd0071-mon11 = zsbsd0071-mon11 + gs_group-amountprd.
+    WHEN '12'.
+       zsbsd0071-mon12 = zsbsd0071-mon12 + gs_group-amountprd.
+  ENDCASE.
+
+ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_box_sales</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_box_sales USING p_lv_count.
+
+zsbsd0073-sales_perc_can = zsbsd0073-sales_can / lv_count * 100.
+zsbsd0073-sales_perc_bot = zsbsd0073-sales_bot / lv_count * 100.
+zsbsd0073-sales_perc_pet = zsbsd0073-sales_pet / lv_count * 100.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_box_rev</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_box_rev USING p_lv_sum.
+
+zsbsd0073-rev_perc_can = zsbsd0073-rev_can / lv_sum * 100.
+zsbsd0073-rev_perc_bot = zsbsd0073-rev_bot / lv_sum * 100.
+zsbsd0073-rev_perc_pet = zsbsd0073-rev_pet / lv_sum * 100.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_rest</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_rest .
+
+zsbsd0073-currency_can = 'KRW'.
+zsbsd0073-currency_bot = 'KRW'.
+zsbsd0073-currency_pet = 'KRW'.
+zsbsd0073-unitcode_can = 'EA'.
+zsbsd0073-unitcode_bot = 'EA'.
+zsbsd0073-unitcode_pet = 'EA'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_data_alv1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_data_alv1 .
+
+DATA: ls_exchange_rate TYPE ztbfi0050, "환율 데이터 담을 스트럭쳐
+      ls_group TYPE zsbsd0070,
+      lt_group TYPE TABLE OF zsbsd0070. "임시로 판매실적 데이터 담을 인터널 테이블
+
+PERFORM get_alv1_data TABLES lt_group "판매오더 데이터 select
+                      CHANGING ls_group.
+
+PERFORM curr_exch_alv1 TABLES lt_group "해외통화-&gt; 원화로 전환 + 금액도 계산
+                       USING ls_exchange_rate
+                       CHANGING ls_group.
+
+PERFORM group_material USING lt_group "완제품별로 총금액 + 총수량 더해서 계산하기.
+                             ls_group.
+
+PERFORM fill_gt_group USING lt_group. "ALV2 + ALV3에서 사용할
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

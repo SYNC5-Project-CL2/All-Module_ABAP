@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRMM0070</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRMM0070</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  송장 등록 프로그램</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report ZBRMM0070</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&    [MM]</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&    개발자                 : CL2 KDT-B-02 강현준</font>
+<font color ="#0000FF">*&    프로그램 개요           :  송장 등록 프로그램</font>
+<font color ="#0000FF">*&    개발 시작일            : 2024.11.20</font>
+<font color ="#0000FF">*&    개발 완료일            : 2024.11.21</font>
+<font color ="#0000FF">*&    개발 상태             : 개발중</font>
+<font color ="#0000FF">*&    단위테스트 여부</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT ZBRMM0070 MESSAGE-ID ZCOMMON_MSG.
+
+include <a href ="zbrmm0070_top.html">ZBRMM0070_top</a>.
+include <a href ="zbrmm0070_s01.html">ZBRMM0070_s01</a>.
+include <a href ="zbrmm0070_c01.html">ZBRMM0070_c01</a>.
+include <a href ="zbrmm0070_o01.html">ZBRMM0070_o01</a>.
+include <a href ="zbrmm0070_i01.html">ZBRMM0070_i01</a>.
+include <a href ="zbrmm0070_f01.html">ZBRMM0070_f01</a>.
+
+INITIALIZATION.
+
+AT SELECTION-SCREEN.
+  PERFORM GET_DATA_ALV1.
+  PERFORM CHECK_PONUM.
+
+START-OF-SELECTION.
+  CALL SCREEN 100.
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* T100 --&gt; 송장 등록 프로그램</font>
+<font color ="#0000FF">* T110 --&gt; 구매오더 아이템 리스트</font>
+<font color ="#0000FF">* T120 --&gt; 거래처 송장 아이템 리스트</font>
+<font color ="#0000FF">* T130 --&gt; 거래처 송장 아이템 리스트</font>
+
+<font color ="#0000FF">*Text elements</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* T01 구매오더 조회조건</font>
+
+
+<font color ="#0000FF">*Selection texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* SO_DAT         구매오더 생성일</font>
+<font color ="#0000FF">* SO_PO         구매오더 번호</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: ZCOMMON_MSG</font>
+<font color ="#0000FF">*008   행을 먼저 선택해주세요!</font>
+<font color ="#0000FF">*015   조회 조건에 일치하는 데이터가 없습니다.</font>
+<font color ="#0000FF">*045   소수점 입력 불가능합니다.</font>
+<font color ="#0000FF">*096   &1(이)가 성공적으로 &2되었습니다.</font>
+<font color ="#0000FF">*097   &1 &2을(를) 실패했습니다.</font>
+<font color ="#0000FF">*120   구매오더 범위를 다시 입력하세요.</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

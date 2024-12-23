@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBSD0010I01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBSD0010I01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0010I01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBFI0010I01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0100  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0100 INPUT.
+
+  CASE ok_code.
+    WHEN 'BACK' OR 'CANCEL'.
+      LEAVE TO SCREEN 0.
+
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+
+    WHEN 'BTN_SRCH'.  " 조회 버튼 클릭
+      PERFORM get_alv_data. "
+
+    WHEN 'CREATE'. " 생성 버튼 클릭
+      CALL SCREEN 110
+        STARTING AT 5 5.
+
+    WHEN 'UPDATE' OR 'DELETE'. " 수정 또는 삭제 버튼 클릭
+      PERFORM get_row_no.
+
+    WHEN 'ERASE'.
+      PERFORM erase.
+
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_EXIT  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_exit INPUT.
+
+CASE ok_code.
+  WHEN 'CANCEL'.
+    LEAVE TO SCREEN 0.
+    CLEAR zsbsd0020. "팝업창 필드 클리어
+ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0110  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0110 INPUT.
+
+CASE ok_code.
+  WHEN 'OKAY'.
+
+    PERFORM check_data_type_c. "숫자 외 타입 및 마이너스 값 들어갔는지 체크
+ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0120  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0120 INPUT.
+
+CASE ok_code.
+  WHEN 'OKAY'.
+    PERFORM check_data_type_u. "숫자 외 타입 및 마이너스 값 들어갔는지 체크
+ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  GET_OUTPUT_DATA  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE get_output_data INPUT.
+<font color ="#0000FF">*bpcode + supcode 입력하면 바로 이름 필드도 값 채움</font>
+
+SELECT SINGLE supname
+  FROM ztbsd1061
+  INTO zsbsd0040-supname
+  WHERE supcode = zsbsd0040-supcode.
+
+SELECT SINGLE bpname
+  FROM ztbsd1051
+  INTO zsbsd0040-bpname
+  WHERE bpcode = zsbsd0040-bpcode.
+
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  CHECK_INPUT  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE check_input INPUT.
+
+DATA: lv_bpcode TYPE zsbsd0040-bpcode. "bp코드 담을 변수
+
+IF zsbsd0040-supcode IS NOT INITIAL.
+  PERFORM check_supcode. "SUPCODE 유효성 체크
+ENDIF.
+
+IF zsbsd0040-bpcode IS NOT INITIAL.
+  PERFORM check_bpcode CHANGING lv_bpcode."BPCODE 유효성 체크
+ENDIF.
+
+CLEAR: gs_ztbsd1060-supcode.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  RESET_FIELD  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE reset_field INPUT.
+
+IF  zsbsd0040-supcode IS INITIAL.
+  CLEAR zsbsd0040-supname.
+ENDIF.
+
+IF  zsbsd0040-bpcode IS INITIAL.
+  CLEAR zsbsd0040-bpname.
+ENDIF.
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

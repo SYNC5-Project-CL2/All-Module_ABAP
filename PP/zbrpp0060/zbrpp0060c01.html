@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRPP0060C01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRPP0060C01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRPP0060C01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRPP0060C01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+CLASS lcl_event_handler DEFINITION.
+
+  PUBLIC SECTION.
+    CLASS-METHODS:
+
+      on_toolbar1 FOR EVENT toolbar OF cl_gui_alv_grid
+        IMPORTING e_object,
+      on_user_command1 FOR EVENT user_command OF cl_gui_alv_grid
+        IMPORTING e_ucomm.
+
+
+ENDCLASS.
+
+CLASS lcl_event_handler IMPLEMENTATION.
+
+  METHOD on_toolbar1.
+
+    DATA: ls_button TYPE stb_button.
+
+    ls_button-butn_type = 3.
+
+    APPEND ls_button TO e_object-&gt;mt_toolbar.
+
+    CLEAR ls_button.
+    ls_button-function = 'INPUT'.
+    ls_button-text = '  값 입력  '.
+    ls_button-butn_type = 0.
+    ls_button-icon = icon_change.
+    ls_button-quickinfo = '값 입력'.
+    APPEND ls_button TO e_object-&gt;mt_toolbar.
+
+    clear ls_button.
+    ls_button-butn_type = 3.
+
+    APPEND ls_button TO e_object-&gt;mt_toolbar.
+
+    clear ls_button.
+    ls_button-function = 'SRCH'.
+    ls_button-text = '  검수 조회  '.
+    ls_button-butn_type = 0.
+    ls_button-icon = icon_display.
+    ls_button-quickinfo = '검수 조회'.
+    APPEND ls_button TO e_object-&gt;mt_toolbar.
+
+  ENDMETHOD.
+
+  METHOD on_user_command1.
+
+    CASE e_ucomm.
+      WHEN 'INPUT'.
+
+<font color ="#0000FF">*        clear: zsbpp0040.", gs_alv1.</font>
+        gv_refresh_temp_hum = 1. " 다른거 선택시 input clear하려고
+
+        DATA: lt_row TYPE lvc_t_row,
+              ls_row TYPE lvc_s_row.
+
+        go_alv1-&gt;get_selected_rows(
+          IMPORTING
+            et_index_rows = lt_row                 " Indexes of Selected Rows
+<font color ="#0000FF">*            et_row_no     =                  " Numeric IDs of Selected Rows</font>
+        ).
+
+        READ TABLE lt_row INTO ls_row INDEX 1.
+
+        IF sy-subrc = 0.
+
+          MOVE-CORRESPONDING ls_row TO gs_row.
+          READ TABLE gt_alv1 INTO gs_alv1 INDEX ls_row-index.
+
+          IF sy-subrc = 0.
+
+            IF gs_alv1-status = '검수완료'.
+
+              MESSAGE s302(zcommon_msg) DISPLAY LIKE 'E'. "'이미 검수완료' TYPE 'S' DISPLAY LIKE 'E'.
+
+            ELSEIF gs_alv1-status = '생산완료'.
+
+              CLEAR zsbpp0040.
+              MOVE-CORRESPONDING gs_alv1 TO zsbpp0040.
+              zsbpp0040-unitcode1 = gs_alv1-unitcode.
+              zsbpp0040-unitcode2 = 'GC'.
+              zsbpp0040-unitcode3 = '%'.
+              zsbpp0040-unitcode4 = gs_alv1-unitcode.
+              zsbpp0040-unitcode5 = gs_alv1-unitcode.
+
+              cl_gui_cfw=&gt;set_new_ok_code( "이거 안하면 값 안뜸 강제 pbo 타야함
+                EXPORTING
+                  new_code =   'ENTER'               " New OK_CODE
+<font color ="#0000FF">*              IMPORTING</font>
+<font color ="#0000FF">*                rc       =                  " Return code</font>
+              ).
+            ELSE.
+
+<font color ="#0000FF">*              MESSAGE '아직 공정중' TYPE 'S' DISPLAY LIKE 'E'.</font>
+
+            ENDIF.
+
+          ENDIF.
+
+<font color ="#0000FF">*          clear gs_alv1.</font>
+        ELSE.
+
+          MESSAGE s008(zcommon_msg) DISPLAY LIKE 'E'.
+
+        ENDIF.
+
+        CLEAR: lt_row, ls_row.
+
+      WHEN 'SRCH'.
+
+        DATA: lt_row2 TYPE lvc_t_row,
+              ls_row2 TYPE lvc_s_row.
+
+        go_alv1-&gt;get_selected_rows(
+          IMPORTING
+            et_index_rows = lt_row2                 " Indexes of Selected Rows
+<font color ="#0000FF">*            et_row_no     =                  " Numeric IDs of Selected Rows</font>
+        ).
+
+        READ TABLE lt_row2 INTO ls_row2 INDEX 1.
+
+          IF sy-subrc = 0.
+
+            READ TABLE gt_alv1 INTO gs_alv1 INDEX ls_row2-index.
+
+            IF sy-subrc = 0.
+
+
+            SELECT *
+              FROM ztbpp0040 INTO CORRESPONDING FIELDS OF TABLE gt_alv2
+              WHERE pordnum = gs_alv1-pordnum.
+
+            go_alv2-&gt;refresh_table_display(
+
+              EXCEPTIONS
+                finished       = 1                " Display was Ended (by Export)
+                others         = 2
+            ).
+            IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*             MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*               WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+            ENDIF.
+
+              IF gt_alv2 is INITIAL.
+
+                MESSAGE s322(zcommon_msg) DISPLAY LIKE 'E'.
+
+              ENDIF.
+
+            ENDIF.
+
+
+          ENDIF.
+
+
+
+    ENDCASE.
+
+  ENDMETHOD.
+
+ENDCLASS.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

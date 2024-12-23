@@ -1,0 +1,437 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBBSD0020_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBBSD0020_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBBSD0020_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBBSD0020_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form download_excel_temp</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM download_excel_temp .
+
+"dfies = 테이블 필드의 속성을 가지고 오는 펑션 &lt; DDIF_FIELDINFO_GET &gt;
+"을 사용할 때 필요함.
+  DATA: lt_tab TYPE TABLE OF dfies,
+        ls_tab LIKE LINE OF lt_tab.
+
+  DATA: lv_visible TYPE i,
+        lv_index   TYPE sy-tabix. "loop 돌리는 lt_tab의 현재 row의 인덱스
+
+  " 딕셔너리에 저장된 테이블/스트럭쳐/뷰의 필드 속성을 가져오는 펑션모듈
+  CALL FUNCTION 'DDIF_FIELDINFO_GET'
+    EXPORTING
+      tabname        = 'ZSBSD5051' "해당 스트럭쳐의
+    TABLES
+      dfies_tab      = lt_tab "lt_tab에 결과를 저아
+    EXCEPTIONS
+      not_found      = 1 " 테이블/스트럭쳐/뷰 존재하지 않는 경우
+      internal_error = 2 " 내부 오류 발생 예외 처리
+      OTHERS         = 3.
+
+  IF sy-subrc &lt;&gt; 0.
+    MESSAGE e025 DISPLAY LIKE 'I'.
+  ELSE.
+<font color ="#0000FF">*1. go_excel 변수 사용해서 엑셀 실행</font>
+    CREATE OBJECT go_excel 'EXCEL.APPLICATION'.
+
+<font color ="#0000FF">*2. Workbook 생성 및 worksheet 표시 설정</font>
+    " get list of workbooks, initially empty (go_wbook은 엑셀의 workbook들을 가리킴)
+    CALL METHOD OF go_excel 'Workbooks' = go_wbook.
+    "엑셀 application을 보이게 하는 것
+    SET PROPERTY OF go_excel 'Visible' = 1.
+    "엑셀에 새로운 empty workbook을 추가함
+    CALL METHOD OF go_wbook 'Add'.
+
+<font color ="#0000FF">*3. 현재 worksheet를 활성화 하고 이름 설정</font>
+    " 시트 설정 (selects the first worksheet in an open Excel workbook)
+    CALL METHOD OF go_excel 'Worksheets' = go_sheet
+      EXPORTING
+        #1 = 1.   "활성화할 시트
+
+    "go_sheet가 가리키는 엑셀 worksheet를 현재 보이는 sheet로 설정
+    CALL METHOD OF go_sheet 'Activate'.
+    "active worksheet 이름 설정
+    SET PROPERTY OF go_sheet 'Name' = 'BP 리스트'.    "Sheet name
+
+    "DDIF_FIELDINFO_GET으로 가져온 DB 테이블의 필드 데이터를 엑셀에 채우는 작업
+    LOOP AT lt_tab INTO ls_tab.
+      lv_index = sy-tabix.
+      PERFORM fill_cell USING go_excel 1 lv_index ls_tab-fieldtext.
+    ENDLOOP.
+
+<font color ="#0000FF">*    MESSAGE s027.</font>
+  ENDIF.
+  "변수 데이터 클리어
+  FREE: go_excel, go_wbook, go_sheet.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_file_name</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      &lt;-- PA_FILE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_file_name  CHANGING p_pa_file. "파일 탐색창 여는 서브루틴
+
+  CALL FUNCTION 'F4_FILENAME'
+    EXPORTING
+      field_name = 'PA_FILE' "name of field where path is to be entered
+    IMPORTING
+      file_name  = pa_file. "선택된 파일경로를 pa_file 변수에 저장
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form download_confirm</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      &lt;-- GV_ANSWER</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM download_confirm  CHANGING pv_answer.
+
+CALL FUNCTION 'POPUP_TO_CONFIRM'
+  EXPORTING
+   titlebar                    = 'BP MASTER 데이터 양식 다운로드'
+   text_question               = 'BP MASTER 데이터 양식을 다운로드하시겠습니까?'
+   text_button_1               = 'YES'
+   text_button_2               = 'NO'
+   display_cancel_button       = ''
+   IMPORTING
+     answer                      = gv_answer
+   EXCEPTIONS
+     text_not_found              = 1
+     OTHERS                      = 2
+            .
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form check_before_process</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM check_before_process .
+
+  DATA : lv_file LIKE rlgrap-filename. "파일이름 타입의 변수
+
+  lv_file = pa_file+3. "pa_file에 저장된 값의 3번째부터 'C:/  '
+
+  IF lv_file = space. "LV_FILE에 값 없으면 메시지 띄움
+    MESSAGE i022 DISPLAY LIKE 'E'.
+    LEAVE LIST-PROCESSING. "selection screen으로 돌아감.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form upload_excel</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM upload_excel .
+
+"엑셀 파일의 데이터를 인터널 데이터에 옮기는 펑션
+  CALL FUNCTION 'ALSM_EXCEL_TO_INTERNAL_TABLE'
+    EXPORTING
+      filename                = pa_file "엑셀 파일 경로
+      i_begin_col             = 1 "starting col
+      i_begin_row             = 2 "starting row
+      i_end_col               = 100
+      i_end_row               = 10000
+    TABLES
+      intern                  = gt_upload "여기에 엑셀 데이터 IMPORT
+    EXCEPTIONS
+      inconsistent_parameters = 1
+      upload_ole              = 2
+      OTHERS                  = 3.
+
+  IF sy-subrc &lt;&gt; 0. "엑셀 업로드 실패
+    MESSAGE i029 DISPLAY LIKE 'E'.
+    LEAVE LIST-PROCESSING.
+  ENDIF.
+
+  IF gt_upload[] IS INITIAL. "gt)upload에 데이터 없는 경우
+    MESSAGE i030 DISPLAY LIKE 'E'.
+    LEAVE LIST-PROCESSING.
+  ELSE.
+    LOOP AT gt_upload. "gt_upload 루프 돌림
+      "gt_upload-col은 gs_bp_tmp 스트럭쳐의 필드와 일치하는 엑셀 열의 이름을 가짐
+      "ASSIGN COMPONENT로 gs_bp_tmp의 component를 필드심볼 &lt;fs&gt;에 assign함
+      ASSIGN COMPONENT gt_upload-col OF STRUCTURE gs_bp_tmp TO &lt;fs&gt;.
+      &lt;fs&gt; = gt_upload-value. "gt_upload의 현재 row의 값을 필드심볼에 넣음
+
+      AT END OF row.
+        MOVE-CORRESPONDING gs_bp_tmp TO gs_data. "gs_data로 값 넘김
+        APPEND gs_data TO gt_data. " 인터널 테이블 gt_Data에 데이터 쌓음
+        CLEAR gs_data.
+      ENDAT.
+    ENDLOOP.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_cell</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; GO_EXCEL</font>
+<font color ="#0000FF">*&      --&gt; P_1</font>
+<font color ="#0000FF">*&      --&gt; LV_INDEX</font>
+<font color ="#0000FF">*&      --&gt; LS_TAB_FIELDTEXT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_cell  USING    "엑셀 worksheet의 cell에 값을 채워 넣음
+                         pv_application "ole2 application 오브젝트 (엑셀)
+                         pv_row "엑셀 worksheet의 row number
+                         pv_col "엑셀 worksheet의 column number
+                         pv_value. "엑셀 cell에 채울 값
+
+  DATA: lv_excell TYPE ole2_object.
+
+  CALL METHOD OF pv_application 'Cells' = lv_excell
+    EXPORTING
+      #1 = pv_row
+      #2 = pv_col.
+
+  SET PROPERTY OF lv_excell 'Value' = pv_value. "lv_excell의 값으로 pv_value 사용
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form save_confirm_popup</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      &lt;-- GV_ANSWER</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM save_confirm_popup  CHANGING pv_answer.
+
+CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      titlebar                    = 'BP MASTER 엑셀 데이터 업로드'
+      text_question               = '해당 엑셀 데이터를 업로드하시겠습니까?'
+      text_button_1               = 'YES'
+      text_button_2               = 'NO'
+      display_cancel_button       = ''
+
+    IMPORTING
+      answer                = gv_answer.
+
+  pv_answer = gv_answer. "팝업창에서 누른 버튼값을 PV_CHK로 옮김
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form insert_data</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM insert_data .
+
+
+  DATA : ls_ZTBSD1050 TYPE ztbsd1050, "BP 마스터 테이블 형태의 스트럭쳐
+         lt_ZTBSD1050 LIKE TABLE OF ls_ZTBSD1050,
+
+         ls_ZTBSD1051 TYPE ztbsd1051, "BP 텍스트 테이블 형태의 스트럭쳐
+         lt_ZTBSD1051 LIKE TABLE OF ls_ZTBSD1051.
+
+  PERFORM get_empid.
+
+  LOOP AT gt_data INTO gs_data. "데이터 담긴 gt_data에서 루프 돌기
+    PERFORM get_number_range CHANGING gv_nr.
+    MOVE-CORRESPONDING gs_data TO ls_ztbsd1050. " gs_data 값을 ls_ZTBSD1050로 move
+    ls_ztbsd1050-stamp_date_f = sy-datum.
+    ls_ztbsd1050-stamp_time_f = sy-uzeit.
+    ls_ztbsd1050-stamp_user_f = ztbsd1030-empid.
+    ls_ztbsd1050-bpcode = 'BP' && gv_nr.
+    INSERT ztbsd1050 FROM ls_ztbsd1050.
+  ENDLOOP.
+
+
+  LOOP AT gt_data INTO gs_data. "데이터 담긴 gt_data에서 루프 돌기
+    PERFORM get_number_range CHANGING gv_nr.
+    MOVE-CORRESPONDING gs_data TO ls_ztbsd1051.
+    ls_ztbsd1051-stamp_date_f = sy-datum.
+    ls_ztbsd1051-stamp_time_f = sy-uzeit.
+    ls_ztbsd1051-stamp_user_f = ztbsd1030-empid.
+    ls_ztbsd1051-bpcode = 'BP' && gv_nr.
+    ls_ztbsd1051-spars = sy-langu.
+    INSERT ztbsd1051 FROM ls_ztbsd1051.
+  ENDLOOP.
+
+
+  IF sy-subrc = 0.
+    MESSAGE i031 DISPLAY LIKE 'S'.
+    LEAVE TO SCREEN 0.
+  ELSE.
+    MESSAGE i029 DISPLAY LIKE 'E'.
+  ENDIF.
+
+  CLEAR: gt_data, lt_ZTBSD1050, lt_ZTBSD1051, pa_file.
+
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_empid</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_empid .
+
+DATA: lt_ZTBSD1030 TYPE TABLE OF ztbsd1030.
+
+SELECT *
+  FROM ztbsd1030
+  INTO TABLE lt_ztbsd1030.
+
+READ TABLE lt_ztbsd1030 INTO ztbsd1030 WITH KEY logid = sy-uname.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout .
+
+  gs_layout-zebra = 'X'.
+  gs_layout-cwidth_opt = 'A'.
+  gs_layout-grid_title = '엑셀 BP 데이터 리스트'.
+  gs_layout-sel_mode = 'B'.
+
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_EXIT  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_exit INPUT.
+
+CASE ok_code.
+  WHEN 'BACK' OR 'CANCEL'.
+    LEAVE TO SCREEN 0.
+  WHEN 'EXIT'.
+    LEAVE PROGRAM.
+ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat .
+
+gs_fcat-fieldname = 'BPCODE'.
+gs_fcat-no_out = 'X'.
+APPEND gs_fcat TO gt_fcat.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_number_range</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_number_range CHANGING gv_nr.
+
+    CALL FUNCTION 'NUMBER_GET_NEXT'
+      EXPORTING
+        nr_range_nr             = '01'            " NUMBER RANGE의 인터벌 번호
+        object                  = 'ZBBSD1050'    "생성한 NUMBER RANGE OBJECT 이름
+      IMPORTING
+        number                  = gv_nr              " 생성한 번호 받아오는 변수 넣어주기
+      EXCEPTIONS
+        interval_not_found      = 1
+        number_range_not_intern = 2
+        object_not_found        = 3
+        quantity_is_0           = 4
+        quantity_is_not_1       = 5
+        interval_overflow       = 6
+        buffer_overflow         = 7
+        OTHERS                  = 8.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_template_name</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_template_name .
+
+DATA: lv_filename        TYPE string,         " 기본 파일명을 저장할 변수
+      lv_path            TYPE string,         " 파일이 저장될 경로를 저장할 변수
+      lv_user_filename   TYPE string,         " 사용자 지정 저장 파일명을 저장할 변수
+      lv_fullpath        TYPE string.         " 파일의 전체 경로를 저장할 변수
+
+" 현재 날짜와 시간을 포함한 기본 파일명을 생성
+" lv_filename에 현재 날짜와 시간을 포함시킴
+  lv_filename = |BPMASTER__{ sy-datum }{ sy-uzeit }.xlsx|.
+
+" CL_GUI_FRONTEND_SERVICES 클래스의 FILE_SAVE_DIALOG 메서드를 호출하여 파일 저장 popup dialog 생성
+  cl_gui_frontend_services=&gt;file_save_dialog(
+    EXPORTING
+      default_file_name         = lv_filename            " 기본 파일명 설정
+      file_filter               = '엑셀 파일(*.xlsx)|*.xlsx'  " 파일 확장자 필터 설정
+      initial_directory         = 'C:\'               " 초기 디렉토리 설정
+    CHANGING
+      filename                  = lv_user_filename       " 사용자가 지정한 파일명 반환
+      path                      = lv_path                " 사용자가 선택한 경로 반환
+      fullpath                  = lv_fullpath            " 전체 경로와 파일명 반환
+    EXCEPTIONS
+      cntl_error                = 1
+      error_no_gui              = 2
+      not_supported_by_gui      = 3
+      invalid_default_file_name = 4
+      OTHERS                    = 5
+  ).
+
+IF sy-subrc = 0.
+  MESSAGE i027 DISPLAY LIKE 'S'.
+ELSE.
+  MESSAGE i025 DISPLAY LIKE 'E'.
+ENDIF.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

@@ -1,0 +1,1002 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBFI0030_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBFI0030_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0030_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBFI0030_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form clear_okcode</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CLEAR_OKCODE .
+  CLEAR: OK_CODE.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ALV</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_ALV .
+
+  IF GO_CONT IS INITIAL.
+
+    PERFORM CREATE_OBJECT.  "GO_CONT & GO_ALV 생성
+    PERFORM SET_LAYOUT.
+    PERFORM SET_FCAT.
+    PERFORM SET_HANDLER.
+    PERFORM SET_TOOLBAR_EXCLUDING.
+    PERFORM ALV_DISPLAY.
+  ELSE.
+    PERFORM ALV_REFRESH.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT .
+
+  GS_LAYOUT-GRID_TITLE = '전표 상세 리스트'.
+  GS_LAYOUT-CWIDTH_OPT = 'A'.
+  GS_LAYOUT-ZEBRA = 'X'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT .
+
+  REFRESH GT_FCAT. "Field catalog 설정을 위한 초기화
+
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'BUZEI'.
+  GS_FCAT-COLTEXT = '번호'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'SHKZG'.
+  GS_FCAT-COLTEXT = '차변/대변'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  " ----ALV에 표시하지 않을 필드
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'BELNR'. "전표번호
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'AUGBL'. "반제전표번호
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'AUGDT'. "반제일
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'STBLG'. "역분개전표번호
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'STODT'. "역분개일
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'STGRD'. "역분개 사유
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'STAMP_DATE_F'. "최초 생성일
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'STAMP_TIME_F'. "최초 생성시간
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'STAMP_USER_F'. "최초 생성자
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'STAMP_DATE_L'. "최종 수정일
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'STAMP_TIME_L'. "최종 수정시간
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR: GS_FCAT.
+  GS_FCAT-FIELDNAME = 'STAMP_USER_L'. "최종 수정자
+  GS_FCAT-NO_OUT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form HEADER_INIT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_INIT .
+<font color ="#0000FF">***전표헤더,아이템 기본값 입력***</font>
+  "--전표 헤더--
+  ZTBFI0030-COMCODE = '1000'.       "회사코드
+  ZTBFI0030-GJAHR = SY-DATUM+0(4).  "회계연도
+  IF ZTBFI0030-BUDAT IS INITIAL.
+    ZTBFI0030-BUDAT = SY-DATUM.     "전기일
+  ENDIF.
+
+  SELECT SINGLE EMPID               "전표작성자-사원ID 할당
+         FROM ZTBSD1030             "사원 MASTER
+         INTO ZTBFI0030-USNAM       "전표작성자 필드에
+         WHERE LOGID = SY-UNAME.
+
+  SELECT SINGLE EMPNAME             "전표작성자-사원명
+    FROM ZTBSD1030                  "사원 MASTER
+    INTO ZTBSD1030-EMPNAME          "전표작성자 필드에
+    WHERE EMPID = ZTBFI0030-USNAM.
+
+  "전표 작성자 공란일 경우 에러메세지 출력
+  IF ZTBFI0030-USNAM IS INITIAL.
+    MESSAGE E442. "전표 생성 권한이 없는 사용자입니다.
+  ENDIF.
+
+  "--전표 아이템--
+  IF ZTBFI0031-CURRENCY_F IS INITIAL.
+    ZTBFI0031-CURRENCY_F = 'KRW'.   "통화
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_GO_CONT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_OBJECT .
+
+  CREATE OBJECT GO_CONT
+    EXPORTING
+      CONTAINER_NAME              = 'AREA'
+    EXCEPTIONS
+      CNTL_ERROR                  = 1
+      CNTL_SYSTEM_ERROR           = 2
+      CREATE_ERROR                = 3
+      LIFETIME_ERROR              = 4
+      LIFETIME_DYNPRO_DYNPRO_LINK = 5
+      OTHERS                      = 6.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  CREATE OBJECT GO_ALV
+    EXPORTING
+      I_PARENT          = GO_CONT
+    EXCEPTIONS
+      ERROR_CNTL_CREATE = 1
+      ERROR_CNTL_INIT   = 2
+      ERROR_CNTL_LINK   = 3
+      ERROR_DP_CREATE   = 4
+      OTHERS            = 5.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ALV_DISPLAY</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ALV_DISPLAY .
+
+  CALL METHOD GO_ALV-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+      I_STRUCTURE_NAME              = 'ZTBFI0031'
+      IS_LAYOUT                     = GS_LAYOUT
+      IT_TOOLBAR_EXCLUDING          = GT_TOOLBAR
+    CHANGING
+      IT_OUTTAB                     = GT_ZTBFI0031
+      IT_FIELDCATALOG               = GT_FCAT
+    EXCEPTIONS
+      INVALID_PARAMETER_COMBINATION = 1
+      PROGRAM_ERROR                 = 2
+      TOO_MANY_LINES                = 3
+      OTHERS                        = 4.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_HANDLER</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_HANDLER .
+
+  " ALV 툴바 이벤트 핸들링
+  SET HANDLER LCL_EVENT_HANDLER=&gt;ON_TOOLBAR FOR GO_ALV.
+  " ALV USER-COMMAND 이벤트 핸들링
+  SET HANDLER LCL_EVENT_HANDLER=&gt;ON_USER_COMMAND FOR GO_ALV.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form INSERT_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM INSERT_DATA .
+
+  "내역삭제를 한 후가 아닐 때, 초기화 후가 아닐 때.
+  IF GV_CANC_VAL IS INITIAL AND ( OK_CODE &lt;&gt; 'SAVE'
+        AND OK_CODE &lt;&gt; 'REFR' AND OK_CODE &lt;&gt; 'RST' ).
+
+    "전표 기본정보 입력값 검증
+    PERFORM CHECK_HEADER.
+    IF SY-SUBRC &lt;&gt; 0.
+      RETURN.
+    ENDIF.
+    "전표 상세내역 입력값 검증
+    PERFORM CHECK_ITEM.
+    IF SY-SUBRC &lt;&gt; 0.
+      RETURN.
+    ENDIF.
+
+  ELSE. "내역 삭제 - YES 했을 때
+    GV_CANC_VAL = 0.  "[내역삭제] 후 [초기화]
+  ENDIF.
+
+
+  "[내역 추가] 버튼 클릭
+  IF OK_CODE = 'IST'.
+
+    MOVE-CORRESPONDING ZTBFI0031 TO GS_ZTBFI0031. "전표 상세내역 필드
+    MOVE-CORRESPONDING ZSBFI0031 TO GS_ZTBFI0031. "전표 상세내역 - 계정과목 & BP 필드
+
+    "항목 적요 입력 안됐을 때 [전표 기본정보] 적요 값 넣기
+    IF GS_ZTBFI0031-ITTXT IS INITIAL.
+      GS_ZTBFI0031-ITTXT = ZTBFI0030-BKTXT.
+      MESSAGE S418.
+    ENDIF.
+
+    "1.전표라인번호 할당
+    DATA: LV_INDEX TYPE C LENGTH 12 VALUE 1.
+<font color ="#0000FF">*    DATA: LV_INDEX TYPE I VALUE 1.</font>
+    LV_INDEX = LINES( GT_ZTBFI0031 ) + 1.
+    GS_ZTBFI0031-BUZEI = LV_INDEX.
+
+    "2.거래통화에 따른 금액 계산
+    "거래환율 계산을 위한 변수 선언
+    DATA: LV_BKPR  TYPE ZTBFI0050-BKPR,
+          LV_BKPR2 TYPE P.
+
+    "증빙일 기준 환율로 계산
+    CASE ZTBFI0031-CURRENCY_F.
+<font color ="#0000FF">*----KRW일때는 '금액 = 거래통화금액'----</font>
+      WHEN 'KRW'.
+        GS_ZTBFI0031-WRBTR    = ZTBFI0031-HWRBTR.
+        GS_ZTBFI0031-CURRENCY = ZTBFI0031-CURRENCY_F.
+<font color ="#0000FF">*----USD, EUR----</font>
+      WHEN 'USD' OR 'EUR'.
+        SELECT SINGLE BKPR "환율테이블의 장부가격
+          FROM ZTBFI0050   "환율테이블
+          INTO LV_BKPR
+          WHERE CUR_UNIT = ZTBFI0031-CURRENCY_F "환율테이블의 통화 = 전표생성시 거래통화
+          AND CUR_DATE = ZTBFI0030-BLDAT.       "환율테이블의 환율적용일 = 전표생성시 증빙일
+
+        IF SY-SUBRC &lt;&gt; 0.
+          " 12PM 전에 외화전표 작성 시 오류 (12시에 실시간 환율 반영)
+          MESSAGE I414 DISPLAY LIKE 'E'.
+          RETURN.
+        ENDIF.
+
+        "금액 계산을 위해서 LV_BKPR2를 숫자로 변환
+        CALL FUNCTION 'MOVE_CHAR_TO_NUM'
+          EXPORTING
+            CHR             = LV_BKPR                 " character value
+          IMPORTING
+            NUM             = LV_BKPR2                 " numeric value
+          EXCEPTIONS
+            CONVT_NO_NUMBER = 1                " impossible to convert to numeric
+            CONVT_OVERFLOW  = 2                " overflow in numeric field
+            OTHERS          = 3.
+        IF SY-SUBRC &lt;&gt; 0.
+        ENDIF.
+
+        GS_ZTBFI0031-WRBTR = ZTBFI0031-HWRBTR * LV_BKPR2 / 100.
+        GS_ZTBFI0031-CURRENCY = 'KRW'.
+<font color ="#0000FF">*----CNY----</font>
+      WHEN 'CNY'. "CUR_UNIT : CNH
+        SELECT SINGLE BKPR                      "환율테이블의 장부가격
+          FROM ZTBFI0050                        "환율테이블
+          INTO LV_BKPR
+          WHERE CUR_UNIT = 'CNH'                "환율테이블의 통화 = 전표생성시 거래통화
+          AND CUR_DATE = ZTBFI0030-BLDAT.       "환율테이블의 환율적용일 = 전표생성시 증빙일
+
+        IF SY-SUBRC &lt;&gt; 0.
+          " 12PM 전에 외화전표 작성 시 오류 (12시에 실시간 환율 반영)
+          MESSAGE I414 DISPLAY LIKE 'E'.
+          RETURN.
+        ENDIF.
+
+        "금액 계산을 위해서 LV_BKPR2를 숫자로 변환
+        CALL FUNCTION 'MOVE_CHAR_TO_NUM'
+          EXPORTING
+            CHR             = LV_BKPR                 " character value
+          IMPORTING
+            NUM             = LV_BKPR2                 " numeric value
+          EXCEPTIONS
+            CONVT_NO_NUMBER = 1                " impossible to convert to numeric
+            CONVT_OVERFLOW  = 2                " overflow in numeric field
+            OTHERS          = 3.
+        IF SY-SUBRC &lt;&gt; 0.
+        ENDIF.
+
+        GS_ZTBFI0031-WRBTR = ZTBFI0031-HWRBTR * LV_BKPR2 / 100.
+        GS_ZTBFI0031-CURRENCY = 'KRW'.
+
+    ENDCASE.
+
+    "BP코드 입력 시 지급조건
+    SELECT SINGLE ZTERM
+      INTO GS_ZTBFI0031-ZTERM
+      FROM ZTBSD1050
+      WHERE BPCODE = ZSBFI0031-BPCODE.
+
+    APPEND GS_ZTBFI0031 TO GT_ZTBFI0031.
+
+    "차대변합계 표시.
+    IF GS_ZTBFI0031-SHKZG = 'S'.
+      SSUM = SSUM + GS_ZTBFI0031-WRBTR * 100. """"FM으로 변경해보렴?
+    ELSE.
+      HSUM = HSUM + GS_ZTBFI0031-WRBTR * 100.
+    ENDIF.
+
+    CLEAR: GS_ZTBFI0031.
+
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ALV_REFRESH</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ALV_REFRESH .
+  GO_ALV-&gt;REFRESH_TABLE_DISPLAY(
+   EXCEPTIONS
+     FINISHED       = 1                " Display was Ended (by Export)
+     OTHERS         = 2
+ ).
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_TOOLBAR_EXCLUDING</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_TOOLBAR_EXCLUDING .
+  APPEND CL_GUI_ALV_GRID=&gt;MC_FC_EXCL_ALL TO GT_TOOLBAR.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CLICK_DROW</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CLICK_DROW .
+  CALL METHOD GO_ALV-&gt;GET_SELECTED_ROWS
+    IMPORTING
+      ET_INDEX_ROWS = ET_INDEX_ROW.
+
+  "ALV에서 행 미선택시.
+  IF ET_INDEX_ROW IS INITIAL.
+    MESSAGE S008 DISPLAY LIKE 'E'.
+    RETURN.
+  ENDIF.
+
+  "CONFIRM POPUP.
+  DATA: LV_ANSWER TYPE C.
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      TITLEBAR              = '전표 내역 삭제'
+      TEXT_QUESTION         = '해당 데이터를 삭제하시겠습니까?'
+      TEXT_BUTTON_1         = 'YES'
+      ICON_BUTTON_1         = 'ICON_OKAY'
+      TEXT_BUTTON_2         = 'NO'
+      ICON_BUTTON_2         = 'ICON_CANCEL'
+      DEFAULT_BUTTON        = '1'
+      DISPLAY_CANCEL_BUTTON = ''
+    IMPORTING
+      ANSWER                = LV_ANSWER
+    EXCEPTIONS
+      TEXT_NOT_FOUND        = 1
+      OTHERS                = 2.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  "CONFIRM POPUP 에서 'YES' 선택 시.
+
+  IF LV_ANSWER = 1.
+
+    READ TABLE ET_INDEX_ROW INTO ES_INDEX_ROW INDEX 1.
+    ROW_IDX = ES_INDEX_ROW-INDEX.
+
+    IF SY-SUBRC = 0.
+      READ TABLE GT_ZTBFI0031 INTO GS_ZTBFI0031 INDEX ROW_IDX.
+      DELETE TABLE GT_ZTBFI0031 FROM GS_ZTBFI0031.
+<font color ="#0000FF">*      DELETE GT_ZTBFI0031 INDEX ROW_IDX.</font>
+
+      IF GS_ZTBFI0031-SHKZG = 'S'.
+        SSUM = SSUM - GS_ZTBFI0031-WRBTR * 100.
+      ELSE.
+        HSUM = HSUM - GS_ZTBFI0031-WRBTR * 100.
+      ENDIF.
+
+    ENDIF.
+
+    "전표라인번호 재정렬
+    DATA: LV_INDEX TYPE C LENGTH 12 VALUE 1.
+
+    GV_CANC_VAL = 1. "내역 삭제-YES 상태(상황)
+
+<font color ="#0000FF">**********************************************************************</font>
+    LOOP AT GT_ZTBFI0031 INTO GS_ZTBFI0031.
+      GS_ZTBFI0031-BUZEI = LV_INDEX.
+      LV_INDEX = LV_INDEX + 1.
+      MODIFY GT_ZTBFI0031 FROM GS_ZTBFI0031.
+    ENDLOOP.
+
+    CL_GUI_CFW=&gt;SET_NEW_OK_CODE(
+          EXPORTING
+            NEW_CODE = 'ENTER').
+
+    MESSAGE S428.
+<font color ="#0000FF">**********************************************************************</font>
+  ELSE.
+    MESSAGE S305 WITH '내역' DISPLAY LIKE 'W'.
+  ENDIF.
+
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ICON</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_ICON .
+  "차대변 합계 비교해서 아이콘 설정
+  IF SSUM = HSUM.
+    ICON_SUM = ICON_LED_GREEN && ' 대차 일치'.
+  ELSE.
+    ICON_SUM = ICON_LED_RED && ' 대차 불일치'.
+  ENDIF.
+
+  "ALV에 데이터 없을때는 아이콘 안보이게
+  IF SSUM = 0 AND HSUM = 0.
+    ICON_SUM = ''.
+  ENDIF.
+
+  MODIFY SCREEN.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SAVE_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SAVE_DATA .
+
+  CLEAR : GS_ZTBFI0030, GV_BELNR. """
+
+
+
+  " 차대변 합계 불일치 - 에러메세지 출력
+  IF SSUM &lt;&gt; HSUM.
+    MESSAGE S407 DISPLAY LIKE 'E'.
+    RETURN.
+  ENDIF.
+
+  " 내역 추가 안하고 전표 생성 시.
+  IF GT_ZTBFI0031 IS INITIAL.
+    MESSAGE S409 DISPLAY LIKE 'E'.
+    RETURN.
+  ENDIF.
+
+  ""
+  DATA: LV_ANSWER TYPE C.
+  "CONFIRM POPUP.
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      TITLEBAR              = '전표 생성'
+      TEXT_QUESTION         = '전표를 생성하시겠습니니까?'
+      TEXT_BUTTON_1         = 'YES'
+      ICON_BUTTON_1         = 'ICON_OKAY'
+      TEXT_BUTTON_2         = 'NO'
+      ICON_BUTTON_2         = 'ICON_CANCEL'
+      DEFAULT_BUTTON        = '1'
+      DISPLAY_CANCEL_BUTTON = ''
+    IMPORTING
+      ANSWER                = LV_ANSWER
+    EXCEPTIONS
+      TEXT_NOT_FOUND        = 1
+      OTHERS                = 2.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  "CONFIRM POPUP에서 YES 선택
+  IF LV_ANSWER = 1.
+    PERFORM INSERT_DB.
+  ELSE.
+    MESSAGE S427 DISPLAY LIKE 'W'. "전표 생성 취소
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form RESET_ITEM</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM RESET_ITEM .
+  "전표 상세내역 필드 초기화
+  CLEAR: ZTBFI0031, ZSBFI0031.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form REFRESH_PAGE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM REFRESH_PAGE .
+  "CONFIRM POPUP.
+  DATA: LV_ANSWER TYPE C.
+
+
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      TITLEBAR              = '전표 초기화'
+      TEXT_QUESTION         = '초기화 하시겠습니까?'
+      TEXT_BUTTON_1         = 'YES'
+      ICON_BUTTON_1         = 'ICON_OKAY'
+      TEXT_BUTTON_2         = 'NO'
+      ICON_BUTTON_2         = 'ICON_CANCEL'
+      DEFAULT_BUTTON        = '1'
+      DISPLAY_CANCEL_BUTTON = ''
+    IMPORTING
+      ANSWER                = LV_ANSWER
+    EXCEPTIONS
+      TEXT_NOT_FOUND        = 1
+      OTHERS                = 2.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  "CONFIRM POPUP 에서 'YES' 선택 시.
+  IF LV_ANSWER = 1.
+    CLEAR: ZTBFI0030, ZTBFI0031, ZSBFI0020, ZSBFI0031, GT_ZTBFI0031.
+    CLEAR: SSUM, HSUM.
+
+    MESSAGE S429.
+  ELSE.
+    MESSAGE S430 DISPLAY LIKE 'W'. "취소
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CHECK_ITEM</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CHECK_ITEM .
+
+<font color ="#0000FF">*---필수 입력)차변/대변 미선택---</font>
+  IF ZTBFI0031-SHKZG IS INITIAL.
+    MESSAGE S422 DISPLAY LIKE 'E'.
+    SY-SUBRC = 1.
+    RETURN.
+  ENDIF.
+
+<font color ="#0000FF">*---입력된 BP코드 검증 & BP명 아웃풋필드 표시---</font>
+  IF ZSBFI0031-BPCODE IS NOT INITIAL.
+    SELECT SINGLE BPNAME    "BP명
+      INTO ZSBFI0031-BPNAME
+      FROM ZTBSD1051        "BP TEXT 테이블
+      WHERE BPCODE = ZSBFI0031-BPCODE
+        AND DELFLG = ''.
+
+    "-존재하지 않는 BP -&gt; 에러메시지 출력
+    IF SY-SUBRC &lt;&gt; 0.
+      MESSAGE S415 WITH ZSBFI0031-BPCODE DISPLAY LIKE 'E'.
+      CLEAR: ZSBFI0031-BPCODE, ZSBFI0031-BPNAME.
+      RETURN.
+    ENDIF.
+  ELSE.
+    "-BP코드 입력값 없으면 BP명 필드도 빈값으로.
+    ZSBFI0031-BPNAME = ''.
+  ENDIF.
+
+<font color ="#0000FF">*---입력된 계정과목코드 검증 & 계정과목명 아웃풋필드 표시---</font>
+  "계정과목 입력 안한 경우
+  IF ZSBFI0031-ACODE IS INITIAL.    "계정과목코드
+    MESSAGE S419 DISPLAY LIKE 'E'.
+    SY-SUBRC = 1.
+    ZSBFI0031-ANAME = ''.           "계정과목명
+    RETURN.
+  ELSE.
+    SELECT SINGLE ANAME             "계정과목명
+     INTO ZSBFI0031-ANAME
+     FROM ZTBFI0031_2               "전표유형-계정과목 매칭 테이블
+     WHERE BLART = ZSBFI0020-BLART  "전표유형
+       AND ACODE = ZSBFI0031-ACODE. "계정과목코드
+
+    "선택한 전표유형에 사용할 수 없는 계정과목인 경우
+    IF SY-SUBRC &lt;&gt; 0.
+
+      " -입력된 계정과목코드의 계정과목명은 표시
+      SELECT SINGLE ANAME               "계정과목명
+        INTO ZSBFI0031-ANAME
+        FROM ZTBFI0011                  "계정과목 TEXT 테이블
+        WHERE ACODE  = ZSBFI0031-ACODE. "계정과목코드
+
+      "-존재하지 않는 계정과목인 경우 에러메세지 출력
+      IF SY-SUBRC &lt;&gt; 0.
+        MESSAGE S421 WITH ZSBFI0031-ACODE DISPLAY LIKE 'E'.
+        CLEAR: ZSBFI0031-ANAME, ZSBFI0031-ACODE.
+        RETURN.
+      ENDIF.
+
+      SY-SUBRC = 1.
+
+      "-전표유형 @@에 사용할 수 없다는 메세지
+      MESSAGE S410 WITH ZSBFI0020-BLART DISPLAY LIKE 'E'.
+      RETURN.
+    ENDIF.
+  ENDIF.
+
+
+<font color ="#0000FF">*---입력된 통화단위 검증---</font>
+  DATA LV_CNT TYPE I.
+
+  IF ZTBFI0031-CURRENCY_F IS NOT INITIAL. "거래통화
+    SELECT COUNT( * )
+      INTO LV_CNT
+      FROM ZTBSD1040   "국가 Master
+      WHERE CURRENCY = ZTBFI0031-CURRENCY_F.
+
+    IF LV_CNT = 0.
+      " '사용할 수 없는 통화단위입니다.' 메세지 출력
+      MESSAGE S411 WITH ZTBFI0031-CURRENCY_F DISPLAY LIKE 'E'.
+      SY-SUBRC = 1.
+      ZTBFI0031-CURRENCY_F =''.
+    ENDIF.
+  ENDIF.
+
+<font color ="#0000FF">*---BP코드 반드시 입력되어야 하는 전표유형인 경우---</font>
+  IF ZSBFI0020-BLART = 'ZV' OR        "지급반제
+     ZSBFI0020-BLART CP 'K*' OR       "구매처 전표
+     ZSBFI0020-BLART CP 'D*'.         "고객 전표
+    IF ZSBFI0031-BPCODE IS INITIAL.
+      " '전표유형 '&'는 BP코드 필수 입력입니다.'
+      MESSAGE S405 WITH ZSBFI0020-BLART DISPLAY LIKE 'E'.
+      SY-SUBRC = 1.  " 에러 발생 시 SY-SUBRC 설정
+      RETURN.
+    ENDIF.
+  ENDIF.
+
+<font color ="#0000FF">*---전표유형과 BP코드의 매칭여부 검증---</font>
+  DATA: LV_TYPE TYPE C.
+
+  IF ZSBFI0031-BPCODE IS NOT INITIAL.
+
+    SELECT SINGLE BPTCODE   "BP 타입
+      FROM ZTBSD1050        "BP Master
+      INTO LV_TYPE
+      WHERE BPCODE = ZSBFI0031-BPCODE.
+
+    CASE LV_TYPE.
+      WHEN 'V'. "거래처(구매처)
+        IF NOT ( ZSBFI0020-BLART = 'AB' OR ZSBFI0020-BLART CP 'K*' ).
+          MESSAGE S406 WITH ZSBFI0020-BLART DISPLAY LIKE 'E'.
+          SY-SUBRC = 1.  " 에러 발생 시 SY-SUBRC 설정
+          RETURN.
+        ENDIF.
+      WHEN 'C'. "고객사
+        IF NOT ( ZSBFI0020-BLART = 'AB' OR ZSBFI0020-BLART CP 'D*' ).
+          MESSAGE S406 WITH ZSBFI0020-BLART DISPLAY LIKE 'E'.
+          SY-SUBRC = 1.
+          RETURN.
+        ENDIF.
+      WHEN 'B'. "은행
+        IF NOT ( ZSBFI0020-BLART = 'AB' OR ZSBFI0020-BLART = 'SA' ).
+          MESSAGE S406 WITH ZSBFI0020-BLART DISPLAY LIKE 'E'.
+          SY-SUBRC = 1.  " 에러 발생 시 SY-SUBRC 설정
+          RETURN.
+        ENDIF.
+      WHEN 'D'. "배송업체
+        IF NOT ( ZSBFI0020-BLART = 'AB' OR ZSBFI0020-BLART = 'ZV'
+                  OR ZSBFI0020-BLART = 'KA').
+          MESSAGE S406 WITH ZSBFI0020-BLART DISPLAY LIKE 'E'.
+          SY-SUBRC = 1.  " 에러 발생 시 SY-SUBRC 설정
+          RETURN.
+        ENDIF.
+    ENDCASE.
+
+  ENDIF.
+
+<font color ="#0000FF">*---BP코드가 입력되면 안되는 전표유형인 경우---</font>
+  IF ZSBFI0031-BPCODE IS NOT INITIAL.
+    IF ZSBFI0020-BLART = 'AA' OR
+      ZSBFI0020-BLART CP 'W*'.
+      " '전표유형 '&'는 BP코드를 입력할 수 없습니다.'
+      MESSAGE S413 WITH ZSBFI0020-BLART DISPLAY LIKE 'E'.
+      SY-SUBRC = 1.
+      RETURN.
+    ENDIF.
+  ENDIF.
+
+<font color ="#0000FF">*---전표 내역의 통화단위가 일치하지 않는 경우---</font>
+" (같은 통화단위의 전표만 생성 가능하도록 함)
+  IF GT_ZTBFI0031 IS NOT INITIAL.
+    READ TABLE GT_ZTBFI0031 WITH KEY CURRENCY_F = ZTBFI0031-CURRENCY_F TRANSPORTING NO FIELDS.
+    IF SY-SUBRC &lt;&gt; 0 .
+      MESSAGE S412 DISPLAY LIKE 'E'.
+      RETURN.
+    ENDIF.
+  ENDIF.
+
+<font color ="#0000FF">*---필수입력) 금액 미입력</font>
+  IF ZTBFI0031-HWRBTR IS INITIAL.
+    MESSAGE S423 DISPLAY LIKE 'E'.
+    SY-SUBRC = 1.
+    RETURN.
+    "-금액 0원 입력 -X
+  ELSEIF ZTBFI0031-HWRBTR = 0.
+    MESSAGE S417 DISPLAY LIKE 'E'.
+    SY-SUBRC = 1.
+    RETURN.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CHECK_HEADER</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CHECK_HEADER .
+<font color ="#0000FF">*---입력된 전표유형 검증---</font>
+  IF ZSBFI0020-BLART IS NOT INITIAL.
+    SELECT SINGLE BLTXT
+      INTO ZSBFI0020-BLTXT
+      FROM ZTBFI0020
+      WHERE BLART = ZSBFI0020-BLART
+      AND DELFLG = ''.
+    " 존재하지 않는 전표유형이 입력된 경우
+    IF SY-SUBRC &lt;&gt; 0.
+      MESSAGE S416 WITH ZSBFI0020-BLART DISPLAY LIKE 'E'.
+      CLEAR: ZSBFI0020-BLTXT, ZSBFI0020-BLART.
+      RETURN.
+    ENDIF.
+  ELSE.
+    "전표유형 미입력
+    MESSAGE S420 DISPLAY LIKE 'E'.
+    SY-SUBRC = 1.
+    ZSBFI0020-BLTXT =''.
+    RETURN.
+  ENDIF.
+
+<font color ="#0000FF">*---전기일, 증빙일 검증---</font>
+  " 1. 전기일자, 증빙일자 - 회계연도와 일치 여부 확인
+  IF ZTBFI0030-BUDAT(4) &lt;&gt; ZTBFI0030-GJAHR OR
+    ZTBFI0030-BLDAT(4) &lt;&gt; ZTBFI0030-GJAHR .
+    MESSAGE S400 DISPLAY LIKE 'E'.
+    SY-SUBRC = 1.
+    RETURN.
+  ENDIF.
+
+  " 2. 전기일자, 증빙일자 - 현재 월과의 일치 여부 확인
+  IF ZTBFI0030-BUDAT+4(2) &lt;&gt; SY-DATUM+4(2) OR
+      ZTBFI0030-BLDAT+4(2)  &lt;&gt; SY-DATUM+4(2) .
+    MESSAGE S401 DISPLAY LIKE 'E'.
+    SY-SUBRC = 1.
+    RETURN.
+  " 3. 증빙일자가 전기일자보다 이전인지 확인
+  ELSEIF ZTBFI0030-BLDAT &gt; ZTBFI0030-BUDAT.
+    MESSAGE S402 DISPLAY LIKE 'E'.
+    SY-SUBRC = 1.
+    RETURN.
+    " 4. 증빙일자가 현재 날짜보다 미래면 전표 생성 불가.
+  ELSEIF ZTBFI0030-BLDAT &gt; SY-DATUM.
+    MESSAGE S403 DISPLAY LIKE 'E'.
+    SY-SUBRC = 1.
+    RETURN.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form INSERT_DB</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM INSERT_DB .
+<font color ="#0000FF">*  1. 전표 HEADER 테이블에 저장</font>
+  " 전표 기본정보 입력값을 전표 헤더 WA로
+  MOVE-CORRESPONDING ZTBFI0030 TO GS_ZTBFI0030.
+  ZSBFI0020-COMCODE = ZTBFI0030-COMCODE.
+  MOVE-CORRESPONDING ZSBFI0020 TO GS_ZTBFI0030.
+  "---최초 생성일
+  GS_ZTBFI0030-STAMP_DATE_F = SY-DATUM.
+  "--최초 생성시간
+  GS_ZTBFI0030-STAMP_TIME_F = SY-UZEIT.
+  "---최초 생성자
+  GS_ZTBFI0030-STAMP_USER_F = GS_ZTBFI0030-USNAM.
+
+  " 전표 번호 생성
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      NR_RANGE_NR = '01'
+      OBJECT      = 'ZBBFI0030'
+      QUANTITY    = '1'
+    IMPORTING
+      NUMBER      = GS_ZTBFI0030-BELNR
+    EXCEPTIONS
+      OTHERS      = 8.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  GV_BELNR = GS_ZTBFI0030-BELNR.
+
+  INSERT INTO ZTBFI0030 VALUES GS_ZTBFI0030.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE I424 DISPLAY LIKE 'E'. "전표 HEADER 생성 실패
+    RETURN.
+  ENDIF.
+<font color ="#0000FF">***********************************************************************</font>
+<font color ="#0000FF">*  2. 전표 ITEM 테이블에 저장</font>
+  LOOP AT GT_ZTBFI0031 INTO GS_ZTBFI0031.
+    "전표번호 연결
+    GS_ZTBFI0031-BELNR = GV_BELNR.
+    "최초 생성일
+    GS_ZTBFI0031-STAMP_DATE_F = GS_ZTBFI0030-STAMP_DATE_F.
+    "--최초 생성시간
+    GS_ZTBFI0031-STAMP_TIME_F = GS_ZTBFI0030-STAMP_TIME_F.
+    "---최초 생성자
+    GS_ZTBFI0031-STAMP_USER_F = GS_ZTBFI0030-STAMP_USER_F.
+    MODIFY GT_ZTBFI0031 FROM GS_ZTBFI0031.
+  ENDLOOP.
+
+  INSERT ZTBFI0031 FROM TABLE GT_ZTBFI0031.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE I425 DISPLAY LIKE 'E'. "전표 ITEM 생성 실패
+    RETURN.
+  ENDIF.
+
+  CLEAR: GS_ZTBFI0031, GS_ZTBFI0030.
+
+  IF SY-SUBRC = 0.
+    MESSAGE S408 WITH GV_BELNR.
+    COMMIT WORK.
+    CLEAR: ZTBFI0030, ZTBFI0031, ZSBFI0020, ZSBFI0031, GT_ZTBFI0031.
+    CLEAR: SSUM, HSUM.
+  ELSE.
+    MESSAGE I426 DISPLAY LIKE 'E'. "전표 생성 실패
+    ROLLBACK WORK.
+  ENDIF.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FIELD</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FIELD .
+
+  "전표 상세내역 추가되면 전표 기본정보(전표 헤더) 잠금(output 상태로)
+  DATA LV_LINE TYPE I.
+  LV_LINE = LINES( GT_ZTBFI0031 ).
+
+  IF LV_LINE IS NOT INITIAL.
+    LOOP AT SCREEN.
+      IF SCREEN-NAME = 'ZSBFI0020-BLART' OR   "전표유형
+         SCREEN-NAME = 'ZTBFI0030-BUDAT' OR   "전기일
+         SCREEN-NAME = 'ZTBFI0030-BLDAT' OR   "증빙일
+         SCREEN-NAME = 'ZTBFI0030-BKTXT' OR   "적요
+         SCREEN-NAME = 'ZTBFI0030-XBLNR'.     "참조문서번호
+        SCREEN-INPUT = 0.
+        MODIFY SCREEN.
+      ENDIF.
+    ENDLOOP.
+  ENDIF.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

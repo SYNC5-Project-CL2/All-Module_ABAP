@@ -1,0 +1,1706 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBBPP0050F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBBPP0050F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBBPP0050F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBBPP0050F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ztbmm0030</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ztbmm0030 .
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_ztbpp0030</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_ztbpp0030 . "생산오더 테이블 ZTBPP0030에서 정보를 가져오려고
+
+  DATA: rt_pordnum TYPE RANGE OF ztbpp0030-pordnum,
+        rs_pordnum LIKE LINE OF rt_pordnum.
+
+
+  SELECT *    "헤더에서 select 생산 전인 애들
+    FROM ztbpp0030
+    INTO CORRESPONDING FIELDS OF TABLE gt_ztbpp0030
+    WHERE status = '생산전'.
+
+
+
+
+  SORT gt_ztbpp0030 BY pordnum ASCENDING.    "헤더에서 select 해온 생산오더번호=pordnum 으로 아이템에서 select해오고 싶어서
+
+  READ TABLE gt_ztbpp0030 INTO gs_ztbpp0030 INDEX 1.
+  IF sy-subrc = 0.
+
+    rs_pordnum-low = gs_ztbpp0030-pordnum.
+
+  ENDIF.
+
+  SORT gt_ztbpp0030 BY pordnum DESCENDING.
+
+  READ TABLE gt_ztbpp0030 INTO gs_ztbpp0030 INDEX 1.
+  IF sy-subrc = 0.
+
+    rs_pordnum-high = gs_ztbpp0030-pordnum.
+
+  ENDIF.
+
+  rs_pordnum-sign = 'I'.
+  rs_pordnum-option = 'BT'.
+  APPEND rs_pordnum TO rt_pordnum.
+
+  SELECT *
+    FROM ztbpp0031
+    INTO CORRESPONDING FIELDS OF TABLE gt_ztbpp0031
+    WHERE pordnum IN rt_pordnum.
+
+  SORT gt_ztbpp0031 BY pordnum ASCENDING mattype DESCENDING. "생산오더 번호로 오름 차순 자제타입별로 내림 차순해서 반제품이 젤 위에 있게
+
+  SORT gt_ztbpp0030 BY pordnum ASCENDING.
+
+<font color ="#0000FF">*  cl_demo_output=&gt;display( gt_ztbpp0031 ).</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form process1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM process1 .
+
+  DATA: rt_matcode TYPE RANGE OF ztbmm0030-matcode,
+        rs_matcode LIKE LINE OF rt_matcode.
+
+  rs_matcode-sign = 'I'.
+  rs_matcode-option = 'BT'.
+  rs_matcode-low = 'MAT0000001'.
+  rs_matcode-high = 'MAT0000009'.
+  APPEND rs_matcode TO rt_matcode.
+
+  READ TABLE gt_ztbpp0031 INTO gs_ztbpp0031 WITH KEY mattype = 'S'.
+  READ TABLE gt_ztbpp0030 INTO gs_ztbpp0030 INDEX 1.
+
+  gs_ztbpp0031-status = '공정1중'.
+  UPDATE ztbpp0031 SET status = '공정1중'     " 맨 마지막에 풀어라!!!!!!!!!!
+                   WHERE pordnum = gs_ztbpp0031-pordnum
+                     AND matcode = gs_ztbpp0031-matcode.
+
+
+
+  gs_ztbpp0030-status = '생산중'.
+  UPDATE ztbpp0030 SET status = '생산중'      " 맨 마지막에 풀어라!!!!!!!!!!
+                   WHERE pordnum = gs_ztbpp0030-pordnum.
+
+  UPDATE ztbpp0030 SET prdstdat = gs_ztbpp0030-salesdate      " 맨 마지막에 풀어라!!!!!!!!!!
+                   WHERE pordnum = gs_ztbpp0030-pordnum.
+
+
+<font color ="#0000FF">*************************************************************************************************************위까지 생산오더 헤더 item 업뎃</font>
+
+  PERFORM consp_calc1. "공정 1은 반제품을 만드는 과정 그래서 반제품 만들 때 들어가는 원자재으 소요량 계산
+
+  SELECT * FROM ztbmm0030  "계산한 소요량으로 자재를 UPDATE 해주기 위해서
+    INTO CORRESPONDING FIELDS OF TABLE gt_ztbmm0030
+    WHERE matcode IN rt_matcode
+    ORDER BY matcode ASCENDING.
+
+  LOOP AT gt_ztbmm0030 INTO gs_ztbmm0030.
+
+    READ TABLE gt_consp INTO gs_consp WITH KEY matcode = gs_ztbmm0030-matcode.
+
+    IF sy-subrc = 0.
+      gs_ztbmm0030-currstock = gs_ztbmm0030-currstock - gs_consp-consp.
+    ENDIF.
+
+    MODIFY gt_ztbmm0030 FROM gs_ztbmm0030 INDEX sy-tabix.
+
+    UPDATE ztbmm0030 FROM gs_ztbmm0030. " 맨 마지막에 풀어라!!!!!!!!!!
+
+  ENDLOOP.
+
+<font color ="#0000FF">***************************************************************************************************위까지 자재현황 테이블 없뎃</font>
+
+  PERFORM set_ztbmm0040a. "자재문서 생성
+  PERFORM set_ztbfi0030a. "전표1 생성
+  PERFORM set_ztbfi00302a. "전표2 생성
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form process2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM process2 .
+
+  READ TABLE gt_ztbpp0031 INTO gs_ztbpp0031 WITH KEY mattype = 'S'. "공정1완료는 반제품에게 있어 생산완료
+
+  IF sy-subrc = 0.
+
+    gs_ztbpp0031-status = '생산완료'.
+    UPDATE ztbpp0031 SET status = '생산완료'     " 맨 마지막에 풀어라!!!!!!!!!!
+                     WHERE pordnum = gs_ztbpp0031-pordnum
+                       AND matcode = gs_ztbpp0031-matcode.
+
+
+  ENDIF.
+
+
+
+  PERFORM ztbmm0030b. " 자재문서
+  PERFORM ztbmm004041b. " 자재문서
+  PERFORM ztbfi0030b. "전표
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form process3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM process3 .
+
+
+  LOOP AT gt_ztbpp0031 INTO gs_ztbpp0031 FROM 2 TO 4. "완제품 생산에 대한건 공정 2중으로 반제품은 생산왼료로
+
+    gs_ztbpp0031-status = '공정2중'.
+    UPDATE ztbpp0031 SET status = '공정2중'     " 맨 마지막에 풀어라!!!!!!!!!!
+                     WHERE pordnum = gs_ztbpp0031-pordnum
+                       AND matcode = gs_ztbpp0031-matcode.
+
+  ENDLOOP.
+
+  PERFORM ztbmm0030c. "자재 현황 업데이트
+  PERFORM ztbmm004041c.  "자재문서 생성
+  PERFORM ztbfi0030c. "전표 생성
+  PERFORM ztbfi0030c2. "전표 생성
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form process4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM process4 .
+
+  DATA: lv_dat TYPE dats.
+
+  LOOP AT gt_ztbpp0031 INTO gs_ztbpp0031 FROM 2 TO 4. "완제품 생산에 대한건 공정 2중으로 반제품은 생산왼료로
+
+    gs_ztbpp0031-status = '생산완료'.
+    UPDATE ztbpp0031 SET status = '생산완료'     " 맨 마지막에 풀어라!!!!!!!!!!
+                     WHERE pordnum = gs_ztbpp0031-pordnum
+                       AND matcode = gs_ztbpp0031-matcode.
+
+  ENDLOOP.
+
+  READ TABLE gt_ztbpp0030 INTO gs_ztbpp0030 INDEX 1.
+  IF sy-subrc = 0.
+
+    lv_dat = gs_ztbpp0030-prdstdat + 7.
+
+    gs_ztbpp0030-status = '생산완료'.
+    UPDATE ztbpp0030 SET status = '생산완료'
+                         prdendat = lv_dat    " 맨 마지막에 풀어라!!!!!!!!!!
+                     WHERE pordnum = gs_ztbpp0030-pordnum.
+
+
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form consp_calc1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM consp_calc1 .
+
+  CLEAR gt_consp. " 한번클리어 """"""
+<font color ="#0000FF">*  CLEAR lt_ztbpp0071.</font>
+
+  DATA: ls_ztbpp0070 TYPE ztbpp0070,
+
+        lt_ztbpp0071 TYPE TABLE OF ztbpp0071,
+        ls_ztbpp0071 LIKE LINE OF lt_ztbpp0071.
+
+<font color ="#0000FF">*  CLEAR lt_ztbpp0071.</font>
+
+  READ TABLE gt_ztbpp0031 INTO gs_ztbpp0031 INDEX 1.
+  IF sy-subrc = 0 .
+
+    SELECT SINGLE bomid " bomid get
+      FROM ztbpp0070
+      INTO CORRESPONDING FIELDS OF ls_ztbpp0070
+      WHERE matcode = gs_ztbpp0031-matcode.
+
+    SELECT * " get material using bomid
+      FROM ztbpp0071
+      INTO CORRESPONDING FIELDS OF TABLE lt_ztbpp0071
+      WHERE bomid = ls_ztbpp0070-bomid.
+
+    LOOP AT lt_ztbpp0071 INTO ls_ztbpp0071.  " 소요량 계산 완료 원자재별로
+
+      gs_consp-matcode = ls_ztbpp0071-matcode.
+      gs_consp-consp = ls_ztbpp0071-matquan * gs_ztbpp0031-prdquan.
+
+      APPEND gs_consp TO gt_consp.
+
+    ENDLOOP.
+
+
+  ENDIF.
+<font color ="#0000FF">*  cl_demo_output=&gt;display( gt_consp ).</font>
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_ztbmm0040A</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_ztbmm0040a .
+
+  DATA: lv_number TYPE char10.      "넘버 레인지에서 넘버 받아 올려고
+  DATA: ls_ztbmm0070 TYPE ztbmm0070.  "ZTBMM0070은 INFO RECORD이며 거기서 자재에 대한 단가 값이 있어서 그걸가지고 계산하려고
+
+  READ TABLE gt_ztbpp0030 INTO gs_ztbpp0030 INDEX 1. "생산오더 번호 읽을려고
+
+  gs_ztbmm0040-docyear = sy-datum+0(4). "자재문서 년도
+  gs_ztbmm0040-mvcode = 'MV02'. " 자재 이동유형
+  gs_ztbmm0040-docdate = sy-datum. " 자재 문서 생성일
+  gs_ztbmm0040-pltcode = 'PLT0000001'.  " 플랜트 코드
+  gs_ztbmm0040-pordnum = gs_ztbpp0030-pordnum.  "생산오더 번호
+
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      nr_range_nr             = '01'
+      object                  = 'ZBBMM0040'
+<font color ="#0000FF">*     QUANTITY                = '1'</font>
+<font color ="#0000FF">*     SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*     TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*     IGNORE_BUFFER           = ' '</font>
+    IMPORTING
+      number                  = lv_number
+<font color ="#0000FF">*     QUANTITY                =</font>
+<font color ="#0000FF">*     RETURNCODE              =</font>
+    EXCEPTIONS
+      interval_not_found      = 1
+      number_range_not_intern = 2
+      object_not_found        = 3
+      quantity_is_0           = 4
+      quantity_is_not_1       = 5
+      interval_overflow       = 6
+      buffer_overflow         = 7
+      OTHERS                  = 8.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  gs_ztbmm0040-docnum = 'DOC' && lv_number.  " 넘버레인지 가져오기
+
+  APPEND gs_ztbmm0040 TO gt_ztbmm0040.
+
+  INSERT ztbmm0040 FROM gs_ztbmm0040. """"""""""""""""""맨 마지막에 풀어라!!!!!!
+
+  gv_mm0041_docnum1 = gs_ztbmm0040-docnum. "전표 생성할 떄 참조문서 번호에 입력하기 위해 여기서 값을 글러벌 변수에 넘긴다
+
+<font color ="#0000FF">***************************************************************************************************************************************</font>
+
+  LOOP AT gt_consp INTO gs_consp.  "소요량 가지고 소요량에 따른 얼마치를 계산하기 휘해서
+
+    gs_ztbmm0041-docnum = 'DOC' && lv_number.
+    gs_ztbmm0041-matcode = gs_consp-matcode.
+    gs_ztbmm0041-docyear = sy-datum+0(4).
+    gs_ztbmm0041-mattype = 'M'.
+    gs_ztbmm0041-mvquant = gs_consp-consp.
+
+    IF gs_ztbmm0041-matcode = 'MAT0000001'.
+
+      gs_ztbmm0041-unitcode = 'L'.
+
+    ELSE.
+
+      gs_ztbmm0041-unitcode = 'KG'.
+
+    ENDIF.
+
+    SELECT SINGLE *            "인포 레코드에서 자재 별 단가를 읽어와서 값을 계산
+      FROM ztbmm0070
+      INTO CORRESPONDING FIELDS OF ls_ztbmm0070
+      WHERE matcode = gs_consp-matcode.
+
+    gs_ztbmm0041-mvprice = gs_consp-consp * ( ls_ztbmm0070-infprice /  ls_ztbmm0070-infquant  ).
+
+    gs_ztbmm0041-currency = 'KRW'.
+
+    APPEND gs_ztbmm0041 TO gt_ztbmm0041.
+
+    INSERT ztbmm0041 FROM gs_ztbmm0041. """"""" 맨만지막에 풀어라 !!!!!!1
+
+  ENDLOOP.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ztbmm0030B</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ztbmm0030b .
+
+  READ TABLE gt_ztbpp0031 INTO gs_ztbpp0031 INDEX 1. "index 1번이 반제품 , 반제품 값을 현황 테이블인 ztbmm0030에서 업데이트 해줄려고
+  IF sy-subrc = 0.
+
+    SELECT SINGLE *
+      FROM ztbmm0030
+      INTO CORRESPONDING FIELDS OF gs_ztbmm0030
+      WHERE matcode = gs_ztbpp0031-matcode.
+
+  ENDIF.
+
+  gs_ztbmm0030-currstock = gs_ztbmm0030-currstock + gs_ztbpp0031-prdquan.
+
+  UPDATE ztbmm0030 FROM gs_ztbmm0030. """""""" 나중에 풀어라
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ztbmm0041B</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ztbmm004041b.
+
+  DATA: ls_ztbmm0070 TYPE ztbmm0070. " 단가를 가지고 있는 인포 레코드에서 단가 읽어올려고
+  DATA: lv_price_sum TYPE int4, " 단가 계산한거 합산 할려고
+        lv_number    TYPE char10.  " 넙버레인지 받을려고
+
+  READ TABLE gt_ztbpp0031 INTO gs_ztbpp0031 INDEX 1. " 반제품 읽어 올려고 1번은 반제품 asc로 sort 해놔서
+
+  PERFORM consp_calc1.
+
+  LOOP AT gt_consp INTO gs_consp. " 반제품 만들떄 들어가는 총 가격 구할려고
+
+    SELECT SINGLE *
+      FROM ztbmm0070
+      INTO CORRESPONDING FIELDS OF ls_ztbmm0070
+      WHERE matcode = gs_consp-matcode.
+
+    lv_price_sum += gs_consp-consp * ( ls_ztbmm0070-infprice /  ls_ztbmm0070-infquant  ).
+
+  ENDLOOP.
+
+
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      nr_range_nr             = '01'
+      object                  = 'ZBBMM0040'
+<font color ="#0000FF">*     QUANTITY                = '1'</font>
+<font color ="#0000FF">*     SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*     TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*     IGNORE_BUFFER           = ' '</font>
+    IMPORTING
+      number                  = lv_number
+<font color ="#0000FF">*     QUANTITY                =</font>
+<font color ="#0000FF">*     RETURNCODE              =</font>
+    EXCEPTIONS
+      interval_not_found      = 1
+      number_range_not_intern = 2
+      object_not_found        = 3
+      quantity_is_0           = 4
+      quantity_is_not_1       = 5
+      interval_overflow       = 6
+      buffer_overflow         = 7
+      OTHERS                  = 8.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+
+  gs_ztbmm0041-docnum = 'DOC' && lv_number.      "자재문서 번호
+  gs_ztbmm0041-matcode = gs_ztbpp0031-matcode.    "자재코드
+  gs_ztbmm0041-docyear = sy-datum+0(4).          "자재문서 년도
+  gs_ztbmm0041-mattype = 'S'.                    "자재 유형
+  gs_ztbmm0041-mvquant = gs_ztbpp0031-prdquan.      "수량
+  gs_ztbmm0041-unitcode = gs_ztbpp0031-unitcode.      "단위
+  gs_ztbmm0041-mvprice = lv_price_sum.             "가격
+  gs_ztbmm0041-currency = 'KRW'.                   "통화
+
+  gv_mm0041_docnum2 = gs_ztbmm0041-docnum. "전표 생성시에 참조 번호 줄려고
+
+  APPEND gs_ztbmm0041 TO gt_ztbmm0041.
+
+  INSERT ztbmm0041 FROM gs_ztbmm0041. """""""""""""""""""""" 나중에 주석 풀어라 !!!
+
+<font color ="#0000FF">**************************************************************** 위까지 item</font>
+
+  gs_ztbmm0040-docnum = 'DOC' && lv_number. "자재문서 번호
+  gs_ztbmm0040-docyear = sy-datum+0(4).   "자재문서 녀도
+  gs_ztbmm0040-mvcode = 'MV03'.          "이동 유형
+  gs_ztbmm0040-docdate = sy-datum.        "자재문서 생성일
+  gs_ztbmm0040-pltcode = 'PLT0000001'.         "플랜트 코드
+  gs_ztbmm0040-pordnum = gs_ztbpp0031-pordnum.      "생산오더 번호
+
+  APPEND gs_ztbmm0040 TO gt_ztbmm0040.
+
+
+  INSERT ztbmm0040 FROM gs_ztbmm0040. """""""""""""""""""""" 나중에 주석 풀어라 !!!
+
+<font color ="#0000FF">************************************************************ 위까지 header</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ztbmm0030C</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ztbmm0030c.
+
+  DATA: ls_ztbpp0070 TYPE ztbpp0070. "BOM 정보 가져와서 반제품 생성시 들어가는 자재 확인할려고
+
+  DATA: lt_ztbpp0071 TYPE TABLE OF ztbpp0071,   "BOM item 정보 읽어 올려고
+        ls_ztbpp0071 LIKE LINE OF lt_ztbpp0071.
+
+  DATA: lt_ztbmm0030 TYPE TABLE OF ztbmm0030,    "자재 현황, 읽어온 BOM 정보로 읽어온 자재코드로 자재현황에 값을 업데이트할려고
+        ls_ztbmm0030 LIKE LINE OF lt_ztbmm0030.
+
+  READ TABLE gt_ztbpp0031 INTO gs_ztbpp0031 INDEX 1.
+
+  IF sy-subrc = 0 .
+
+    SELECT SINGLE *
+      FROM ztbmm0030
+      INTO CORRESPONDING FIELDS OF ls_ztbmm0030
+      WHERE matcode = gs_ztbpp0031-matcode.
+
+    ls_ztbmm0030-currstock = ls_ztbmm0030-currstock - gs_ztbpp0031-prdquan. "자재 현황 업데이트 해줄려고
+
+    UPDATE ztbmm0030 FROM ls_ztbmm0030.""""""" 나중에 폴어라 !!!!!!!!!!!
+
+  ENDIF.
+
+  LOOP AT gt_ztbpp0031 INTO gs_ztbpp0031 FROM 2 TO 4. "gt_ztbpp0031에는 총 4가지 정보가 있음 1-반제품, 2-완제품1, 3-완제품2, 4-완제품3 , ROW 2~4번 까지는 완제품 들
+
+    SELECT SINGLE bomid  "완제품에 대한 BOM 헤더 정보를 가지고 온다 BOM ITME 읽을려고
+      FROM ztbpp0070
+      INTO CORRESPONDING FIELDS OF ls_ztbpp0070
+      WHERE matcode = gs_ztbpp0031-matcode.
+
+    SELECT *            "BOM ITEM 정보를 읽어 온다
+      FROM ztbpp0071
+      INTO CORRESPONDING FIELDS OF TABLE lt_ztbpp0071
+      WHERE bomid = ls_ztbpp0070-bomid
+      ORDER BY matcode ASCENDING.
+
+    LOOP AT lt_ztbpp0071 INTO ls_ztbpp0071 FROM 1 TO 2.  "BOM ITEM에서 들어가는 자재를 읽고 그거 가지고 자재현황 테이블 업데이트해줄려고
+
+      SELECT SINGLE *
+        FROM ztbmm0030
+        INTO CORRESPONDING FIELDS OF ls_ztbmm0030
+        WHERE matcode = ls_ztbpp0071-matcode.
+
+      ls_ztbmm0030-currstock = ls_ztbmm0030-currstock - ( ls_ztbpp0071-matquan * gs_ztbpp0031-prdquan ).
+
+      UPDATE ztbmm0030 FROM ls_ztbmm0030. """"""""" 나중에 풀어라!!!!!!!!
+
+      APPEND ls_ztbmm0030 TO lt_ztbmm0030.
+
+    ENDLOOP.
+
+  ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ztbmm004041C</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ztbmm004041c .
+
+  DATA: lt_ztbmm0040 TYPE TABLE OF ztbmm0040,     "자재문서 테이블 HEADER에 값을 입력할려고
+        ls_ztbmm0040 LIKE LINE OF lt_ztbmm0040,
+
+        ls_ztbmm0070 TYPE ztbmm0070, "인포 레코드를 읽어사 비용 계산할려고
+
+        lt_ztbmm0041 TYPE TABLE OF ztbmm0041, "자재문서 테이블 ITEM에 값을 입력할려고
+        ls_ztbmm0041 LIKE LINE OF lt_ztbmm0041,
+
+        ls_ztbpp0070 TYPE ztbpp0070, "BOM HEADER 정보 읽어 올려고
+
+        lt_ztbpp0071 TYPE TABLE OF ztbpp0071,   "BOM ITEM 정보 읽어 올려고
+        ls_ztbpp0071 LIKE LINE OF lt_ztbpp0071.
+
+
+  DATA: lv_number TYPE char10.  "넘버 레인지 받을려고
+
+  DATA: lv_price_sum TYPE int4.  "구한 값 합산
+
+  READ TABLE gt_ztbpp0031 INTO gs_ztbpp0031 INDEX 1. " 반제품 읽음
+
+  IF sy-subrc = 0.
+
+    CALL FUNCTION 'NUMBER_GET_NEXT'
+      EXPORTING
+        nr_range_nr             = '01'
+        object                  = 'ZBBMM0040'
+<font color ="#0000FF">*       QUANTITY                = '1'</font>
+<font color ="#0000FF">*       SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*       TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*       IGNORE_BUFFER           = ' '</font>
+      IMPORTING
+        number                  = lv_number
+<font color ="#0000FF">*       QUANTITY                =</font>
+<font color ="#0000FF">*       RETURNCODE              =</font>
+      EXCEPTIONS
+        interval_not_found      = 1
+        number_range_not_intern = 2
+        object_not_found        = 3
+        quantity_is_0           = 4
+        quantity_is_not_1       = 5
+        interval_overflow       = 6
+        buffer_overflow         = 7
+        OTHERS                  = 8.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+    ENDIF.
+
+
+    ls_ztbmm0040-docnum = 'DOC' && lv_number.  "자재문서 번호
+    ls_ztbmm0040-docyear = sy-datum+0(4).    "자재문서 년도
+    ls_ztbmm0040-mvcode = 'MV02'.           "이동 유형
+    ls_ztbmm0040-docdate = sy-datum.        "자재문서 생성일
+    ls_ztbmm0040-pltcode = 'PLT0000001'.
+    ls_ztbmm0040-pordnum = gs_ztbpp0031-pordnum.
+
+    INSERT ztbmm0040 FROM ls_ztbmm0040. """""""""""""""""""""""""""!!!!!!1
+
+    gv_mm0041_docnum3 = ls_ztbmm0040-docnum.
+
+    APPEND ls_ztbmm0040 TO lt_ztbmm0040.
+
+  ENDIF.
+
+<font color ="#0000FF">**************************************************************위까지 헤더</font>
+<font color ="#0000FF">**************************************************************아이템 중에서도 반제품 먼저</font>
+
+  PERFORM consp_calc1. "자재소요량 계산 섭루틴
+
+  LOOP AT gt_consp INTO gs_consp. " 반제품 만들떄 들어가는 총 돈 구할려고
+
+    SELECT SINGLE *
+      FROM ztbmm0070
+      INTO CORRESPONDING FIELDS OF ls_ztbmm0070
+      WHERE matcode = gs_consp-matcode.
+
+    lv_price_sum += gs_consp-consp * ( ls_ztbmm0070-infprice /  ls_ztbmm0070-infquant  ).
+
+  ENDLOOP.
+
+  ls_ztbmm0041-docnum = 'DOC' && lv_number.
+  ls_ztbmm0041-matcode =  gs_ztbpp0031-matcode.
+  ls_ztbmm0041-docyear = sy-datum+0(4).
+  ls_ztbmm0041-mattype = gs_ztbpp0031-mattype.
+  ls_ztbmm0041-mvquant =  gs_ztbpp0031-prdquan.
+  ls_ztbmm0041-unitcode = gs_ztbpp0031-unitcode.
+  ls_ztbmm0041-mvprice = lv_price_sum.
+  ls_ztbmm0041-currency = 'KRW'.
+
+  INSERT ztbmm0041 FROM ls_ztbmm0041. """""""""""""""""" !!!!!!!!!!!
+
+  APPEND ls_ztbmm0041 TO lt_ztbmm0041.
+
+<font color ="#0000FF">******************************************************여기 부터 완제품</font>
+
+  LOOP AT gt_ztbpp0031 INTO gs_ztbpp0031 FROM 2 TO 4.
+
+    SELECT SINGLE bomid
+      FROM ztbpp0070
+      INTO CORRESPONDING FIELDS OF ls_ztbpp0070
+      WHERE matcode = gs_ztbpp0031-matcode.
+
+    SELECT *
+      FROM ztbpp0071
+      INTO CORRESPONDING FIELDS OF TABLE lt_ztbpp0071
+      WHERE bomid = ls_ztbpp0070-bomid
+      ORDER BY matcode ASCENDING.
+
+    LOOP AT lt_ztbpp0071 INTO ls_ztbpp0071 FROM 1 TO 2.
+
+      SELECT SINGLE * " info rec에서 정보 가져옴 단위 수량당 단가 구하기 위해
+        FROM ztbmm0070
+        INTO CORRESPONDING FIELDS OF ls_ztbmm0070
+        WHERE matcode = ls_ztbpp0071-matcode.
+
+      ls_ztbmm0041-docnum = 'DOC' && lv_number.
+      ls_ztbmm0041-matcode =  ls_ztbpp0071-matcode.
+      ls_ztbmm0041-docyear = sy-datum+0(4).
+      ls_ztbmm0041-mattype = 'M'.
+      ls_ztbmm0041-mvquant =  gs_ztbpp0031-prdquan * ls_ztbpp0071-matquan. " 곱하기 1이긴함
+      ls_ztbmm0041-unitcode = ls_ztbpp0071-unitcode.
+      ls_ztbmm0041-mvprice = ls_ztbmm0041-mvquant * ( ls_ztbmm0070-infprice /  ls_ztbmm0070-infquant  ).
+      ls_ztbmm0041-currency = 'KRW'.
+
+      APPEND ls_ztbmm0041 TO lt_ztbmm0041.
+
+      INSERT ztbmm0041 FROM ls_ztbmm0041. """""""""""""!!!!!!!!!!!!
+
+    ENDLOOP.
+
+
+  ENDLOOP.
+
+
+
+<font color ="#0000FF">*  cl_demo_output=&gt;display( lt_ztbmm0041 ).</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_ztbfi0030a</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_ztbfi0030a .
+
+  DATA: lt_ztbfi0030 TYPE TABLE OF ztbfi0030,
+        ls_ztbfi0030 LIKE LINE OF lt_ztbfi0030.
+
+  DATA: lt_ztbfi0031 TYPE TABLE OF ztbfi0031,
+        ls_ztbfi0031 LIKE LINE OF lt_ztbfi0031,
+
+        ls_ztbmm0070 TYPE ztbmm0070.
+
+  DATA: lv_number TYPE char10.
+
+  DATA: lv_price_sum TYPE int4.
+
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      nr_range_nr             = '01'
+      object                  = 'ZBBFI0030'
+<font color ="#0000FF">*     QUANTITY                = '1'</font>
+<font color ="#0000FF">*     SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*     TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*     IGNORE_BUFFER           = ' '</font>
+    IMPORTING
+      number                  = lv_number
+<font color ="#0000FF">*     QUANTITY                =</font>
+<font color ="#0000FF">*     RETURNCODE              =</font>
+    EXCEPTIONS
+      interval_not_found      = 1
+      number_range_not_intern = 2
+      object_not_found        = 3
+      quantity_is_0           = 4
+      quantity_is_not_1       = 5
+      interval_overflow       = 6
+      buffer_overflow         = 7
+      OTHERS                  = 8.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  SELECT SINGLE empid
+    FROM ztbsd1030 INTO ls_ztbfi0030-usnam
+    WHERE logid = sy-uname.
+
+  ls_ztbfi0030-belnr = lv_number.
+  ls_ztbfi0030-comcode = '1000'.
+  ls_ztbfi0030-gjahr = sy-datum+0(4).
+  ls_ztbfi0030-blart = 'WA'.
+  ls_ztbfi0030-budat = sy-datum.
+  ls_ztbfi0030-bktxt = '반제품 생산'.
+  ls_ztbfi0030-bldat = sy-datum.
+  ls_ztbfi0030-xblnr = gv_mm0041_docnum1.
+
+  ls_ztbfi0030-stamp_date_f = sy-datum.
+  ls_ztbfi0030-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ztbsd1030
+    INTO ls_ztbfi0030-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0030 FROM ls_ztbfi0030. """""""""""""""""!!!!!!!!!!!!!!!!!
+
+<font color ="#0000FF">*  APPEND ls_ztbfi0030 to lt_ztbfi0030.</font>
+
+<font color ="#0000FF">*************************************************************************************************위까지 header</font>
+  PERFORM consp_calc1.
+
+<font color ="#0000FF">****  LOOP AT gt_consp INTO gs_consp. " 반제품 만들떄 들어가는 총 돈 구할려고</font>
+<font color ="#0000FF">****</font>
+<font color ="#0000FF">****    SELECT SINGLE *</font>
+<font color ="#0000FF">****      FROM ztbmm0070</font>
+<font color ="#0000FF">****      INTO CORRESPONDING FIELDS OF ls_ztbmm0070</font>
+<font color ="#0000FF">****      WHERE matcode = gs_consp-matcode.</font>
+<font color ="#0000FF">****</font>
+<font color ="#0000FF">****    lv_price_sum += gs_consp-consp * ( ls_ztbmm0070-infprice / ls_ztbmm0070-infquant ). "100 안 곱했음</font>
+<font color ="#0000FF">****</font>
+<font color ="#0000FF">****  ENDLOOP.</font>
+
+
+  PERFORM consp_calc_price.
+
+  ls_ztbfi0031-belnr = lv_number.
+  ls_ztbfi0031-buzei = 1 .
+  ls_ztbfi0031-shkzg = 'S'.
+  ls_ztbfi0031-acode = '50002'.
+  SELECT SINGLE aname
+    FROM ztbfi0011
+    INTO ls_ztbfi0031-aname
+    WHERE acode = ls_ztbfi0031-acode.
+  ls_ztbfi0031-wrbtr = gv_price_sum.
+  ls_ztbfi0031-currency = 'KRW'.
+  ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+  ls_ztbfi0031-hwrbtr = gv_price_sum.
+  ls_ztbfi0031-currency_f = 'KRW'.
+
+  ls_ztbfi0031-stamp_date_f = sy-datum.
+  ls_ztbfi0031-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ztbsd1030
+    INTO ls_ztbfi0031-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0031 FROM ls_ztbfi0031. """"""""""!!!!!!!!
+
+  APPEND ls_ztbfi0031 TO lt_ztbfi0031.
+<font color ="#0000FF">*  cl_demo_output=&gt;display( ls_ztbfi0031 ).</font>
+
+  LOOP AT gt_consp INTO gs_consp.
+
+    CLEAR ls_ztbfi0031. " 한번씩 클리어
+    ls_ztbfi0031-belnr = lv_number.
+    ls_ztbfi0031-buzei = sy-tabix + 1.
+    ls_ztbfi0031-shkzg = 'H'.
+    ls_ztbfi0031-acode = '10010'.
+    SELECT SINGLE aname
+      FROM ztbfi0011
+      INTO ls_ztbfi0031-aname
+      WHERE acode = ls_ztbfi0031-acode.
+
+
+    SELECT SINGLE *
+        FROM ztbmm0070
+        INTO CORRESPONDING FIELDS OF ls_ztbmm0070
+        WHERE matcode = gs_consp-matcode.
+
+    ls_ztbfi0031-wrbtr = gs_consp-consp * ( ls_ztbmm0070-infprice /  ls_ztbmm0070-infquant  ).
+    ls_ztbfi0031-currency = 'KRW'.
+    ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+    ls_ztbfi0031-bpcode = ls_ztbmm0070-bpcode.
+    ls_ztbfi0031-zterm = ls_ztbmm0070-zterm.
+    ls_ztbfi0031-hwrbtr = gs_consp-consp * ( ls_ztbmm0070-infprice /  ls_ztbmm0070-infquant  ).
+    ls_ztbfi0031-currency_f = 'KRW'.
+
+    ls_ztbfi0031-stamp_date_f = sy-datum.
+    ls_ztbfi0031-stamp_time_f = sy-uzeit.
+    SELECT SINGLE empid
+      FROM ztbsd1030
+      INTO ls_ztbfi0031-stamp_user_f
+      WHERE logid = sy-uname.
+
+    INSERT ztbfi0031 FROM ls_ztbfi0031. """"""""""!!!!!!!!
+
+<font color ="#0000FF">*  APPEND ls_ztbfi0031 to lt_ztbfi0031.</font>
+
+  ENDLOOP.
+
+<font color ="#0000FF">*  cl_demo_output=&gt;display( lt_ztbfi0031 ).</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_ztbfi00302a</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_ztbfi00302a .
+
+  DATA: lv_number TYPE char10.
+  DATA: ls_ztbfi0030 TYPE ztbfi0030,
+
+        lt_ztbfi0031 TYPE TABLE OF ztbfi0031,
+        ls_ztbfi0031 LIKE LINE OF lt_ztbfi0031.
+
+  DATA: BEGIN OF ls_rout.
+          include structure <a href ="ztbpp0060/dictionary-ztbpp0060.html">ztbpp0060</a>.
+  DATA:   matcode TYPE ztbpp0061-matcode,
+        END OF ls_rout.
+
+
+
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      nr_range_nr             = '01'
+      object                  = 'ZBBFI0030'
+<font color ="#0000FF">*     QUANTITY                = '1'</font>
+<font color ="#0000FF">*     SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*     TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*     IGNORE_BUFFER           = ' '</font>
+    IMPORTING
+      number                  = lv_number
+<font color ="#0000FF">*     QUANTITY                =</font>
+<font color ="#0000FF">*     RETURNCODE              =</font>
+    EXCEPTIONS
+      interval_not_found      = 1
+      number_range_not_intern = 2
+      object_not_found        = 3
+      quantity_is_0           = 4
+      quantity_is_not_1       = 5
+      interval_overflow       = 6
+      buffer_overflow         = 7
+      OTHERS                  = 8.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  SELECT SINGLE empid
+    FROM ztbsd1030 INTO ls_ztbfi0030-usnam
+    WHERE logid = sy-uname.
+
+  ls_ztbfi0030-belnr = lv_number.
+  ls_ztbfi0030-comcode = '1000'.
+  ls_ztbfi0030-gjahr = sy-datum+0(4).
+  ls_ztbfi0030-blart = 'SA'.
+  ls_ztbfi0030-budat = sy-datum.
+  ls_ztbfi0030-bktxt = '반제품 생산시 인건비 발생'.
+  ls_ztbfi0030-bldat = sy-datum.
+  ls_ztbfi0030-xblnr = gv_mm0041_docnum1.
+
+  ls_ztbfi0030-stamp_date_f = sy-datum.
+  ls_ztbfi0030-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ztbsd1030
+    INTO ls_ztbfi0030-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0030 FROM ls_ztbfi0030. """""""""!!!!!!!!
+
+  READ TABLE gt_ztbpp0031 INTO gs_ztbpp0031 INDEX 1.
+  IF sy-subrc = 0.
+
+<font color ="#0000FF">*    cl_demo_output=&gt;display( gs_ztbpp0031 ).</font>
+
+    SELECT SINGLE *
+      FROM ztbpp0060 AS a
+      INNER JOIN ztbpp0061 AS b
+      ON a~routid = b~routid
+      INTO CORRESPONDING FIELDS OF ls_rout
+      WHERE matcode = gs_ztbpp0031-matcode.
+
+<font color ="#0000FF">*    cl_demo_output=&gt;display( ls_rout ).</font>
+
+    ls_ztbfi0031-belnr = lv_number.
+    ls_ztbfi0031-buzei = 1 .
+    ls_ztbfi0031-shkzg = 'S'.
+    ls_ztbfi0031-acode = '50004'.
+    SELECT SINGLE aname
+      FROM ztbfi0011
+      INTO ls_ztbfi0031-aname
+      WHERE acode = ls_ztbfi0031-acode.
+
+    ls_ztbfi0031-wrbtr = gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ).
+    ls_ztbfi0031-currency = 'KRW'.
+    ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+    ls_ztbfi0031-hwrbtr = gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ).
+    ls_ztbfi0031-currency_f = 'KRW'.
+
+    ls_ztbfi0031-stamp_date_f = sy-datum.
+    ls_ztbfi0031-stamp_time_f = sy-uzeit.
+    SELECT SINGLE empid
+      FROM ztbsd1030
+      INTO ls_ztbfi0031-stamp_user_f
+      WHERE logid = sy-uname.
+
+    INSERT ztbfi0031 FROM ls_ztbfi0031. """""""""""!!!!!!!!!!!!!!
+    CLEAR ls_ztbfi0031.
+
+    ls_ztbfi0031-belnr = lv_number.
+    ls_ztbfi0031-buzei = 2 .
+    ls_ztbfi0031-shkzg = 'H'.
+    ls_ztbfi0031-acode = '20005'.
+    SELECT SINGLE aname
+      FROM ztbfi0011
+      INTO ls_ztbfi0031-aname
+      WHERE acode = ls_ztbfi0031-acode.
+
+    ls_ztbfi0031-wrbtr = gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ).
+    ls_ztbfi0031-currency = 'KRW'.
+    ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+    ls_ztbfi0031-hwrbtr = gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ).
+    ls_ztbfi0031-currency_f = 'KRW'.
+
+
+    ls_ztbfi0031-stamp_date_f = sy-datum.
+    ls_ztbfi0031-stamp_time_f = sy-uzeit.
+    SELECT SINGLE empid
+      FROM ztbsd1030
+      INTO ls_ztbfi0031-stamp_user_f
+      WHERE logid = sy-uname.
+
+    INSERT ztbfi0031 FROM ls_ztbfi0031. """""""""""!!!!!!!!!!!
+<font color ="#0000FF">*   cl_demo_output=&gt;display( ls_ztbfi0031 ).</font>
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ztbfi0030B</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ztbfi0030b .
+
+  DATA: lv_number TYPE char10.
+
+  DATA: ls_ztbfi0030 TYPE ztbfi0030,
+
+        lt_ztbfi0031 TYPE TABLE OF ztbfi0031,
+        ls_ztbfi0031 LIKE LINE OF lt_ztbfi0031,
+
+        lv_price_sum TYPE int4,
+
+        ls_ztbmm0070 TYPE ztbmm0070.
+
+  DATA: BEGIN OF ls_rout.
+          include structure <a href ="ztbpp0060/dictionary-ztbpp0060.html">ztbpp0060</a>.
+  DATA:   matcode TYPE ztbpp0061-matcode,
+        END OF ls_rout.
+
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      nr_range_nr             = '01'
+      object                  = 'ZBBFI0030'
+<font color ="#0000FF">*     QUANTITY                = '1'</font>
+<font color ="#0000FF">*     SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*     TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*     IGNORE_BUFFER           = ' '</font>
+    IMPORTING
+      number                  = lv_number
+<font color ="#0000FF">*     QUANTITY                =</font>
+<font color ="#0000FF">*     RETURNCODE              =</font>
+    EXCEPTIONS
+      interval_not_found      = 1
+      number_range_not_intern = 2
+      object_not_found        = 3
+      quantity_is_0           = 4
+      quantity_is_not_1       = 5
+      interval_overflow       = 6
+      buffer_overflow         = 7
+      OTHERS                  = 8.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  SELECT SINGLE empid
+    FROM ztbsd1030 INTO ls_ztbfi0030-usnam
+    WHERE logid = sy-uname.
+
+  ls_ztbfi0030-belnr = lv_number.
+  ls_ztbfi0030-comcode = '1000'.
+  ls_ztbfi0030-gjahr = sy-datum+0(4).
+  ls_ztbfi0030-blart = 'WE'.
+  ls_ztbfi0030-budat = sy-datum.
+  ls_ztbfi0030-bktxt = '반제품 완성'.
+  ls_ztbfi0030-bldat = sy-datum.
+  ls_ztbfi0030-xblnr = gv_mm0041_docnum2.
+
+  ls_ztbfi0030-stamp_date_f = sy-datum.
+  ls_ztbfi0030-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0030-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0030 FROM ls_ztbfi0030. """""""""""""""""!!!!!!!!!!!!!!!
+
+  PERFORM consp_calc1.
+
+<font color ="#0000FF">*  LOOP AT gt_consp INTO gs_consp. " 반제품 만들떄 들어가는 총 돈 구할려고</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    SELECT SINGLE *</font>
+<font color ="#0000FF">*      FROM ztbmm0070</font>
+<font color ="#0000FF">*      INTO CORRESPONDING FIELDS OF ls_ztbmm0070</font>
+<font color ="#0000FF">*      WHERE matcode = gs_consp-matcode.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    lv_price_sum += gs_consp-consp * ( ls_ztbmm0070-infprice / ( ls_ztbmm0070-infquant * 100 ) ). "100 안 곱했음</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  ENDLOOP.</font>
+
+  PERFORM consp_calc_price.
+
+  READ TABLE gt_ztbpp0031 INTO gs_ztbpp0031 INDEX 1.
+  IF sy-subrc = 0.
+
+    SELECT SINGLE *
+     FROM ztbpp0060 AS a
+     INNER JOIN ztbpp0061 AS b
+     ON a~routid = b~routid
+     INTO CORRESPONDING FIELDS OF ls_rout
+     WHERE matcode = gs_ztbpp0031-matcode.
+
+  ENDIF.
+
+
+  ls_ztbfi0031-belnr = lv_number.
+  ls_ztbfi0031-buzei = 1 .
+  ls_ztbfi0031-shkzg = 'S'.
+  ls_ztbfi0031-acode = '10011'.
+  SELECT SINGLE aname
+    FROM ztbfi0011
+    INTO ls_ztbfi0031-aname
+    WHERE acode = ls_ztbfi0031-acode.
+
+  ls_ztbfi0031-wrbtr = gv_price_sum + ( gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ) ). "여기선 100을 곱함 MM에 DB 자체에 100이
+  ls_ztbfi0031-currency = 'KRW'.                                                                              " 곱해져 있어서
+  ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+  ls_ztbfi0031-hwrbtr = gv_price_sum + ( gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ) ).
+  ls_ztbfi0031-currency_f = 'KRW'.
+
+  ls_ztbfi0031-stamp_date_f = sy-datum.
+  ls_ztbfi0031-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0031-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0031 FROM ls_ztbfi0031. """"""""!!!!!!!
+
+  APPEND ls_ztbfi0031 TO lt_ztbfi0031.
+
+  CLEAR ls_ztbfi0031.
+  ls_ztbfi0031-belnr = lv_number.
+  ls_ztbfi0031-buzei = 2 .
+  ls_ztbfi0031-shkzg = 'H'.
+  ls_ztbfi0031-acode = '50002'.
+  SELECT SINGLE aname
+    FROM ztbfi0011
+    INTO ls_ztbfi0031-aname
+    WHERE acode = ls_ztbfi0031-acode.
+
+  ls_ztbfi0031-wrbtr = gv_price_sum.
+  ls_ztbfi0031-currency = 'KRW'.
+  ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+  ls_ztbfi0031-hwrbtr = gv_price_sum.
+  ls_ztbfi0031-currency_f = 'KRW'.
+
+  ls_ztbfi0031-stamp_date_f = sy-datum.
+  ls_ztbfi0031-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0031-stamp_user_f
+    WHERE logid = sy-uname.
+
+
+  INSERT ztbfi0031 FROM ls_ztbfi0031. """"""""!!!!!!!
+  APPEND ls_ztbfi0031 TO lt_ztbfi0031.
+
+  CLEAR ls_ztbfi0031.
+  ls_ztbfi0031-belnr = lv_number.
+  ls_ztbfi0031-buzei = 3 .
+  ls_ztbfi0031-shkzg = 'H'.
+  ls_ztbfi0031-acode = '50004'.
+  SELECT SINGLE aname
+    FROM ztbfi0011
+    INTO ls_ztbfi0031-aname
+    WHERE acode = ls_ztbfi0031-acode.
+
+  ls_ztbfi0031-wrbtr = gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ).
+  ls_ztbfi0031-currency = 'KRW'.
+  ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+  ls_ztbfi0031-hwrbtr = gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ).
+  ls_ztbfi0031-currency_f = 'KRW'.
+
+  ls_ztbfi0031-stamp_date_f = sy-datum.
+  ls_ztbfi0031-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0031-stamp_user_f
+    WHERE logid = sy-uname.
+
+
+  INSERT ztbfi0031 FROM ls_ztbfi0031. """"""""!!!!!!!
+  APPEND ls_ztbfi0031 TO lt_ztbfi0031.
+
+<font color ="#0000FF">*  cl_demo_output=&gt;display( lt_ztbfi0031 ).</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form consp_CALC_PRICE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM consp_calc_price .
+
+  DATA : ls_ztbmm0070 TYPE ztbmm0070.
+
+  PERFORM consp_calc1.
+
+  LOOP AT gt_consp INTO gs_consp. " 반제품 만들떄 들어가는 총 돈 구할려고
+
+    SELECT SINGLE *
+      FROM ztbmm0070
+      INTO CORRESPONDING FIELDS OF ls_ztbmm0070
+      WHERE matcode = gs_consp-matcode.
+
+    gv_price_sum += gs_consp-consp * ( ls_ztbmm0070-infprice /  ls_ztbmm0070-infquant ). "100 안 곱했음
+
+  ENDLOOP.
+
+<font color ="#0000FF">*  cl_demo_output=&gt;display( gt_consp ).</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ZTBFI0030c</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ztbfi0030c .
+
+  DATA: lv_number TYPE char10.
+
+  DATA: ls_ztbfi0030 TYPE ztbfi0030,
+
+        lt_ztbfi0031 TYPE TABLE OF ztbfi0031,
+        ls_ztbfi0031 LIKE LINE OF lt_ztbfi0031,
+
+        ls_ztbmm0070 TYPE ztbmm0070.
+
+  DATA: BEGIN OF ls_rout.
+          include structure <a href ="ztbpp0060/dictionary-ztbpp0060.html">ztbpp0060</a>.
+  DATA:   matcode TYPE ztbpp0061-matcode,
+        END OF ls_rout.
+
+
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      nr_range_nr             = '01'
+      object                  = 'ZBBFI0030'
+<font color ="#0000FF">*     QUANTITY                = '1'</font>
+<font color ="#0000FF">*     SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*     TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*     IGNORE_BUFFER           = ' '</font>
+    IMPORTING
+      number                  = lv_number
+<font color ="#0000FF">*     QUANTITY                =</font>
+<font color ="#0000FF">*     RETURNCODE              =</font>
+    EXCEPTIONS
+      interval_not_found      = 1
+      number_range_not_intern = 2
+      object_not_found        = 3
+      quantity_is_0           = 4
+      quantity_is_not_1       = 5
+      interval_overflow       = 6
+      buffer_overflow         = 7
+      OTHERS                  = 8.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  SELECT SINGLE empid
+    FROM ztbsd1030 INTO ls_ztbfi0030-usnam
+    WHERE logid = sy-uname.
+
+  ls_ztbfi0030-belnr = lv_number.
+  ls_ztbfi0030-comcode = '1000'.
+  ls_ztbfi0030-gjahr = sy-datum+0(4).
+  ls_ztbfi0030-blart = 'WA'.
+  ls_ztbfi0030-budat = sy-datum.
+  ls_ztbfi0030-bktxt = '완제품 생산'.
+  ls_ztbfi0030-bldat = sy-datum.
+  ls_ztbfi0030-xblnr = gv_mm0041_docnum3.
+
+  ls_ztbfi0030-stamp_date_f = sy-datum.
+  ls_ztbfi0030-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0030-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0030 FROM ls_ztbfi0030.
+
+<font color ="#0000FF">********************************************************위까지 헤더</font>
+
+  PERFORM consp_calc_price.
+
+  READ TABLE gt_ztbpp0031 INTO gs_ztbpp0031 INDEX 1.
+  IF sy-subrc = 0.
+
+    SELECT SINGLE *
+     FROM ztbpp0060 AS a
+     INNER JOIN ztbpp0061 AS b
+     ON a~routid = b~routid
+     INTO CORRESPONDING FIELDS OF ls_rout
+     WHERE matcode = gs_ztbpp0031-matcode.
+
+  ENDIF.
+
+
+  ls_ztbfi0031-belnr = lv_number.
+  ls_ztbfi0031-buzei = 1 .
+  ls_ztbfi0031-shkzg = 'S'.
+  ls_ztbfi0031-acode = '50003'.
+  SELECT SINGLE aname
+    FROM ztbfi0011
+    INTO ls_ztbfi0031-aname
+    WHERE acode = ls_ztbfi0031-acode.
+
+  ls_ztbfi0031-wrbtr = gv_price_sum + ( gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ) ). "여기선 100을 곱함 MM에 DB 자체에 100이
+  ls_ztbfi0031-currency = 'KRW'.                                                                              " 곱해져 있어서
+  ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+  ls_ztbfi0031-hwrbtr = gv_price_sum + ( gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ) ).
+  ls_ztbfi0031-currency_f = 'KRW'.
+
+  APPEND ls_ztbfi0031 TO lt_ztbfi0031.
+
+  ls_ztbfi0031-stamp_date_f = sy-datum.
+  ls_ztbfi0031-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0031-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0031 FROM ls_ztbfi0031."""""""""""""""!!!!!!!!!!!
+
+  CLEAR ls_ztbfi0031.
+  ls_ztbfi0031-belnr = lv_number.
+  ls_ztbfi0031-buzei = 2 .
+  ls_ztbfi0031-shkzg = 'H'.
+  ls_ztbfi0031-acode = '10011'.
+  SELECT SINGLE aname
+    FROM ztbfi0011
+    INTO ls_ztbfi0031-aname
+    WHERE acode = ls_ztbfi0031-acode.
+
+  ls_ztbfi0031-wrbtr = gv_price_sum + ( gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ) ). "여기선 100을 곱함 MM에 DB 자체에 100이
+  ls_ztbfi0031-currency = 'KRW'.                                                                              " 곱해져 있어서
+  ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+  ls_ztbfi0031-hwrbtr = gv_price_sum + ( gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ) ).
+  ls_ztbfi0031-currency_f = 'KRW'.
+
+  APPEND ls_ztbfi0031 TO lt_ztbfi0031.
+
+  ls_ztbfi0031-stamp_date_f = sy-datum.
+  ls_ztbfi0031-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0031-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0031 FROM ls_ztbfi0031."""""""""""""!!!!!!!!!!
+
+  CLEAR ls_ztbfi0031.
+  ls_ztbfi0031-belnr = lv_number.
+  ls_ztbfi0031-buzei = 3 .
+  ls_ztbfi0031-shkzg = 'S'.
+  ls_ztbfi0031-acode = '50002'.
+  SELECT SINGLE aname
+    FROM ztbfi0011
+    INTO ls_ztbfi0031-aname
+    WHERE acode = ls_ztbfi0031-acode.
+
+  PERFORM calc_submat.
+
+  LOOP AT gt_submat INTO gs_submat.
+
+    gv_price_submat_sum += gs_submat-price.
+
+  ENDLOOP.
+
+  ls_ztbfi0031-wrbtr = gv_price_submat_sum.
+  ls_ztbfi0031-currency = 'KRW'.
+  ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+  ls_ztbfi0031-hwrbtr = gv_price_submat_sum.
+  ls_ztbfi0031-currency_f = 'KRW'.
+
+  APPEND ls_ztbfi0031 TO lt_ztbfi0031.
+
+  ls_ztbfi0031-stamp_date_f = sy-datum.
+  ls_ztbfi0031-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0031-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0031 FROM ls_ztbfi0031."""""""""""""!!!!!!!!!!
+  LOOP AT gt_submat INTO gs_submat.
+
+    CLEAR ls_ztbfi0031.
+    ls_ztbfi0031-belnr = lv_number.
+    ls_ztbfi0031-buzei = sy-tabix + 3 .
+    ls_ztbfi0031-shkzg = 'H'.
+    ls_ztbfi0031-acode = '10010'.
+    SELECT SINGLE aname
+      FROM ztbfi0011
+      INTO ls_ztbfi0031-aname
+      WHERE acode = ls_ztbfi0031-acode.
+
+    SELECT SINGLE *
+          FROM ztbmm0070
+          INTO CORRESPONDING FIELDS OF ls_ztbmm0070
+          WHERE matcode = gs_submat-matcode.
+
+    ls_ztbfi0031-bpcode = ls_ztbmm0070-bpcode.
+    ls_ztbfi0031-zterm = ls_ztbmm0070-zterm.
+    ls_ztbfi0031-wrbtr = gs_submat-price.
+    ls_ztbfi0031-currency = 'KRW'.
+    ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+    ls_ztbfi0031-hwrbtr = gs_submat-price.
+    ls_ztbfi0031-currency_f = 'KRW'.
+
+    APPEND ls_ztbfi0031 TO lt_ztbfi0031.
+
+    ls_ztbfi0031-stamp_date_f = sy-datum.
+  ls_ztbfi0031-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0031-stamp_user_f
+    WHERE logid = sy-uname.
+
+    INSERT ztbfi0031 FROM ls_ztbfi0031."""""""""""""!!!!!!!!!!
+
+  ENDLOOP.
+
+<font color ="#0000FF">*  cl_demo_output=&gt;display( lt_ztbfi0031 ).</font>
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form calc_submat</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM calc_submat .
+
+  DATA: lt_ztbmm0070  TYPE TABLE OF ztbmm0070,
+        ls_ztbmm0070  LIKE LINE OF lt_ztbmm0070,
+
+        ls_ztbpp00712 TYPE ztbpp0071,
+        lt_ztbpp00712 LIKE TABLE OF ls_ztbpp00712,
+
+        ls_ztbpp00702 TYPE ztbpp0070,
+        lt_ztbpp00702 LIKE TABLE OF ls_ztbpp00702.
+
+
+  LOOP AT gt_ztbpp0031 INTO gs_ztbpp0031 FROM 2 TO 4.
+
+    SELECT SINGLE *
+      FROM ztbpp0070
+      INTO CORRESPONDING FIELDS OF ls_ztbpp00702
+      WHERE matcode = gs_ztbpp0031-matcode.
+
+<font color ="#0000FF">*      APPEND ls_ztbpp0070 to lt_ztbpp0070.</font>
+
+<font color ="#0000FF">*      cl_demo_output=&gt;display( lt_ztbpp0070 ).</font>
+
+<font color ="#0000FF">*      LOOP AT lt_ztbpp0070 INTO ls_ztbpp0070.</font>
+
+    SELECT *
+      FROM ztbpp0071
+      INTO CORRESPONDING FIELDS OF TABLE lt_ztbpp00712
+      WHERE bomid = ls_ztbpp00702-bomid.
+
+    SORT lt_ztbpp00712 BY matcode DESCENDING. """""""""""""""""""""
+
+    LOOP AT lt_ztbpp00712 INTO ls_ztbpp00712 FROM 2 TO 3.
+
+
+      SELECT SINGLE *
+        FROM ztbmm0070
+        INTO CORRESPONDING FIELDS OF ls_ztbmm0070
+        WHERE matcode = ls_ztbpp00712-matcode.
+
+      gs_submat-matcode = ls_ztbpp00712-matcode.
+      gs_submat-price = gs_ztbpp0031-prdquan * ls_ztbpp00712-matquan * ( ls_ztbmm0070-infprice / ls_ztbmm0070-infquant ).
+
+      APPEND gs_submat TO gt_submat.
+
+    ENDLOOP.
+
+    SORT gt_submat BY matcode ASCENDING.
+
+<font color ="#0000FF">*           cl_demo_output=&gt;display( gt_submat ).</font>
+
+<font color ="#0000FF">*      ENDLOOP.</font>
+
+  ENDLOOP.
+
+<font color ="#0000FF">*  cl_demo_output=&gt;display( lt_ztbpp0071 ).</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ztbfi0030C2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ztbfi0030c2 .
+
+  DATA: lv_number TYPE char10.
+
+  DATA: ls_ztbfi0030 TYPE ztbfi0030,
+
+        lt_ztbfi0031 TYPE TABLE OF ztbfi0031,
+        ls_ztbfi0031 LIKE LINE OF lt_ztbfi0031.
+
+  DATA: BEGIN OF ls_rout.
+          include structure <a href ="ztbpp0060/dictionary-ztbpp0060.html">ztbpp0060</a>.
+  DATA:   matcode TYPE ztbpp0061-matcode,
+        END OF ls_rout.
+
+
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      nr_range_nr             = '01'
+      object                  = 'ZBBFI0030'
+<font color ="#0000FF">*     QUANTITY                = '1'</font>
+<font color ="#0000FF">*     SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*     TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*     IGNORE_BUFFER           = ' '</font>
+    IMPORTING
+      number                  = lv_number
+<font color ="#0000FF">*     QUANTITY                =</font>
+<font color ="#0000FF">*     RETURNCODE              =</font>
+    EXCEPTIONS
+      interval_not_found      = 1
+      number_range_not_intern = 2
+      object_not_found        = 3
+      quantity_is_0           = 4
+      quantity_is_not_1       = 5
+      interval_overflow       = 6
+      buffer_overflow         = 7
+      OTHERS                  = 8.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  SELECT SINGLE empid
+    FROM ztbsd1030 INTO ls_ztbfi0030-usnam
+    WHERE logid = sy-uname.
+
+  ls_ztbfi0030-belnr = lv_number.
+  ls_ztbfi0030-comcode = '1000'.
+  ls_ztbfi0030-gjahr = sy-datum+0(4).
+  ls_ztbfi0030-blart = 'SA'.
+  ls_ztbfi0030-budat = sy-datum.
+  ls_ztbfi0030-bktxt = '완제품 생산시 인건비 발생'.
+  ls_ztbfi0030-bldat = sy-datum.
+  ls_ztbfi0030-xblnr = gv_mm0041_docnum3.
+
+  ls_ztbfi0030-stamp_date_f = sy-datum.
+  ls_ztbfi0030-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0030-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0030 FROM ls_ztbfi0030. """"""""""""!!!!!!!!!!
+
+
+  LOOP AT gt_ztbpp0031 INTO gs_ztbpp0031 FROM 2 TO 4. "노무비 계산 routing에서 읽어서
+
+    SELECT SINGLE *
+     FROM ztbpp0060 AS a
+     INNER JOIN ztbpp0061 AS b
+     ON a~routid = b~routid
+     INTO CORRESPONDING FIELDS OF ls_rout
+     WHERE matcode = gs_ztbpp0031-matcode.
+
+    gv_price_pexp_sum += ( gs_ztbpp0031-prdquan * ( ls_rout-labcost / ls_rout-prdquan ) ).
+
+  ENDLOOP.
+
+
+  ls_ztbfi0031-belnr = lv_number.
+  ls_ztbfi0031-buzei = 1 .
+  ls_ztbfi0031-shkzg = 'S'.
+  ls_ztbfi0031-acode = '50004'.
+  SELECT SINGLE aname
+    FROM ztbfi0011
+    INTO ls_ztbfi0031-aname
+    WHERE acode = ls_ztbfi0031-acode.
+
+  ls_ztbfi0031-wrbtr = gv_price_pexp_sum.
+  ls_ztbfi0031-currency = 'KRW'.
+  ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+  ls_ztbfi0031-hwrbtr =  gv_price_pexp_sum.
+  ls_ztbfi0031-currency_f = 'KRW'.
+
+  ls_ztbfi0031-stamp_date_f = sy-datum.
+  ls_ztbfi0031-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0031-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0031 FROM ls_ztbfi0031. """"""""""""!!!!!!!!!!
+  APPEND ls_ztbfi0031 TO lt_ztbfi0031.
+
+  CLEAR ls_ztbfi0031.
+  ls_ztbfi0031-belnr = lv_number.
+  ls_ztbfi0031-buzei = 2 .
+  ls_ztbfi0031-shkzg = 'H'.
+  ls_ztbfi0031-acode = '20005'.
+  SELECT SINGLE aname
+    FROM ztbfi0011
+    INTO ls_ztbfi0031-aname
+    WHERE acode = ls_ztbfi0031-acode.
+
+  ls_ztbfi0031-wrbtr = gv_price_pexp_sum.
+  ls_ztbfi0031-currency = 'KRW'.
+  ls_ztbfi0031-ittxt = ls_ztbfi0030-bktxt.
+  ls_ztbfi0031-hwrbtr =  gv_price_pexp_sum.
+  ls_ztbfi0031-currency_f = 'KRW'.
+
+  ls_ztbfi0031-stamp_date_f = sy-datum.
+  ls_ztbfi0031-stamp_time_f = sy-uzeit.
+  SELECT SINGLE empid
+    FROM ZTBSD1030
+    INTO ls_ztbfi0031-stamp_user_f
+    WHERE logid = sy-uname.
+
+  INSERT ztbfi0031 FROM ls_ztbfi0031. """"""""""""!!!!!!!!!!
+  APPEND ls_ztbfi0031 TO lt_ztbfi0031.
+
+<font color ="#0000FF">*  cl_demo_output=&gt;display( lt_ztbfi0031 ).</font>
+
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_ztbpp0030pro1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_ztbpp0030pro1 .
+
+  SELECT *
+    FROM ztbpp0030
+    INTO CORRESPONDING FIELDS OF TABLE gt_ztbpp0030
+    WHERE status = '생산중'.
+
+  SORT gt_ztbpp0030 BY pordnum ASCENDING.
+
+  READ TABLE gt_ztbpp0030 INTO gs_ztbpp0030 INDEX 1.
+  IF sy-subrc = 0.
+
+    SELECT *
+      FROM ztbpp0031
+      INTO CORRESPONDING FIELDS OF TABLE gt_ztbpp0031
+      WHERE pordnum = gs_ztbpp0030-pordnum.
+
+  ENDIF.
+
+  SORT gt_ztbpp0031 BY pordnum ASCENDING mattype DESCENDING.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_ztbpp0030pro2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_ztbpp0030pro2 .
+
+  SELECT *
+  FROM ztbpp0030
+  INTO CORRESPONDING FIELDS OF TABLE gt_ztbpp0030
+  WHERE status = '생산완료'.
+
+  SORT gt_ztbpp0030 BY pordnum ASCENDING.
+
+  READ TABLE gt_ztbpp0030 INTO gs_ztbpp0030 INDEX 1.
+  IF sy-subrc = 0.
+
+    SELECT *
+      FROM ztbpp0031
+      INTO CORRESPONDING FIELDS OF TABLE gt_ztbpp0031
+      WHERE pordnum = gs_ztbpp0030-pordnum.
+
+  ENDIF.
+
+  SORT gt_ztbpp0031 BY pordnum ASCENDING mattype DESCENDING.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

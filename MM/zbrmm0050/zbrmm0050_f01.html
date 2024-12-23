@@ -1,0 +1,2489 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRMM0050_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRMM0050_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRMM0050_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRMM0050_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SELECT_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SELECT_DATA .
+  CLEAR GT_TREE.
+
+  SELECT FROM ZTBMM0040 AS A " 자재문서 HEADER
+    LEFT JOIN ZTBMM0041 AS B " 자재문서 ITEM
+           ON A~DOCYEAR = B~DOCYEAR " 자재문서 생성연도
+          AND A~DOCNUM  = B~DOCNUM  "자재문서번호
+         JOIN ZTBMM1010 AS C " 자재 마스터
+           ON B~MATCODE = C~MATCODE " 자재 번호
+         JOIN ZTBMM1020 AS D " 플랜트 마스터
+           ON A~PLTCODE = D~PLTCODE " 플랜트 코드
+         JOIN ZTBMM1011 AS E " 자재명 TEXT TABLE
+           ON C~MATCODE = E~MATCODE " 자재번호
+          AND E~SPRAS = @SY-LANGU " Language key
+       FIELDS A~DOCYEAR, A~PLTCODE, D~PLTNAME, C~MATTYPE, B~MATCODE, E~MATNAME
+   INTO TABLE @GT_TREE.
+
+  SORT GT_TREE BY DOCYEAR PLTCODE MATTYPE MATCODE.
+
+  DELETE ADJACENT DUPLICATES FROM GT_TREE COMPARING DOCYEAR PLTCODE MATTYPE MATCODE. " 트리에 중복된 값을 제거.
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_NODE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_NODE .
+<font color ="#0000FF">* NODE KEY LEVEL 관련 변수 선언.</font>
+  DATA: LV_NODE_KEY       TYPE N LENGTH 6, " 해당 노드 키 값.
+        LV_NODE_KEY_SUPER TYPE N LENGTH 6, " 부모 노드 키 값.
+        LT_NODE_KEY_LEVEL LIKE TABLE OF LV_NODE_KEY, " 부모 노드 키 값을 저장하는 ITAB.
+        LV_MATTYPE_NAME   TYPE STRING,
+        LV_PNAME          TYPE STRING.
+
+<font color ="#0000FF">* GT_TREE에 담은 데이터를 sorting.</font>
+  SORT GT_TREE BY DOCYEAR DESCENDING PLTCODE MATTYPE MATCODE.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& NODE 구현.</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">* ROOT NODE 1레벨.</font>
+  LV_NODE_KEY += 1.
+
+<font color ="#0000FF">* Node key 값 및 display 설정.</font>
+  CLEAR GS_NODE.
+  GS_NODE-RELATKEY = SPACE. " 최상위 Node 레벨은 부모 Node key 값 설정하지 않음.
+  GS_NODE-NODE_KEY = LV_NODE_KEY_SUPER = LV_NODE_KEY. " 부모 Node key 값 & Node key 값 설정.
+  GS_NODE-ISFOLDER = ABAP_ON. " Node를 Folder로 만들기.
+  GS_NODE-TEXT     = '자재문서 생성연도'. " Node 이름 설정.
+  GS_NODE-N_IMAGE = ICON_ALV_VARIANTS. " Node Image 설정.
+  GS_NODE-EXP_IMAGE = ICON_ALV_VARIANTS.  " Node Image 설정.
+  APPEND GS_NODE TO GT_NODE. " Node ITAB에 값 할당.
+  CLEAR GS_NODE. " CLEAR Node WA.
+
+<font color ="#0000FF">* 부모 Node key 값을 관리하는 ITAB에 값 할당.</font>
+  INSERT LV_NODE_KEY_SUPER INTO LT_NODE_KEY_LEVEL INDEX 1.
+
+<font color ="#0000FF">* Range 변수 ITAB 에 값 할당.</font>
+  CLEAR GS_NODE_INFO.
+  GS_NODE_INFO-NODE_KEY = LV_NODE_KEY.
+  APPEND GS_NODE_INFO TO GT_NODE_INFO.
+  CLEAR GS_NODE_INFO.
+
+<font color ="#0000FF">*--------------------------------------------------------------------*</font>
+<font color ="#0000FF">* AT NEW / ENDAT : LOOP문 안에서 사용되는 제어문.</font>
+<font color ="#0000FF">* AT NEW internal_table_field .</font>
+<font color ="#0000FF">* LOGIC Block.</font>
+<font color ="#0000FF">* ENDAT.</font>
+<font color ="#0000FF">* ITAB의 field 값이, 이전 행의 값과 다른 값이면 AT NEW ~ ENDAT 사이의 LOGIC Block을 수행.</font>
+<font color ="#0000FF">*--------------------------------------------------------------------*</font>
+<font color ="#0000FF">*--------------------------------------------------------------------*</font>
+<font color ="#0000FF">* AT END OF / ENDAT : LOOP문 안에서 사용되는 제어문.</font>
+<font color ="#0000FF">* AT END OF internal_table_field .</font>
+<font color ="#0000FF">* LOGIC Block.</font>
+<font color ="#0000FF">* ENDAT.</font>
+<font color ="#0000FF">* ITAB의 field 값이, 다음 행의 값과 다른 값이면 AT END OF ~ ENDAT 사이의 LOGIC Block을 수행.</font>
+<font color ="#0000FF">*--------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">* 자재유형에 따라서 text 할당.</font>
+  LOOP AT GT_TREE INTO GS_TREE.
+    CASE GS_TREE-MATTYPE.
+      WHEN 'M'.
+        LV_MATTYPE_NAME = '구매자재'.
+      WHEN 'S'.
+        LV_MATTYPE_NAME = '반제품'.
+      WHEN 'C'.
+        LV_MATTYPE_NAME = '완제품'.
+    ENDCASE.
+
+<font color ="#0000FF">* 플랜트코드에 따라서 text 할당.</font>
+    LV_PNAME = GS_TREE-PLTNAME.
+
+<font color ="#0000FF">* 자재문서 생성연도 값 변경 시.</font>
+    AT NEW DOCYEAR.
+
+      LV_NODE_KEY += 1. " Node key 값 증가.
+      GS_NODE-RELATKEY = LV_NODE_KEY_SUPER. " 부모 Node key 값 설정.
+      GS_NODE-NODE_KEY = LV_NODE_KEY_SUPER = LV_NODE_KEY. " 부모 Node key 값 & Node key 값 설정.
+      GS_NODE-ISFOLDER = ABAP_ON. " Node를 Folder로 만들기.
+      GS_NODE-TEXT     = |{ GS_TREE-DOCYEAR }|. " Node 이름 설정 -&gt; 연도 값을 동적으로 할당.
+      GS_NODE-RELATSHIP = CL_GUI_SIMPLE_TREE=&gt;RELAT_LAST_CHILD. " 현재 Node를 부모 Node의 최하위 순서에 생성.
+      GS_NODE-N_IMAGE = ICON_DATE. " Node Image 설정.
+      GS_NODE-EXP_IMAGE = ICON_DATE.  " Node Image 설정.
+      APPEND GS_NODE TO GT_NODE. " Node ITAB 에 값 할당.
+      CLEAR GS_NODE. " CLEAR Node WA.
+
+<font color ="#0000FF">*     부모 Node key 값을 관리하는 ITAB에 값 할당.</font>
+      INSERT LV_NODE_KEY_SUPER INTO LT_NODE_KEY_LEVEL INDEX 1.
+
+<font color ="#0000FF">*     Range 변수 ITAB 에 값 할당.</font>
+      GS_NODE_INFO-DOCYEAR = GS_TREE-DOCYEAR. " 현재 생성연도 값.
+      GS_NODE_INFO-PLTCODE = SPACE.
+      GS_NODE_INFO-MATTYPE = SPACE.
+      GS_NODE_INFO-MATCODE = SPACE.
+      GS_NODE_INFO-NODE_KEY = LV_NODE_KEY.
+      APPEND GS_NODE_INFO TO GT_NODE_INFO.
+      CLEAR GS_NODE_INFO.
+    ENDAT.
+
+<font color ="#0000FF">* 플랜트코드 값 변경 시.</font>
+    AT NEW PLTCODE.
+      IF GS_TREE-PLTCODE IS NOT INITIAL.
+
+        LV_NODE_KEY += 1.
+        GS_NODE-RELATKEY = LV_NODE_KEY_SUPER.
+        GS_NODE-NODE_KEY = LV_NODE_KEY_SUPER = LV_NODE_KEY.
+        GS_NODE-ISFOLDER = ABAP_ON.
+        GS_NODE-TEXT     = |{ GS_TREE-PLTCODE } - { LV_PNAME }|. " Node 이름 설정 -&gt; 플랜트명 값을 동적으로 할당.
+        GS_NODE-RELATSHIP = CL_GUI_SIMPLE_TREE=&gt;RELAT_LAST_CHILD.
+        GS_NODE-N_IMAGE = ICON_PLANT.
+        GS_NODE-EXP_IMAGE = ICON_PLANT.
+        APPEND GS_NODE TO GT_NODE.
+        CLEAR GS_NODE.
+
+        INSERT LV_NODE_KEY_SUPER INTO LT_NODE_KEY_LEVEL INDEX 1.
+
+        GS_NODE_INFO-DOCYEAR = GS_TREE-DOCYEAR.
+        GS_NODE_INFO-PLTCODE = GS_TREE-PLTCODE.
+        GS_NODE_INFO-MATTYPE = SPACE.
+        GS_NODE_INFO-MATCODE = SPACE.
+        GS_NODE_INFO-NODE_KEY = LV_NODE_KEY.
+        APPEND GS_NODE_INFO TO GT_NODE_INFO.
+        CLEAR GS_NODE_INFO.
+      ENDIF.
+    ENDAT.
+
+<font color ="#0000FF">* 자재유형 값 변경 시.</font>
+    AT NEW MATTYPE.
+      IF GS_TREE-MATTYPE IS NOT INITIAL.
+        LV_NODE_KEY += 1.
+        GS_NODE-RELATKEY = LV_NODE_KEY_SUPER.
+        GS_NODE-NODE_KEY = LV_NODE_KEY_SUPER = LV_NODE_KEY.
+        GS_NODE-ISFOLDER = ABAP_ON.
+        GS_NODE-TEXT     = |{ GS_TREE-MATTYPE } - { LV_MATTYPE_NAME }|. " Node 이름 설정 -&gt; 자재유형명 값을 동적으로 할당.
+        GS_NODE-RELATSHIP = CL_GUI_SIMPLE_TREE=&gt;RELAT_LAST_CHILD.
+        GS_NODE-N_IMAGE = ICON_BIW_VIRTUAL_INFO_PROV_INA.
+        GS_NODE-EXP_IMAGE = ICON_BIW_VIRTUAL_INFO_PROVIDER.
+        APPEND GS_NODE TO GT_NODE.
+        CLEAR GS_NODE.
+
+        INSERT LV_NODE_KEY_SUPER INTO LT_NODE_KEY_LEVEL INDEX 1.
+
+        GS_NODE_INFO-DOCYEAR = GS_TREE-DOCYEAR.
+        GS_NODE_INFO-PLTCODE = GS_TREE-PLTCODE.
+        GS_NODE_INFO-MATTYPE = GS_TREE-MATTYPE.
+        GS_NODE_INFO-MATCODE = SPACE.
+        GS_NODE_INFO-NODE_KEY = LV_NODE_KEY.
+        APPEND GS_NODE_INFO TO GT_NODE_INFO.
+        CLEAR GS_NODE_INFO.
+      ENDIF.
+    ENDAT.
+
+<font color ="#0000FF">*   자재번호 값이 존재할 때.</font>
+    IF GS_TREE-MATCODE IS NOT INITIAL.
+      LV_NODE_KEY += 1.
+      GS_NODE-RELATKEY = LV_NODE_KEY_SUPER.
+      GS_NODE-NODE_KEY = LV_NODE_KEY.
+      GS_NODE-ISFOLDER = ABAP_OFF. " NODE를 LEAF로 만들기.
+      GS_NODE-TEXT     = |{ GS_TREE-MATCODE } - { GS_TREE-MATNAME }|. " Node 이름 설정 -&gt; 자재번호 값을 동적으로 할당.
+      GS_NODE-RELATSHIP = CL_GUI_SIMPLE_TREE=&gt;RELAT_LAST_CHILD.
+      APPEND GS_NODE TO GT_NODE.
+      CLEAR GS_NODE.
+
+      GS_NODE_INFO-DOCYEAR = GS_TREE-DOCYEAR.
+      GS_NODE_INFO-PLTCODE = GS_TREE-PLTCODE.
+      GS_NODE_INFO-MATTYPE = GS_TREE-MATTYPE.
+      GS_NODE_INFO-MATCODE = GS_TREE-MATCODE.
+      GS_NODE_INFO-NODE_KEY = LV_NODE_KEY.
+      APPEND GS_NODE_INFO TO GT_NODE_INFO.
+      CLEAR GS_NODE_INFO.
+    ENDIF.
+
+<font color ="#0000FF">*   MATTYPE 값이 다음 행의 값과 다를 때, 현재 부모 Node key 값보다 한 level 더 큰 값으로 부모 Node key 값을 설정한다.</font>
+    AT END OF MATTYPE.
+      DELETE LT_NODE_KEY_LEVEL INDEX 1.
+      READ TABLE LT_NODE_KEY_LEVEL INTO LV_NODE_KEY_SUPER INDEX 1.
+    ENDAT.
+
+<font color ="#0000FF">*   PLTCODE 값이 다음 행의 값과 다를 때, 현재 부모 Node key 값보다 한 level 더 큰 값으로 부모 Node key 값을 설정한다.</font>
+    AT END OF PLTCODE.
+      DELETE LT_NODE_KEY_LEVEL INDEX 1.
+      READ TABLE LT_NODE_KEY_LEVEL INTO LV_NODE_KEY_SUPER INDEX 1.
+    ENDAT.
+
+<font color ="#0000FF">*   DOCYEAR 값이 다음 행의 값과 다를 때, 현재 부모 Node key 값보다 한 level 더 큰 값으로 부모 Node key 값을 설정한다.</font>
+    AT END OF DOCYEAR.
+      DELETE LT_NODE_KEY_LEVEL INDEX 1.
+      READ TABLE LT_NODE_KEY_LEVEL INTO LV_NODE_KEY_SUPER INDEX 1.
+    ENDAT.
+  ENDLOOP.
+
+<font color ="#0000FF">* GT_NODE 에 담긴 Node 정보들로 Tree Node 생성.</font>
+  CALL METHOD GO_TREE100-&gt;ADD_NODES
+    EXPORTING
+      TABLE_STRUCTURE_NAME           = 'MTREESNODE'
+      NODE_TABLE                     = GT_NODE
+    EXCEPTIONS
+      ERROR_IN_NODE_TABLE            = 1                " Node Table Contains Errors
+      FAILED                         = 2                " General error
+      DP_ERROR                       = 3                " Error in Data Provider
+      TABLE_STRUCTURE_NAME_NOT_FOUND = 4                " Unable to Find Structure in Dictionary
+      OTHERS                         = 5.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE S203 DISPLAY LIKE 'E'.
+  ENDIF.
+
+  CALL METHOD GO_TREE100-&gt;EXPAND_ROOT_NODES
+    EXPORTING
+      EXPAND_SUBTREE = ABAP_ON
+    EXCEPTIONS
+      OTHERS         = 4.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE S204 DISPLAY LIKE 'E'.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_TREE100_EVENT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_TREE100_EVENT .
+<font color ="#0000FF">* EVENT 변수 선언.</font>
+  DATA: LT_EVENT TYPE CNTL_SIMPLE_EVENTS,
+        LS_EVENT LIKE LINE OF LT_EVENT.
+
+<font color ="#0000FF">* 더블클릭 이벤트를 TREE ALV 에서 활성화 해주는 기능.</font>
+  CLEAR LS_EVENT.
+  LS_EVENT-APPL_EVENT = ABAP_ON.
+  LS_EVENT-EVENTID   = CL_GUI_SIMPLE_TREE=&gt;EVENTID_NODE_DOUBLE_CLICK.
+  APPEND LS_EVENT TO LT_EVENT.
+
+  CALL METHOD GO_TREE100-&gt;SET_REGISTERED_EVENTS
+    EXPORTING
+      EVENTS = LT_EVENT.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT_ALV100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT_ALV100 .
+  CLEAR GS_LAYO.
+
+  GS_LAYO-ZEBRA = 'X'. " 가독성을 위한 행 줄무늬 색 지정.
+  GS_LAYO-CWIDTH_OPT = 'A'. " 열 넓이 최적화 설정.
+  GS_LAYO-CTAB_FNAME = 'GT_COL'. " 특정 열 색 지정.
+  GS_LAYO-NO_TOTLINE = 'X'. " Total 행 display 하지 않음.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_EVENT_ALV100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_EVENT_ALV100 .
+<font color ="#0000FF">* Tree Node 더블 클릭 시 Range ITAB에서 해당 Node key 값에 해당하는 data 호출</font>
+  SET HANDLER LCL_EVENT_HANDLER=&gt;ON_NODE_DOUBLE_CLICK FOR GO_TREE100.
+
+<font color ="#0000FF">* ALV Hotspot Click Event</font>
+  SET HANDLER LCL_EVENT_HANDLER=&gt;ON_HOTSPOT_CLICK FOR GO_ALV100.
+
+<font color ="#0000FF">* ALV Toolbar 이벤트 핸들링을 위한 메소드 등록</font>
+  SET HANDLER LCL_EVENT_HANDLER=&gt;ON_TOOLBAR FOR GO_ALV100.
+
+<font color ="#0000FF">* ALV User-command 이벤트 핸들링을 위한 메소드 등록</font>
+  SET HANDLER LCL_EVENT_HANDLER=&gt;ON_USER_COMMAND FOR GO_ALV100.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ON_NODE_DOUBLE_CLICK</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Node 더블 클릭 시 해당 Node key 값에 대한 ALV data display 구현.</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; NODE_KEY</font>
+<font color ="#0000FF">*&      --&gt; SENDER</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ON_NODE_DOUBLE_CLICK  USING PV_NODE_KEY TYPE MTREESNODE-NODE_KEY.
+  DATA: LS_SCOL TYPE LVC_S_SCOL. " Cell 색 지정을 위한 변수
+
+  DATA : LV_CURR       LIKE ZTBMM0041-CURRENCY, " Currency 값 변수
+         LV_BEFORE_AMT LIKE BAPICURR-BAPICURR,  " DB 금액 값 변수
+         LV_AFTER_AMT  LIKE BAPICURR-BAPICURR.  " ALV display 금액 값 변수
+
+<font color ="#0000FF">* SELECT-OPTION RANGE 변수 선언.</font>
+  RANGES: RT_DOCYEAR FOR GS_NODE_INFO-DOCYEAR, " 자재문서 생성연도
+          RT_PLTCODE FOR GS_NODE_INFO-PLTCODE, " 플랜트 코드
+          RT_MATTYPE FOR GS_NODE_INFO-MATTYPE, " 자재 유형
+          RT_MATCODE FOR GS_NODE_INFO-MATCODE. " 자재 번호
+
+<font color ="#0000FF">* Node 더블 클릭 시, 현재 Range 변수 값 clear</font>
+  CLEAR: RT_DOCYEAR, RT_PLTCODE, RT_MATTYPE, RT_MATCODE.
+
+  READ TABLE GT_NODE_INFO INTO GS_NODE_INFO
+  WITH KEY NODE_KEY = PV_NODE_KEY.
+
+<font color ="#0000FF">* READ TABLE 결과가 정상일때.</font>
+  CHECK SY-SUBRC = 0.
+
+<font color ="#0000FF">* 각 Node Key 값에 해당하는 data들을 Range 변수로 설정.</font>
+<font color ="#0000FF">* 자재문서 생성연도</font>
+  IF GS_NODE_INFO-DOCYEAR IS NOT INITIAL.
+    RT_DOCYEAR-SIGN = 'I'.
+    RT_DOCYEAR-OPTION = 'EQ'.
+    RT_DOCYEAR-LOW = GS_NODE_INFO-DOCYEAR.
+    APPEND RT_DOCYEAR.
+  ENDIF.
+
+<font color ="#0000FF">* 플랜트코드</font>
+  IF GS_NODE_INFO-PLTCODE IS NOT INITIAL.
+    RT_PLTCODE-SIGN = 'I'.
+    RT_PLTCODE-OPTION = 'EQ'.
+    RT_PLTCODE-LOW = GS_NODE_INFO-PLTCODE.
+    APPEND RT_PLTCODE.
+  ENDIF.
+
+<font color ="#0000FF">* 자재유형</font>
+  IF GS_NODE_INFO-MATTYPE IS NOT INITIAL.
+    RT_MATTYPE-SIGN = 'I'.
+    RT_MATTYPE-OPTION = 'EQ'.
+    RT_MATTYPE-LOW = GS_NODE_INFO-MATTYPE.
+    APPEND RT_MATTYPE.
+  ENDIF.
+
+<font color ="#0000FF">* 자재번호</font>
+  IF GS_NODE_INFO-MATCODE IS NOT INITIAL.
+    RT_MATCODE-SIGN = 'I'.
+    RT_MATCODE-OPTION = 'EQ'.
+    RT_MATCODE-LOW = GS_NODE_INFO-MATCODE.
+    APPEND RT_MATCODE.
+  ENDIF.
+
+<font color ="#0000FF">* ALV ITAB에 Data 할당.</font>
+  SELECT FROM ZTBMM0040 AS A          " 자재문서 HEADER
+    LEFT JOIN ZTBMM0041 AS B          " 자재문서 ITEM
+           ON A~DOCNUM EQ B~DOCNUM    " 자재문서번호.
+         JOIN ZTBMM1020  AS C         " PLANT 마스터.
+           ON A~PLTCODE EQ C~PLTCODE  " 플랜트 코드.
+         JOIN ZTBMM1010 AS D          " 자재 마스터.
+           ON B~MATCODE EQ D~MATCODE  " 자재 번호.
+         JOIN ZTBMM1011 AS E          " 자재 TEXT TABLE.
+           ON D~MATCODE EQ E~MATCODE  " 자재 번호.
+          AND E~SPRAS EQ @SY-LANGU    " 언어 키.
+    FIELDS *
+    WHERE A~DOCYEAR IN @RT_DOCYEAR    " 생성연도
+      AND C~PLTCODE IN @RT_PLTCODE    " 플랜트코드
+      AND B~MATTYPE IN @RT_MATTYPE    " 자재유형
+      AND B~MATCODE IN @RT_MATCODE    " 자재번호
+    ORDER BY A~DOCYEAR DESCENDING, A~DOCNUM DESCENDING, B~MATCODE ASCENDING " Data Sorting
+    INTO CORRESPONDING FIELDS OF TABLE @GT_DISPLAY.
+
+<font color ="#0000FF">* 입고건 & 출고건에 대해서 Cell 색깔 지정.</font>
+  LOOP AT GT_DISPLAY INTO GS_DISPLAY.
+    CLEAR LS_SCOL.
+    CASE GS_DISPLAY-MVCODE.
+      WHEN 'MV01' OR 'MV03' OR 'MV04' .
+        LS_SCOL-FNAME = 'MVPRICE'.
+        LS_SCOL-COLOR-COL = '5'.
+        LS_SCOL-COLOR-INT = '0'.
+        LS_SCOL-COLOR-INV = '0'.
+        APPEND LS_SCOL TO GS_DISPLAY-GT_COL.
+      WHEN 'MV02' OR 'MV05'.
+        LS_SCOL-FNAME = 'MVPRICE'.
+        LS_SCOL-COLOR-COL = '6'.
+        LS_SCOL-COLOR-INT = '0'.
+        LS_SCOL-COLOR-INV = '0'.
+        APPEND LS_SCOL TO GS_DISPLAY-GT_COL.
+    ENDCASE.
+
+<font color ="#0000FF">* 화폐단위가 'KRW'일 때, 단위 오류 해결을 위한 BAPI FM 호출.</font>
+    LV_BEFORE_AMT = GS_DISPLAY-MVPRICE.
+    LV_CURR = GS_DISPLAY-CURRENCY.
+
+    CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'
+      EXPORTING
+        AMOUNT_EXTERNAL      = LV_BEFORE_AMT
+        CURRENCY             = LV_CURR
+        MAX_NUMBER_OF_DIGITS = 21  "출력할 금액필드의 자릿수"
+      IMPORTING
+        AMOUNT_INTERNAL      = LV_AFTER_AMT.
+
+    GS_DISPLAY-MVPRICE = LV_AFTER_AMT.
+
+    MODIFY GT_DISPLAY FROM GS_DISPLAY.
+    CLEAR: LV_BEFORE_AMT, LV_CURR, LV_AFTER_AMT.
+  ENDLOOP.
+
+<font color ="#0000FF">* ALV Refresh</font>
+  PERFORM REFRESH_ALV_DISPLAY.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form INIT_ALV100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM INIT_ALV100 .
+<font color ="#0000FF">* ALV DISPLAY.</font>
+  GS_VARIANT-REPORT = SY-CPROG.
+<font color ="#0000FF">*  GS_VARIANT-VARIANT = '/ALV100'.</font>
+
+  GO_ALV100-&gt;SET_TABLE_FOR_FIRST_DISPLAY(
+    EXPORTING
+      I_STRUCTURE_NAME              = 'ZSBMM0040'
+      IS_VARIANT                    = GS_VARIANT  " Layout
+      I_SAVE                        = 'A'     " Save Layout
+<font color ="#0000FF">*      I_DEFAULT                     = 'X'     " Default Display Variant</font>
+      IS_LAYOUT                     = GS_LAYO " Layout
+    CHANGING
+      IT_OUTTAB                     = GT_DISPLAY  " Output ITAB
+      IT_FIELDCATALOG               = GT_FCAT " Field Catalog
+      IT_SORT                       = GT_SORT " SORT
+    EXCEPTIONS
+      OTHERS                        = 1
+).
+  IF SY-SUBRC NE 0.
+    MESSAGE S205 DISPLAY LIKE 'E'.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form REFRESH_ALV_DISPLAY</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM REFRESH_ALV_DISPLAY .
+  GO_ALV100-&gt;REFRESH_TABLE_DISPLAY(
+    EXCEPTIONS
+      FINISHED       = 1                " Display was Ended (by Export)
+      OTHERS         = 2 ).
+  IF SY-SUBRC NE 0.
+    MESSAGE S205.
+  ENDIF.
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_FIELDCAT_ALV100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; GT_DISPLAY</font>
+<font color ="#0000FF">*&      --&gt; GT_FCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_FIELDCAT_ALV100  USING    PT_DISPLAY
+                                   PT_FCAT.
+  TRY.
+      CALL METHOD CL_SALV_TABLE=&gt;FACTORY
+        IMPORTING
+          R_SALV_TABLE = DATA(LO_SALV_TABLE)
+        CHANGING
+          T_TABLE      = PT_DISPLAY.
+
+      DATA(LO_COLUMNS)      = LO_SALV_TABLE-&gt;GET_COLUMNS( ).
+      DATA(LO_AGGREGATIONS) = LO_SALV_TABLE-&gt;GET_AGGREGATIONS( ).
+
+      PT_FCAT = CL_SALV_CONTROLLER_METADATA=&gt;GET_LVC_FIELDCATALOG(
+                  R_COLUMNS = LO_COLUMNS
+                  R_AGGREGATIONS = LO_AGGREGATIONS ).
+
+    CATCH CX_SALV_MSG.
+  ENDTRY.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FIELDCAT_ALV100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FIELDCAT_ALV100 .
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'DOCYEAR'.
+  GS_FCAT-JUST = 'C'.
+  GS_FCAT-KEY = ABAP_ON.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'DOCNUM'.
+  GS_FCAT-JUST = 'C'.
+  GS_FCAT-HOTSPOT = 'X'.
+  GS_FCAT-KEY = ABAP_ON.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'DOCDATE'.
+  GS_FCAT-JUST = 'C'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'PLTCODE'.
+  GS_FCAT-JUST = 'C'.
+  GS_FCAT-HOTSPOT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'MVCODE'.
+  GS_FCAT-JUST = 'C'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'MATTYPE'.
+  GS_FCAT-JUST = 'C'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'MATCODE'.
+  GS_FCAT-JUST = 'C'.
+  GS_FCAT-HOTSPOT = 'X'.
+  GS_FCAT-KEY = ABAP_ON.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'MATNAME'.
+  GS_FCAT-JUST = 'C'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'MVQUANT'.
+  GS_FCAT-JUST = 'R'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'UNITCODE'.
+  GS_FCAT-JUST = 'L'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'MVPRICE'.
+  GS_FCAT-JUST = 'R'.
+  GS_FCAT-DO_SUM = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'CURRENCY'.
+  GS_FCAT-JUST = 'L'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'PONUM'.
+  GS_FCAT-JUST = 'C'.
+  GS_FCAT-HOTSPOT = 'X'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'PORDNUM'.
+  GS_FCAT-JUST = 'C'.
+  GS_FCAT-HOTSPOT = 'X'.
+  GS_FCAT-COLTEXT = '생산오더번호'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+  GS_FCAT-FIELDNAME = 'SONUM'.
+  GS_FCAT-JUST = 'C'.
+  GS_FCAT-HOTSPOT = 'X'.
+  GS_FCAT-COLTEXT = '판매오더번호'.
+  APPEND GS_FCAT TO GT_FCAT.
+  CLEAR GS_FCAT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_SORT_ALV100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_SORT_ALV100 .
+  DATA: LS_SORT TYPE LVC_S_SORT.
+
+  LS_SORT-FIELDNAME = 'DOCYEAR'.
+  LS_SORT-UP = 'X'.
+  APPEND LS_SORT TO GT_SORT.
+  CLEAR LS_SORT.
+
+  LS_SORT-FIELDNAME = 'DOCNUM'.
+  LS_SORT-UP = 'X'.
+  LS_SORT-SUBTOT = 'X'.
+  APPEND LS_SORT TO GT_SORT.
+  CLEAR LS_SORT.
+
+  LS_SORT-FIELDNAME = 'DOCDATE'.
+  LS_SORT-UP = 'X'.
+  APPEND LS_SORT TO GT_SORT.
+  CLEAR LS_SORT.
+
+  LS_SORT-FIELDNAME = 'PLTCODE'.
+  LS_SORT-UP = 'X'.
+  APPEND LS_SORT TO GT_SORT.
+  CLEAR LS_SORT.
+
+  LS_SORT-FIELDNAME = 'MVCODE'.
+  LS_SORT-UP = 'X'.
+  APPEND LS_SORT TO GT_SORT.
+  CLEAR LS_SORT.
+
+  LS_SORT-FIELDNAME = 'PONUM'.
+  LS_SORT-UP = 'X'.
+  APPEND LS_SORT TO GT_SORT.
+  CLEAR LS_SORT.
+
+  LS_SORT-FIELDNAME = 'PORDNUM'.
+  LS_SORT-UP = 'X'.
+  APPEND LS_SORT TO GT_SORT.
+  CLEAR LS_SORT.
+
+  LS_SORT-FIELDNAME = 'SONUM'.
+  LS_SORT-UP = 'X'.
+  APPEND LS_SORT TO GT_SORT.
+  CLEAR LS_SORT.
+
+  LS_SORT-FIELDNAME = 'MATCODE'.
+  LS_SORT-UP = 'X'.
+  APPEND LS_SORT TO GT_SORT.
+  CLEAR LS_SORT.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form HANDLE_TOOLBAR</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; E_OBJECT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM HANDLE_TOOLBAR  USING PV_OBJECT TYPE REF TO CL_ALV_EVENT_TOOLBAR_SET.
+  DATA LS_BUTTON LIKE LINE OF PV_OBJECT-&gt;MT_TOOLBAR.
+
+<font color ="#0000FF">* 구분자 추가.</font>
+  CLEAR LS_BUTTON.
+  LS_BUTTON-BUTN_TYPE = 3.
+  APPEND LS_BUTTON TO PV_OBJECT-&gt;MT_TOOLBAR.
+
+<font color ="#0000FF">* 각 버튼의 개수를 담을 변수.</font>
+  DATA LV_COUNT TYPE I. " 전체.
+  DATA LV_COUNT_MV01 TYPE I. " 구매오더 자재 입고.
+  DATA LV_COUNT_MV02 TYPE I. " 생산오더 자재 출고.
+  DATA LV_COUNT_MV03 TYPE I. " 생산오더 자재 입고.
+  DATA LV_COUNT_MV04 TYPE I. " 생산오더 완제품 입고.
+  DATA LV_COUNT_MV05 TYPE I. " 생산오더 완제품 출고.
+
+<font color ="#0000FF">* 자재문서 HEADER 기준으로 개수 COUNT.</font>
+  LOOP AT GT_DISPLAY INTO GS_DISPLAY.
+    AT NEW DOCNUM.
+      ADD 1 TO LV_COUNT.
+    ENDAT.
+
+    CASE GS_DISPLAY-MVCODE.
+      WHEN 'MV01'.
+        AT NEW DOCNUM.
+          ADD 1 TO LV_COUNT_MV01.
+        ENDAT.
+      WHEN 'MV02'.
+        AT NEW DOCNUM.
+          ADD 1 TO LV_COUNT_MV02.
+        ENDAT.
+      WHEN 'MV03'.
+        AT NEW DOCNUM.
+          ADD 1 TO LV_COUNT_MV03.
+        ENDAT.
+      WHEN 'MV04'.
+        AT NEW DOCNUM.
+          ADD 1 TO LV_COUNT_MV04.
+        ENDAT.
+      WHEN 'MV05'.
+        AT NEW DOCNUM.
+          ADD 1 TO LV_COUNT_MV05.
+        ENDAT.
+    ENDCASE.
+  ENDLOOP.
+
+<font color ="#0000FF">* 버튼 '전체 : ##' 추가.</font>
+  LS_BUTTON-BUTN_TYPE = 0. " 일반 버튼(NORMAL BUTTON)
+  LS_BUTTON-TEXT      = ' 전체: ' && LV_COUNT.
+  LS_BUTTON-FUNCTION  = 'FILTER_TOTAL'.
+  APPEND LS_BUTTON TO PV_OBJECT-&gt;MT_TOOLBAR.
+  CLEAR LS_BUTTON.
+
+<font color ="#0000FF">* 버튼 '구매오더 자재 입고 : ##' 추가.</font>
+  LS_BUTTON-BUTN_TYPE = 0. " 일반 버튼(NORMAL BUTTON)
+  LS_BUTTON-TEXT      = ' 구매 자재입고 : ' && LV_COUNT_MV01.
+  LS_BUTTON-FUNCTION  = 'FILTER_MV01'.
+  APPEND LS_BUTTON TO PV_OBJECT-&gt;MT_TOOLBAR.
+  CLEAR LS_BUTTON.
+
+<font color ="#0000FF">* 버튼 '생산오더 자재 출고 : ##' 추가.</font>
+  LS_BUTTON-BUTN_TYPE = 0. " 일반 버튼(NORMAL BUTTON)
+  LS_BUTTON-TEXT      = ' 생산 자재출고 : ' && LV_COUNT_MV02.
+  LS_BUTTON-FUNCTION  = 'FILTER_MV02'.
+  APPEND LS_BUTTON TO PV_OBJECT-&gt;MT_TOOLBAR.
+  CLEAR LS_BUTTON.
+
+<font color ="#0000FF">* 버튼 '생산오더 자재 입고 : ##' 추가.</font>
+  LS_BUTTON-BUTN_TYPE = 0. " 일반 버튼(NORMAL BUTTON)
+  LS_BUTTON-TEXT      = ' 생산 자재입고 : ' && LV_COUNT_MV03.
+  LS_BUTTON-FUNCTION  = 'FILTER_MV03'.
+  APPEND LS_BUTTON TO PV_OBJECT-&gt;MT_TOOLBAR.
+  CLEAR LS_BUTTON.
+
+<font color ="#0000FF">* 버튼 '생산오더 완제품 입고 : ##' 추가.</font>
+  LS_BUTTON-BUTN_TYPE = 0. " 일반 버튼(NORMAL BUTTON)
+  LS_BUTTON-TEXT      = ' 생산 완제품입고 : ' && LV_COUNT_MV04.
+  LS_BUTTON-FUNCTION  = 'FILTER_MV04'.
+  APPEND LS_BUTTON TO PV_OBJECT-&gt;MT_TOOLBAR.
+  CLEAR LS_BUTTON.
+
+<font color ="#0000FF">* 버튼 '생산오더 완제품 출고 : ##' 추가.</font>
+  LS_BUTTON-BUTN_TYPE = 0. " 일반 버튼(NORMAL BUTTON)
+  LS_BUTTON-TEXT      = ' 판매 완제품출고 : ' && LV_COUNT_MV05.
+  LS_BUTTON-FUNCTION  = 'FILTER_MV05'.
+  APPEND LS_BUTTON TO PV_OBJECT-&gt;MT_TOOLBAR.
+  CLEAR LS_BUTTON.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form HANDLE_USER_COMMAND</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; E_UCOMM</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM HANDLE_USER_COMMAND  USING    PV_UCOMM LIKE SY-UCOMM.
+  CASE PV_UCOMM.
+      " 각 버튼 마다 FILTERING.
+    WHEN 'FILTER_TOTAL'.
+      PERFORM APPLY_FILTER USING SPACE.
+
+    WHEN 'FILTER_MV01'.
+      PERFORM APPLY_FILTER USING 'MV01'.
+
+    WHEN 'FILTER_MV02'.
+      PERFORM APPLY_FILTER USING 'MV02'.
+
+    WHEN 'FILTER_MV03'.
+      PERFORM APPLY_FILTER USING 'MV03'.
+
+    WHEN 'FILTER_MV04'.
+      PERFORM APPLY_FILTER USING 'MV04'.
+
+    WHEN 'FILTER_MV05'.
+      PERFORM APPLY_FILTER USING 'MV05'.
+
+  ENDCASE.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form APPLY_FILTER</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; SPACE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM APPLY_FILTER  USING    PV_VALUE.
+  DATA: LT_FILTER TYPE LVC_T_FILT,
+        LS_FILTER LIKE LINE OF LT_FILTER.
+
+  IF PV_VALUE IS NOT INITIAL.
+    CLEAR LS_FILTER.
+    LS_FILTER-FIELDNAME = 'MVCODE'.
+    LS_FILTER-SIGN      = 'I'.
+    LS_FILTER-OPTION    = 'EQ'.
+    LS_FILTER-LOW       = PV_VALUE.
+    APPEND LS_FILTER TO LT_FILTER.
+  ENDIF.
+
+<font color ="#0000FF">* 필터 기준 설정.</font>
+  CALL METHOD GO_ALV100-&gt;SET_FILTER_CRITERIA
+    EXPORTING
+      IT_FILTER = LT_FILTER.         " FILTER CONDITIONS
+
+  CALL METHOD GO_ALV100-&gt;REFRESH_TABLE_DISPLAY.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DIALOG_DOC</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM DIALOG_DOC .
+  CLEAR: GT_DISPLAY200, GS_DISPLAY200.
+
+<font color ="#0000FF">* DIALOG ALV 스크린 호출.</font>
+  IF GS_DISPLAY-DOCNUM IS INITIAL.
+    MESSAGE S224 DISPLAY LIKE 'E'.
+  ELSE.
+    PERFORM SET_BUTTON. " '이전', '다음' 버튼 활성화/비활성화.
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJECT_200</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_OBJECT_200 .
+
+  CREATE OBJECT GO_CUST200
+    EXPORTING
+      CONTAINER_NAME              = 'AREA200'
+    EXCEPTIONS
+      CNTL_ERROR                  = 1
+      CNTL_SYSTEM_ERROR           = 2
+      CREATE_ERROR                = 3
+      LIFETIME_ERROR              = 4
+      LIFETIME_DYNPRO_DYNPRO_LINK = 5
+      OTHERS                      = 6.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  CREATE OBJECT GO_ALV200
+    EXPORTING
+      I_PARENT          = GO_CUST200
+    EXCEPTIONS
+      ERROR_CNTL_CREATE = 1
+      ERROR_CNTL_INIT   = 2
+      ERROR_CNTL_LINK   = 3
+      ERROR_DP_CREATE   = 4
+      OTHERS            = 5.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA_ALV200</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_DATA_ALV200 .
+  DATA : LV_CURR       LIKE ZTBMM0041-CURRENCY, " Currency 값 변수
+         LV_BEFORE_AMT LIKE BAPICURR-BAPICURR,  " DB 금액 값 변수
+         LV_AFTER_AMT  LIKE BAPICURR-BAPICURR.  " ALV display 금액 값 변수
+
+  CLEAR: ZTBMM0040.
+
+<font color ="#0000FF">* 팝업창의 '자재문서번호', '생성연도' 필드 값에 현재 선택한 자재문서의 값 할당.</font>
+  MOVE-CORRESPONDING GS_DISPLAY TO GS_DISPLAY200.
+  MOVE-CORRESPONDING GS_DISPLAY200 TO ZTBMM0040.
+
+<font color ="#0000FF">* ALV200 ITAB에 DATA 할당.</font>
+  SELECT FROM ZTBMM0040 AS A        " 자재문서 HEADER
+    LEFT JOIN ZTBMM0041 AS B        " 자재문서 ITEM
+           ON A~DOCNUM EQ B~DOCNUM  " 자재문서번호.
+         JOIN ZTBMM1020  AS C       " PLANT 마스터.
+           ON A~PLTCODE EQ C~PLTCODE" 플랜트 코드.
+         JOIN ZTBMM1010 AS D        " 자재 마스터.
+           ON B~MATCODE EQ D~MATCODE" 자재 번호.
+         JOIN ZTBMM1011 AS E        " 자재 TEXT TABLE.
+           ON D~MATCODE EQ E~MATCODE" 자재 번호.
+          AND E~SPRAS EQ @SY-LANGU  " 언어 키.
+    FIELDS *
+    WHERE A~DOCNUM = @GS_DISPLAY200-DOCNUM
+     INTO CORRESPONDING FIELDS OF TABLE @GT_DISPLAY200.
+
+  SORT GT_DISPLAY200 BY DOCYEAR DOCNUM MATCODE.
+
+<font color ="#0000FF">* 'KRW' 화폐단위의 표기 오류 수정을 위한 BAPI FM 호출.</font>
+  LOOP AT GT_DISPLAY200 INTO GS_DISPLAY200.
+    LV_BEFORE_AMT = GS_DISPLAY200-MVPRICE.
+    LV_CURR = GS_DISPLAY200-CURRENCY.
+
+    CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'
+      EXPORTING
+        AMOUNT_EXTERNAL      = LV_BEFORE_AMT
+        CURRENCY             = LV_CURR
+        MAX_NUMBER_OF_DIGITS = 21  "출력할 금액필드의 자릿수"
+      IMPORTING
+        AMOUNT_INTERNAL      = LV_AFTER_AMT.
+
+    GS_DISPLAY200-MVPRICE = LV_AFTER_AMT.
+
+    MODIFY GT_DISPLAY200 FROM GS_DISPLAY200.
+  ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form INIT_ALV200</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM INIT_ALV200 .
+<font color ="#0000FF">* DIALOG ALV TOOLBAR HIDDEN 처리.</font>
+  DATA: LS_EXCLUD TYPE UI_FUNC,
+        LT_EXCLUD TYPE UI_FUNCTIONS.
+
+  LS_EXCLUD = CL_GUI_ALV_GRID=&gt;MC_FC_EXCL_ALL.
+  APPEND LS_EXCLUD TO LT_EXCLUD.
+
+  GS_VARIANT-REPORT = SY-CPROG.
+  GS_VARIANT-VARIANT = '/ALV200'.
+
+<font color ="#0000FF">* DIALOG ALV DISPLAY.</font>
+  CALL METHOD GO_ALV200-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+      I_STRUCTURE_NAME              = 'ZSBMM0040'
+      IS_VARIANT                    = GS_VARIANT
+      I_SAVE                        = 'A'
+<font color ="#0000FF">*     I_DEFAULT                     = 'X'</font>
+      IS_LAYOUT                     = GS_LAYO200
+<font color ="#0000FF">*     IT_TOOLBAR_EXCLUDING          = LT_EXCLUD</font>
+    CHANGING
+      IT_OUTTAB                     = GT_DISPLAY200
+      IT_FIELDCATALOG               = GT_FCAT200
+<font color ="#0000FF">*     IT_SORT                       = GT_SORT200</font>
+<font color ="#0000FF">*     IT_FILTER                     =</font>
+    EXCEPTIONS
+      INVALID_PARAMETER_COMBINATION = 1
+      PROGRAM_ERROR                 = 2
+      TOO_MANY_LINES                = 3
+      OTHERS                        = 4.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE S205 DISPLAY LIKE 'E'.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT200</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT200 .
+  CLEAR GS_LAYO200.
+
+  GS_LAYO200-ZEBRA = 'X'.
+  GS_LAYO200-CWIDTH_OPT = 'A'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FIELDCAT_ALV200</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FIELDCAT_ALV200 .
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'DOCYEAR'.
+  GS_FCAT200-JUST = 'C'.
+  GS_FCAT200-NO_OUT = 'X'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'DOCNUM'.
+  GS_FCAT200-JUST = 'C'.
+  GS_FCAT200-NO_OUT = 'X'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'DOCDATE'.
+  GS_FCAT200-JUST = 'C'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'PLTCODE'.
+  GS_FCAT200-JUST = 'C'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'MVCODE'.
+  GS_FCAT200-JUST = 'C'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'MATTYPE'.
+  GS_FCAT200-JUST = 'C'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'MATCODE'.
+  GS_FCAT200-JUST = 'C'.
+  GS_FCAT200-COL_POS = 1.
+  GS_FCAT200-KEY = 'X'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'MATNAME'.
+  GS_FCAT200-JUST = 'C'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'MVQUANT'.
+  GS_FCAT200-JUST = 'R'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'UNITCODE'.
+  GS_FCAT200-JUST = 'L'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'MVPRICE'.
+  GS_FCAT200-JUST = 'R'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'CURRENCY'.
+  GS_FCAT200-JUST = 'L'.
+  GS_FCAT200-OUTPUTLEN = 50.
+  GS_FCAT200-DO_SUM = 'X'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'PONUM'.
+  GS_FCAT200-JUST = 'C'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'PORDNUM'.
+  GS_FCAT200-JUST = 'C'.
+  GS_FCAT200-COLTEXT = '생산오더번호'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+
+  GS_FCAT200-FIELDNAME = 'SONUM'.
+  GS_FCAT200-JUST = 'C'.
+  GS_FCAT200-COLTEXT = '판매오더번호'.
+  APPEND GS_FCAT200 TO GT_FCAT200.
+  CLEAR GS_FCAT200.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form REFRESH_ALV200</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM REFRESH_ALV200 .
+  DATA: LS_STABLE TYPE LVC_S_STBL.
+
+  CALL METHOD GO_ALV200-&gt;GET_FRONTEND_LAYOUT
+    IMPORTING
+      ES_LAYOUT = GS_LAYO200.
+
+  GS_LAYO200-CWIDTH_OPT = ABAP_ON.
+
+  CALL METHOD GO_ALV200-&gt;SET_FRONTEND_LAYOUT
+    EXPORTING
+      IS_LAYOUT = GS_LAYO200.
+
+  CALL METHOD GO_ALV200-&gt;REFRESH_TABLE_DISPLAY
+    EXPORTING
+      IS_STABLE = LS_STABLE.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DIALOG_PLT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM DIALOG_PLT .
+  IF GS_DISPLAY-PLTCODE IS INITIAL.
+    MESSAGE S225 DISPLAY LIKE 'E'.
+  ELSE.
+    CALL SCREEN 110
+    STARTING AT 20 8.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_PLT_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_PLT_DATA .
+  SELECT SINGLE *
+    FROM ZTBMM1020
+   WHERE PLTCODE = GS_DISPLAY-PLTCODE.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_PO_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_PO_DATA .
+  " ZSBMM0020  구매오더 STRUCTURE
+  " ZTBMM0020  구매오더 header
+  " ZTBMM0021  구매오더 item
+  " ZTBSD1050  BP 마스터.
+  " ZTBMM1020  플랜트 마스터.
+
+  SELECT *
+         FROM ZTBMM0020 AS A
+    LEFT JOIN ZTBMM0021 AS B
+           ON A~PONUM = B~PONUM
+        WHERE A~PONUM = @GS_DISPLAY-PONUM
+         INTO CORRESPONDING FIELDS OF TABLE @GT_DISPLAY120.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DIALOG_PO</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM DIALOG_PO .
+  CLEAR: GT_DISPLAY120, GS_DISPLAY120.
+
+  IF GS_DISPLAY-PONUM IS INITIAL.
+    MESSAGE S226 DISPLAY LIKE 'E'.
+  ELSE.
+    CALL SCREEN 120
+    STARTING AT 20 8.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJECT_120</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_OBJECT_120 .
+  CREATE OBJECT GO_CUST120
+    EXPORTING
+      CONTAINER_NAME              = 'AREA120'
+    EXCEPTIONS
+      CNTL_ERROR                  = 1
+      CNTL_SYSTEM_ERROR           = 2
+      CREATE_ERROR                = 3
+      LIFETIME_ERROR              = 4
+      LIFETIME_DYNPRO_DYNPRO_LINK = 5
+      OTHERS                      = 6.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  CREATE OBJECT GO_ALV120
+    EXPORTING
+      I_PARENT          = GO_CUST120
+    EXCEPTIONS
+      ERROR_CNTL_CREATE = 1
+      ERROR_CNTL_INIT   = 2
+      ERROR_CNTL_LINK   = 3
+      ERROR_DP_CREATE   = 4
+      OTHERS            = 5.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT120</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT120 .
+  CLEAR GS_LAYO120.
+
+  GS_LAYO120-ZEBRA = 'X'.
+  GS_LAYO120-CWIDTH_OPT = 'A'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FIELDCAT_ALV120</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FIELDCAT_ALV120 .
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'PONUM'.
+  GS_FCAT120-JUST = 'C'.
+  GS_FCAT120-KEY  = 'X'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'PRNUM'.
+  GS_FCAT120-JUST = 'C'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'BPCODE'.
+  GS_FCAT120-JUST = 'C'.
+  GS_FCAT120-COLTEXT = '거래처 코드'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'PLTCODE'.
+  GS_FCAT120-JUST = 'C'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'PODATE'.
+  GS_FCAT120-JUST = 'C'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'INBODATE'.
+  GS_FCAT120-JUST = 'C'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'EMPID'.
+  GS_FCAT120-JUST = 'C'.
+  GS_FCAT120-COLTEXT = '구매오더 담당자'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'STATUS'.
+  GS_FCAT120-JUST = 'C'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'MATCODE'.
+  GS_FCAT120-JUST = 'C'.
+  GS_FCAT120-KEY = 'X'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'POQUANT'.
+  GS_FCAT120-JUST = 'R'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'UNITCODE'.
+  GS_FCAT120-JUST = 'L'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'POPRICE'.
+  GS_FCAT120-JUST = 'R'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+  GS_FCAT120-FIELDNAME = 'CURRENCY'.
+  GS_FCAT120-JUST = 'L'.
+  APPEND GS_FCAT120 TO GT_FCAT120.
+  CLEAR GS_FCAT120.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form INIT_ALV120</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM INIT_ALV120 .
+<font color ="#0000FF">* DIALOG ALV TOOLBAR HIDDEN 처리.</font>
+  DATA: LS_EXCLUD TYPE UI_FUNC,
+        LT_EXCLUD TYPE UI_FUNCTIONS.
+
+  LS_EXCLUD = CL_GUI_ALV_GRID=&gt;MC_FC_EXCL_ALL.
+  APPEND LS_EXCLUD TO LT_EXCLUD.
+
+  GS_VARIANT-REPORT = SY-CPROG.
+  GS_VARIANT-VARIANT = '/ALV120'.
+
+<font color ="#0000FF">* DIALOG ALV DISPLAY.</font>
+  CALL METHOD GO_ALV120-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+      I_STRUCTURE_NAME              = 'ZSBMM0020'
+      IS_VARIANT                    = GS_VARIANT
+      I_SAVE                        = 'A'
+<font color ="#0000FF">*     I_DEFAULT                     = 'X'</font>
+      IS_LAYOUT                     = GS_LAYO120
+<font color ="#0000FF">*     IT_TOOLBAR_EXCLUDING          = LT_EXCLUD</font>
+    CHANGING
+      IT_OUTTAB                     = GT_DISPLAY120
+      IT_FIELDCATALOG               = GT_FCAT120
+<font color ="#0000FF">*     IT_SORT                       = GT_SORT120</font>
+<font color ="#0000FF">*     IT_FILTER                     =</font>
+    EXCEPTIONS
+      INVALID_PARAMETER_COMBINATION = 1
+      PROGRAM_ERROR                 = 2
+      TOO_MANY_LINES                = 3
+      OTHERS                        = 4.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE S205 DISPLAY LIKE 'E'.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form REFRESH_ALV120</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM REFRESH_ALV120 .
+  DATA: LS_STABLE TYPE LVC_S_STBL.
+
+  CALL METHOD GO_ALV120-&gt;GET_FRONTEND_LAYOUT
+    IMPORTING
+      ES_LAYOUT = GS_LAYO120.
+
+  GS_LAYO120-CWIDTH_OPT = ABAP_ON.
+
+  CALL METHOD GO_ALV120-&gt;SET_FRONTEND_LAYOUT
+    EXPORTING
+      IS_LAYOUT = GS_LAYO120.
+
+  CALL METHOD GO_ALV120-&gt;REFRESH_TABLE_DISPLAY
+    EXPORTING
+      IS_STABLE = LS_STABLE.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA_ALV130</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_DATA_ALV130 .
+  " ZSBPP0030  생산오더 STRUCTURE
+  " ZTBPP0030  생산오더 header
+  " ZTBPP0031  생산오더 item
+
+  DATA: LV_PRODOR TYPE C LENGTH 10,
+        LV_WHCODE TYPE C LENGTH 10,
+        LV_MRP    TYPE C LENGTH 10.
+
+  SELECT *
+       FROM ZTBPP0030 AS A
+  LEFT JOIN ZTBPP0031 AS B
+         ON A~PORDNUM = B~PORDNUM
+      WHERE A~PORDNUM = @GS_DISPLAY-PORDNUM
+       INTO CORRESPONDING FIELDS OF TABLE @GT_DISPLAY130.
+
+  READ TABLE GT_DISPLAY130 INTO GS_DISPLAY130 INDEX 1.
+
+  SELECT SINGLE MRPNUM
+    FROM ZTBPP0020
+   WHERE PREQNUM EQ @GS_DISPLAY130-PREQNUM
+    INTO @LV_MRP.
+
+  SELECT SINGLE WHCODE
+    FROM ZTBPP0080
+   WHERE MRPNUM EQ @LV_MRP
+    INTO @LV_WHCODE.
+
+  LOOP AT GT_DISPLAY130 INTO GS_DISPLAY130.
+    CASE LV_WHCODE.
+      WHEN 'STP0000001'.
+
+      WHEN 'STP0000002'.
+
+      WHEN 'STP0000003'.
+
+      WHEN 'STP0000004'.
+
+      WHEN 'STP0000005'.
+
+    ENDCASE.
+  ENDLOOP.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJECT_130</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_OBJECT_130 .
+  CREATE OBJECT GO_CUST130
+    EXPORTING
+      CONTAINER_NAME              = 'AREA130'
+    EXCEPTIONS
+      CNTL_ERROR                  = 1
+      CNTL_SYSTEM_ERROR           = 2
+      CREATE_ERROR                = 3
+      LIFETIME_ERROR              = 4
+      LIFETIME_DYNPRO_DYNPRO_LINK = 5
+      OTHERS                      = 6.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  CREATE OBJECT GO_ALV130
+    EXPORTING
+      I_PARENT          = GO_CUST130
+    EXCEPTIONS
+      ERROR_CNTL_CREATE = 1
+      ERROR_CNTL_INIT   = 2
+      ERROR_CNTL_LINK   = 3
+      ERROR_DP_CREATE   = 4
+      OTHERS            = 5.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT130</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT130 .
+  CLEAR GS_LAYO130.
+
+  GS_LAYO130-ZEBRA = 'X'.
+  GS_LAYO130-CWIDTH_OPT = 'A'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FIELDCAT_ALV130</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FIELDCAT_ALV130 .
+  CLEAR GS_FCAT130.
+
+  GS_FCAT130-FIELDNAME = 'PORDNUM'.
+  GS_FCAT130-JUST = 'C'.
+  GS_FCAT130-COLTEXT = '생산오더번호'.
+  GS_FCAT130-KEY = 'X'.
+  APPEND GS_FCAT130 TO GT_FCAT130.
+  CLEAR GS_FCAT130.
+
+  GS_FCAT130-FIELDNAME = 'PREQNUM'.
+  GS_FCAT130-JUST = 'C'.
+  GS_FCAT130-COLTEXT = '생산요청번호'.
+  APPEND GS_FCAT130 TO GT_FCAT130.
+  CLEAR GS_FCAT130.
+
+  GS_FCAT130-FIELDNAME = 'WHCODE'.
+  GS_FCAT130-JUST = 'C'.
+  GS_FCAT130-COLTEXT = '플랜트 코드'.
+  APPEND GS_FCAT130 TO GT_FCAT130.
+  CLEAR GS_FCAT130.
+
+  GS_FCAT130-FIELDNAME = 'MATCODE'.
+  GS_FCAT130-JUST = 'C'.
+  APPEND GS_FCAT130 TO GT_FCAT130.
+  CLEAR GS_FCAT130.
+
+  GS_FCAT130-FIELDNAME = 'PRDQUAN'.
+  GS_FCAT130-JUST = 'R'.
+  GS_FCAT130-COLTEXT = '생산단위수량'.
+  APPEND GS_FCAT130 TO GT_FCAT130.
+  CLEAR GS_FCAT130.
+
+  GS_FCAT130-FIELDNAME = 'UNITCODE'.
+  GS_FCAT130-JUST = 'L'.
+  APPEND GS_FCAT130 TO GT_FCAT130.
+  CLEAR GS_FCAT130.
+
+  GS_FCAT130-FIELDNAME = 'PRDSTDAT'.
+  GS_FCAT130-JUST = 'C'.
+  GS_FCAT130-COLTEXT = '생산시작일'.
+  APPEND GS_FCAT130 TO GT_FCAT130.
+  CLEAR GS_FCAT130.
+
+  GS_FCAT130-FIELDNAME = 'PRDENDAT'.
+  GS_FCAT130-JUST = 'C'.
+  GS_FCAT130-COLTEXT = '생산완료일'.
+  APPEND GS_FCAT130 TO GT_FCAT130.
+  CLEAR GS_FCAT130.
+
+  GS_FCAT130-FIELDNAME = 'STATUS'.
+  GS_FCAT130-JUST = 'C'.
+  GS_FCAT130-COLTEXT = '상태'.
+  APPEND GS_FCAT130 TO GT_FCAT130.
+  CLEAR GS_FCAT130.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form INIT_ALV130</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM INIT_ALV130 .
+<font color ="#0000FF">* DIALOG ALV TOOLBAR HIDDEN 처리.</font>
+  DATA: LS_EXCLUD TYPE UI_FUNC,
+        LT_EXCLUD TYPE UI_FUNCTIONS.
+
+  LS_EXCLUD = CL_GUI_ALV_GRID=&gt;MC_FC_EXCL_ALL.
+  APPEND LS_EXCLUD TO LT_EXCLUD.
+
+  GS_VARIANT-REPORT = SY-CPROG.
+  GS_VARIANT-VARIANT = '/ALV130'.
+
+<font color ="#0000FF">* DIALOG ALV DISPLAY.</font>
+  CALL METHOD GO_ALV130-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+      I_STRUCTURE_NAME              = 'ZSBPP0030'
+      IS_VARIANT                    = GS_VARIANT
+      I_SAVE                        = 'A'
+<font color ="#0000FF">*     I_DEFAULT                     = 'X'</font>
+      IS_LAYOUT                     = GS_LAYO130
+<font color ="#0000FF">*     IT_TOOLBAR_EXCLUDING          = LT_EXCLUD</font>
+    CHANGING
+      IT_OUTTAB                     = GT_DISPLAY130
+      IT_FIELDCATALOG               = GT_FCAT130
+<font color ="#0000FF">*     IT_SORT                       = GT_SORT120</font>
+<font color ="#0000FF">*     IT_FILTER                     =</font>
+    EXCEPTIONS
+      INVALID_PARAMETER_COMBINATION = 1
+      PROGRAM_ERROR                 = 2
+      TOO_MANY_LINES                = 3
+      OTHERS                        = 4.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE S205 DISPLAY LIKE 'E'.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form REFRESH_ALV130</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM REFRESH_ALV130 .
+  DATA: LS_STABLE TYPE LVC_S_STBL.
+
+  CALL METHOD GO_ALV130-&gt;GET_FRONTEND_LAYOUT
+    IMPORTING
+      ES_LAYOUT = GS_LAYO130.
+
+  GS_LAYO130-CWIDTH_OPT = ABAP_ON.
+
+  CALL METHOD GO_ALV130-&gt;SET_FRONTEND_LAYOUT
+    EXPORTING
+      IS_LAYOUT = GS_LAYO130.
+
+  CALL METHOD GO_ALV130-&gt;REFRESH_TABLE_DISPLAY
+    EXPORTING
+      IS_STABLE = LS_STABLE.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DIALOG_PORD</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM DIALOG_PORD .
+  CLEAR: GT_DISPLAY130, GS_DISPLAY130.
+
+  IF GS_DISPLAY-PORDNUM IS INITIAL.
+    MESSAGE S227 DISPLAY LIKE 'E'.
+  ELSE.
+    CALL SCREEN 130
+    STARTING AT 20 8.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_SO_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_SO_DATA .
+  " ZSBSD0030  판매오더 STRUCTURE
+  " ZTBSD0030  판매오더 header
+  " ZTBSD0031  판매오더 item
+
+  SELECT *
+    FROM ZTBSD0030 AS A
+LEFT JOIN ZTBSD0031 AS B
+      ON A~SONUM = B~SONUM
+   WHERE A~SONUM = @GS_DISPLAY-SONUM
+INTO CORRESPONDING FIELDS OF TABLE @GT_DISPLAY140.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJECT_140</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_OBJECT_140 .
+  CREATE OBJECT GO_CUST140
+    EXPORTING
+      CONTAINER_NAME              = 'AREA140'
+    EXCEPTIONS
+      CNTL_ERROR                  = 1
+      CNTL_SYSTEM_ERROR           = 2
+      CREATE_ERROR                = 3
+      LIFETIME_ERROR              = 4
+      LIFETIME_DYNPRO_DYNPRO_LINK = 5
+      OTHERS                      = 6.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  CREATE OBJECT GO_ALV140
+    EXPORTING
+      I_PARENT          = GO_CUST140
+    EXCEPTIONS
+      ERROR_CNTL_CREATE = 1
+      ERROR_CNTL_INIT   = 2
+      ERROR_CNTL_LINK   = 3
+      ERROR_DP_CREATE   = 4
+      OTHERS            = 5.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT140</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT140 .
+  CLEAR GS_LAYO140.
+
+  GS_LAYO140-ZEBRA = 'X'.
+  GS_LAYO140-CWIDTH_OPT = 'A'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FIELDCAT_ALV140</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FIELDCAT_ALV140 .
+  CLEAR GS_FCAT140.
+
+  GS_FCAT140-FIELDNAME = 'SONUM'.
+  GS_FCAT140-JUST = 'C'.
+  GS_FCAT140-COLTEXT = '판매오더번호'.
+  GS_FCAT140-KEY = 'X'.
+  APPEND GS_FCAT140 TO GT_FCAT140.
+  CLEAR GS_FCAT140.
+
+  GS_FCAT140-FIELDNAME = 'BPCODE'.
+  GS_FCAT140-JUST = 'C'.
+  GS_FCAT140-COLTEXT = '고객사 코드'.
+  APPEND GS_FCAT140 TO GT_FCAT140.
+  CLEAR GS_FCAT140.
+
+  GS_FCAT140-FIELDNAME = 'SUPCODE'.
+  GS_FCAT140-JUST = 'C'.
+  APPEND GS_FCAT140 TO GT_FCAT140.
+  CLEAR GS_FCAT140.
+
+  GS_FCAT140-FIELDNAME = 'EMPID'.
+  GS_FCAT140-JUST = 'C'.
+  GS_FCAT140-COLTEXT = '판매오더 담당자'.
+  APPEND GS_FCAT140 TO GT_FCAT140.
+  CLEAR GS_FCAT140.
+
+  GS_FCAT140-FIELDNAME = 'DELIVDATE'.
+  GS_FCAT140-JUST = 'C'.
+  GS_FCAT140-COLTEXT = '납기일'.
+  APPEND GS_FCAT140 TO GT_FCAT140.
+  CLEAR GS_FCAT140.
+
+  GS_FCAT140-FIELDNAME = 'MATCODE'.
+  GS_FCAT140-JUST = 'C'.
+  GS_FCAT140-KEY = 'X'.
+  APPEND GS_FCAT140 TO GT_FCAT140.
+  CLEAR GS_FCAT140.
+
+  GS_FCAT140-FIELDNAME = 'AMOUNTPRD'.
+  GS_FCAT140-JUST = 'R'.
+  APPEND GS_FCAT140 TO GT_FCAT140.
+  CLEAR GS_FCAT140.
+
+  GS_FCAT140-FIELDNAME = 'UNITCODE'.
+  GS_FCAT140-JUST = 'L'.
+  APPEND GS_FCAT140 TO GT_FCAT140.
+  CLEAR GS_FCAT140.
+
+  GS_FCAT140-FIELDNAME = 'TOTALPRD'.
+  GS_FCAT140-JUST = 'R'.
+  APPEND GS_FCAT140 TO GT_FCAT140.
+  CLEAR GS_FCAT140.
+
+  GS_FCAT140-FIELDNAME = 'CURRENCY'.
+  GS_FCAT140-JUST = 'L'.
+  APPEND GS_FCAT140 TO GT_FCAT140.
+  CLEAR GS_FCAT140.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form INIT_ALV140</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM INIT_ALV140 .
+<font color ="#0000FF">* DIALOG ALV TOOLBAR HIDDEN 처리.</font>
+  DATA: LS_EXCLUD TYPE UI_FUNC,
+        LT_EXCLUD TYPE UI_FUNCTIONS.
+
+  LS_EXCLUD = CL_GUI_ALV_GRID=&gt;MC_FC_EXCL_ALL.
+  APPEND LS_EXCLUD TO LT_EXCLUD.
+
+  GS_VARIANT-REPORT = SY-CPROG.
+  GS_VARIANT-VARIANT = '/ALV140'.
+
+<font color ="#0000FF">* DIALOG ALV DISPLAY.</font>
+  CALL METHOD GO_ALV140-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+      I_STRUCTURE_NAME              = 'ZSBSD0030_STR'
+      IS_VARIANT                    = GS_VARIANT
+      I_SAVE                        = 'A'
+<font color ="#0000FF">*     I_DEFAULT                     = 'X'</font>
+      IS_LAYOUT                     = GS_LAYO140
+<font color ="#0000FF">*     IT_TOOLBAR_EXCLUDING          = LT_EXCLUD</font>
+    CHANGING
+      IT_OUTTAB                     = GT_DISPLAY140
+      IT_FIELDCATALOG               = GT_FCAT140
+<font color ="#0000FF">*     IT_SORT                       = GT_SORT120</font>
+<font color ="#0000FF">*     IT_FILTER                     =</font>
+    EXCEPTIONS
+      INVALID_PARAMETER_COMBINATION = 1
+      PROGRAM_ERROR                 = 2
+      TOO_MANY_LINES                = 3
+      OTHERS                        = 4.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE S205 DISPLAY LIKE 'E'.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form REFRESH_ALV140</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM REFRESH_ALV140 .
+  DATA: LS_STABLE TYPE LVC_S_STBL.
+
+  CALL METHOD GO_ALV140-&gt;GET_FRONTEND_LAYOUT
+    IMPORTING
+      ES_LAYOUT = GS_LAYO140.
+
+  GS_LAYO120-CWIDTH_OPT = ABAP_ON.
+
+  CALL METHOD GO_ALV140-&gt;SET_FRONTEND_LAYOUT
+    EXPORTING
+      IS_LAYOUT = GS_LAYO140.
+
+  CALL METHOD GO_ALV140-&gt;REFRESH_TABLE_DISPLAY
+    EXPORTING
+      IS_STABLE = LS_STABLE.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DIALOG_SO</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM DIALOG_SO .
+  CLEAR: GT_DISPLAY140, GS_DISPLAY140.
+
+  IF GS_DISPLAY-SONUM IS INITIAL.
+    MESSAGE S228 DISPLAY LIKE 'E'.
+  ELSE.
+    CALL SCREEN 140
+    STARTING AT 20 8.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DIALOG_MATCODE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM DIALOG_MATCODE .
+  CLEAR: GS_DISPLAY170, GT_DISPLAY170, ZSBMM1010, ZSBMM0070, ZSBPP0060, ZSBSD0080.
+
+<font color ="#0000FF">* TAB1 DATA</font>
+  PERFORM GET_TAB1.
+  PERFORM GET_DATA_ALV170.
+
+  IF GS_DISPLAY-MATCODE IS INITIAL.
+    MESSAGE S229 DISPLAY LIKE 'E'.
+  ELSE.
+    TAB_STRIP-ACTIVETAB = '160'.
+    CALL SCREEN 150
+    STARTING AT 30 3.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_TAB1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_TAB1 .
+  SELECT SINGLE *
+    FROM ZTBMM1010 AS A
+    JOIN ZTBMM1011 AS B
+      ON A~MATCODE = B~MATCODE
+   WHERE A~MATCODE = @GS_DISPLAY-MATCODE
+     AND B~SPRAS = @SY-LANGU
+    INTO CORRESPONDING FIELDS OF @ZSBMM1010.
+
+  SELECT SINGLE *
+  FROM ZTBMM0070 AS A
+  JOIN ZTBSD1051 AS B
+    ON A~BPCODE = B~BPCODE
+ WHERE A~MATCODE = @GS_DISPLAY-MATCODE
+   AND B~SPARS = @SY-LANGU
+  INTO CORRESPONDING FIELDS OF @ZSBMM0070.
+
+  SELECT SINGLE BOMID
+  FROM ZTBPP0070
+ WHERE MATCODE = @GS_DISPLAY-MATCODE
+  INTO CORRESPONDING FIELDS OF @ZSBPP0060.
+
+  SELECT SINGLE *
+    FROM ZTBPP0061 AS A
+    JOIN ZTBPP0060 AS B
+      ON A~ROUTID = B~ROUTID
+   WHERE A~MATCODE = @GS_DISPLAY-MATCODE
+    INTO CORRESPONDING FIELDS OF @ZSBPP0060.
+
+  SELECT SINGLE A~CTRYCODE, A~PRICE, A~CURRENCY, B~CTRYNAME
+    FROM ZTBSD0080 AS A
+    JOIN ZTBSD1040 AS B
+      ON A~CTRYCODE = B~CTRYCODE
+   WHERE A~MATCODE = @GS_DISPLAY-MATCODE
+     AND A~CTRYCODE = 'KR'
+    INTO (@ZSBSD0080-CTRYCODE1, @ZSBSD0080-PRICE1, @ZSBSD0080-CURRENCY1, @ZSBSD0080-CTRYNAME1).
+
+  SELECT SINGLE A~CTRYCODE, A~PRICE, A~CURRENCY, B~CTRYNAME
+  FROM ZTBSD0080 AS A
+  JOIN ZTBSD1040 AS B
+    ON A~CTRYCODE = B~CTRYCODE
+ WHERE A~MATCODE = @GS_DISPLAY-MATCODE
+   AND A~CTRYCODE = 'CH'
+  INTO (@ZSBSD0080-CTRYCODE3, @ZSBSD0080-PRICE3, @ZSBSD0080-CURRENCY3, @ZSBSD0080-CTRYNAME3).
+
+  SELECT SINGLE A~CTRYCODE, A~PRICE, A~CURRENCY, B~CTRYNAME
+FROM ZTBSD0080 AS A
+JOIN ZTBSD1040 AS B
+  ON A~CTRYCODE = B~CTRYCODE
+WHERE A~MATCODE = @GS_DISPLAY-MATCODE
+ AND A~CTRYCODE = 'DE'
+INTO (@ZSBSD0080-CTRYCODE4, @ZSBSD0080-PRICE4, @ZSBSD0080-CURRENCY4, @ZSBSD0080-CTRYNAME4).
+
+  SELECT SINGLE A~CTRYCODE, A~PRICE, A~CURRENCY, B~CTRYNAME
+FROM ZTBSD0080 AS A
+JOIN ZTBSD1040 AS B
+ON A~CTRYCODE = B~CTRYCODE
+WHERE A~MATCODE = @GS_DISPLAY-MATCODE
+AND A~CTRYCODE = 'US'
+INTO (@ZSBSD0080-CTRYCODE2, @ZSBSD0080-PRICE2, @ZSBSD0080-CURRENCY2, @ZSBSD0080-CTRYNAME2).
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA_ALV170</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_DATA_ALV170 .
+  " ZTBMM0030 재고현황.
+
+  SELECT *
+    FROM ZTBMM0030
+   WHERE MATCODE = @GS_DISPLAY-MATCODE
+    INTO CORRESPONDING FIELDS OF TABLE @GT_DISPLAY170.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJECT_170</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_OBJECT_170 .
+  CREATE OBJECT GO_CUST170
+    EXPORTING
+      CONTAINER_NAME              = 'AREA170'
+    EXCEPTIONS
+      CNTL_ERROR                  = 1
+      CNTL_SYSTEM_ERROR           = 2
+      CREATE_ERROR                = 3
+      LIFETIME_ERROR              = 4
+      LIFETIME_DYNPRO_DYNPRO_LINK = 5
+      OTHERS                      = 6.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  CREATE OBJECT GO_ALV170
+    EXPORTING
+      I_PARENT          = GO_CUST170
+    EXCEPTIONS
+      ERROR_CNTL_CREATE = 1
+      ERROR_CNTL_INIT   = 2
+      ERROR_CNTL_LINK   = 3
+      ERROR_DP_CREATE   = 4
+      OTHERS            = 5.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT170</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT170 .
+  CLEAR GS_LAYO170.
+
+  GS_LAYO170-ZEBRA = 'X'.
+  GS_LAYO170-CWIDTH_OPT = 'A'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FIELDCAT_ALV170</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FIELDCAT_ALV170 .
+  CLEAR GS_FCAT170.
+
+  GS_FCAT170-FIELDNAME = 'MANDT'.
+  GS_FCAT170-JUST = 'C'.
+  APPEND GS_FCAT170 TO GT_FCAT170.
+  CLEAR GS_FCAT170.
+
+  GS_FCAT170-FIELDNAME = 'WHCODE'.
+  GS_FCAT170-JUST = 'C'.
+  APPEND GS_FCAT170 TO GT_FCAT170.
+  CLEAR GS_FCAT170.
+
+  GS_FCAT170-FIELDNAME = 'MATCODE'.
+  GS_FCAT170-JUST = 'C'.
+  APPEND GS_FCAT170 TO GT_FCAT170.
+  CLEAR GS_FCAT170.
+
+  GS_FCAT170-FIELDNAME = 'MATTYPE'.
+  GS_FCAT170-JUST = 'C'.
+  APPEND GS_FCAT170 TO GT_FCAT170.
+  CLEAR GS_FCAT170.
+
+  GS_FCAT170-FIELDNAME = 'CURRSTOCK'.
+  GS_FCAT170-JUST = 'R'.
+  APPEND GS_FCAT170 TO GT_FCAT170.
+  CLEAR GS_FCAT170.
+
+  GS_FCAT170-FIELDNAME = 'UNITCODE1'.
+  GS_FCAT170-JUST = 'L'.
+  APPEND GS_FCAT170 TO GT_FCAT170.
+  CLEAR GS_FCAT170.
+
+  GS_FCAT170-FIELDNAME = 'SAFESTOCK'.
+  GS_FCAT170-JUST = 'R'.
+  APPEND GS_FCAT170 TO GT_FCAT170.
+  CLEAR GS_FCAT170.
+
+  GS_FCAT170-FIELDNAME = 'UNITCODE2'.
+  GS_FCAT170-JUST = 'L'.
+  APPEND GS_FCAT170 TO GT_FCAT170.
+  CLEAR GS_FCAT170.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form INIT_ALV170</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM INIT_ALV170 .
+<font color ="#0000FF">* DIALOG ALV TOOLBAR HIDDEN 처리.</font>
+  DATA: LS_EXCLUD TYPE UI_FUNC,
+        LT_EXCLUD TYPE UI_FUNCTIONS.
+
+  LS_EXCLUD = CL_GUI_ALV_GRID=&gt;MC_FC_EXCL_ALL.
+  APPEND LS_EXCLUD TO LT_EXCLUD.
+
+  GS_VARIANT-REPORT = SY-CPROG.
+  GS_VARIANT-VARIANT = '/ALV170'.
+
+<font color ="#0000FF">* DIALOG ALV DISPLAY.</font>
+  CALL METHOD GO_ALV170-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+      I_STRUCTURE_NAME              = 'ZTBMM0030'
+      IS_VARIANT                    = GS_VARIANT
+      I_SAVE                        = 'A'
+<font color ="#0000FF">*     I_DEFAULT                     = 'X'</font>
+      IS_LAYOUT                     = GS_LAYO170
+<font color ="#0000FF">*     IT_TOOLBAR_EXCLUDING          = LT_EXCLUD</font>
+    CHANGING
+      IT_OUTTAB                     = GT_DISPLAY170
+      IT_FIELDCATALOG               = GT_FCAT170
+<font color ="#0000FF">*     IT_SORT                       = GT_SORT120</font>
+<font color ="#0000FF">*     IT_FILTER                     =</font>
+    EXCEPTIONS
+      INVALID_PARAMETER_COMBINATION = 1
+      PROGRAM_ERROR                 = 2
+      TOO_MANY_LINES                = 3
+      OTHERS                        = 4.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE S205 DISPLAY LIKE 'E'.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form REFRESH_ALV170</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM REFRESH_ALV170 .
+  DATA: LS_STABLE TYPE LVC_S_STBL.
+
+  CALL METHOD GO_ALV170-&gt;GET_FRONTEND_LAYOUT
+    IMPORTING
+      ES_LAYOUT = GS_LAYO170.
+
+  GS_LAYO170-CWIDTH_OPT = ABAP_ON.
+
+  CALL METHOD GO_ALV170-&gt;SET_FRONTEND_LAYOUT
+    EXPORTING
+      IS_LAYOUT = GS_LAYO170.
+
+  CALL METHOD GO_ALV170-&gt;REFRESH_TABLE_DISPLAY
+    EXPORTING
+      IS_STABLE = LS_STABLE.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form REFRESH_ALV100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM REFRESH_ALV100 .
+  DATA: LS_STABLE TYPE LVC_S_STBL.
+
+  CALL METHOD GO_ALV100-&gt;GET_FRONTEND_LAYOUT
+    IMPORTING
+      ES_LAYOUT = GS_LAYO.
+
+  GS_LAYO-CWIDTH_OPT = ABAP_ON.
+
+  CALL METHOD GO_ALV100-&gt;SET_FRONTEND_LAYOUT
+    EXPORTING
+      IS_LAYOUT = GS_LAYO.
+
+  CALL METHOD GO_ALV100-&gt;REFRESH_TABLE_DISPLAY
+    EXPORTING
+      IS_STABLE = LS_STABLE.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form PREV_PAGE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& '이전' 버튼을 눌렀을 때, '이전'버튼 활성화/비활성화 설정</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM PREV_PAGE .
+  DATA: LV_VALID   LIKE GV_PAGE,
+        LV_INVALID LIKE GV_PAGE,
+        LV_DOCNUM  TYPE N LENGTH 10.
+
+  DATA : LV_CURR       LIKE ZTBMM0041-CURRENCY, " Currency 값 변수
+         LV_BEFORE_AMT LIKE BAPICURR-BAPICURR,  " DB 금액 값 변수
+         LV_AFTER_AMT  LIKE BAPICURR-BAPICURR.  " ALV display 금액 값 변수
+
+  CLEAR: GV_PAGE, GT_DISPLAY200, GS_DISPLAY200.
+
+  LV_VALID = 0.
+  LV_INVALID = 1.
+
+<font color ="#0000FF">* 현재 자재문서 번호보다 2개 이전 데이터를 LT_ZTBMM0040 에 할당.</font>
+  SELECT DOCYEAR, DOCNUM
+    FROM ZTBMM0040
+   WHERE DOCYEAR LE @ZTBMM0040-DOCYEAR " 현재 자재문서의 생성연도 이하 포함.
+     AND DOCNUM LT @ZTBMM0040-DOCNUM " 현재 자재문서의 번호보다 작은값.
+ORDER BY DOCNUM DESCENDING
+    INTO TABLE @DATA(LT_ZTBMM0040)
+   UP TO 2 ROWS.
+
+  IF SY-SUBRC = 0. " 선택한 자재 문서의 이전 자재 문서가 2개 있을 때.
+
+    READ TABLE LT_ZTBMM0040 INTO DATA(LS_ZTBMM0040) INDEX 1.
+    MOVE-CORRESPONDING LS_ZTBMM0040 TO GS_DISPLAY200.
+    MOVE-CORRESPONDING LS_ZTBMM0040 TO ZTBMM0040.
+
+<font color ="#0000FF">*   ALV200에 띄울 데이터 SELECT문.</font>
+    SELECT FROM ZTBMM0040 AS A        " 자재문서 HEADER
+      LEFT JOIN ZTBMM0041 AS B        " 자재문서 ITEM
+             ON A~DOCNUM EQ B~DOCNUM  " 자재문서번호.
+           JOIN ZTBMM1020  AS C       " PLANT 마스터.
+             ON A~PLTCODE EQ C~PLTCODE" 플랜트 코드.
+           JOIN ZTBMM1010 AS D        " 자재 마스터.
+             ON B~MATCODE EQ D~MATCODE" 자재 번호.
+           JOIN ZTBMM1011 AS E        " 자재 TEXT TABLE.
+             ON D~MATCODE EQ E~MATCODE" 자재 번호.
+            AND E~SPRAS EQ @SY-LANGU  " 언어 키.
+      FIELDS *
+      WHERE A~DOCNUM = @GS_DISPLAY200-DOCNUM
+       INTO CORRESPONDING FIELDS OF TABLE @GT_DISPLAY200.
+
+    SORT GT_DISPLAY200 BY MATCODE.
+
+<font color ="#0000FF">* 'KRW' 화폐단위의 표기 오류 수정을 위한 BAPI FM 호출.</font>
+    LOOP AT GT_DISPLAY200 INTO GS_DISPLAY200.
+      LV_BEFORE_AMT = GS_DISPLAY200-MVPRICE.
+      LV_CURR = GS_DISPLAY200-CURRENCY.
+
+      CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'
+        EXPORTING
+          AMOUNT_EXTERNAL      = LV_BEFORE_AMT
+          CURRENCY             = LV_CURR
+          MAX_NUMBER_OF_DIGITS = 21  "출력할 금액필드의 자릿수"
+        IMPORTING
+          AMOUNT_INTERNAL      = LV_AFTER_AMT.
+
+      GS_DISPLAY200-MVPRICE = LV_AFTER_AMT.
+
+      MODIFY GT_DISPLAY200 FROM GS_DISPLAY200.
+    ENDLOOP.
+
+<font color ="#0000FF">*   현재 자재문서의 전전 데이터가 있는지 확인.</font>
+    READ TABLE LT_ZTBMM0040 TRANSPORTING NO FIELDS INDEX 2.
+
+<font color ="#0000FF">*   전전 데이터의 존재유무에 따라 GV_PAGE 값 변경.</font>
+    IF SY-SUBRC = 0.
+      GV_PAGE = LV_VALID. " 전전 데이터 있으면, GV_PAGE = 0.
+    ELSE.
+      GV_PAGE = LV_INVALID. " 전전 데이터 없으면, GV_PAGE = 1.
+    ENDIF.
+
+<font color ="#0000FF">*   GV_PAGE 바뀐 값으로 STATUS 변경.</font>
+    CL_GUI_CFW=&gt;SET_NEW_OK_CODE(
+      EXPORTING
+        NEW_CODE = 'ENTER').              " New OK_CODE
+
+    PERFORM REFRESH_ALV200.
+
+  ELSE. " 선택한 자재 문서의 이전 자재 문서가 없을 때.
+    GV_PAGE = LV_INVALID. " 'PREV' 버튼 비활성화.
+
+<font color ="#0000FF">*   GV_PAGE 바뀐 값으로 STATUS 변경.</font>
+    CL_GUI_CFW=&gt;SET_NEW_OK_CODE(
+          EXPORTING
+            NEW_CODE = 'ENTER').              " New OK_CODE
+
+    PERFORM REFRESH_ALV200.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form NEXT_PAGE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM NEXT_PAGE .
+  DATA: LV_VALID   LIKE GV_PAGE,
+        LV_INVALID LIKE GV_PAGE,
+        LV_DOCNUM  TYPE N LENGTH 10.
+
+  DATA : LV_CURR       LIKE ZTBMM0041-CURRENCY, " Currency 값 변수
+         LV_BEFORE_AMT LIKE BAPICURR-BAPICURR,  " DB 금액 값 변수
+         LV_AFTER_AMT  LIKE BAPICURR-BAPICURR.  " ALV display 금액 값 변수
+
+  CLEAR: GV_PAGE, GT_DISPLAY200, GS_DISPLAY200.
+
+  LV_VALID = 0.
+  LV_INVALID = -1.
+
+<font color ="#0000FF">* 현재 자재문서 번호보다 2개 다음 데이터를 LT_ZTBMM0040 에 할당.</font>
+  SELECT DOCYEAR, DOCNUM
+    FROM ZTBMM0040
+   WHERE DOCYEAR GE @ZTBMM0040-DOCYEAR " 현재 자재문서의 생성연도 이상 포함.
+     AND DOCNUM GT @ZTBMM0040-DOCNUM " 현재 자재문서의 번호보다 큰값.
+ORDER BY DOCNUM ASCENDING
+    INTO TABLE @DATA(LT_ZTBMM0040)
+   UP TO 2 ROWS.
+
+  IF SY-SUBRC = 0. " 선택한 자재 문서의 다음 자재 문서가 2개 있을 때.
+
+    READ TABLE LT_ZTBMM0040 INTO DATA(LS_ZTBMM0040) INDEX 1.
+    MOVE-CORRESPONDING LS_ZTBMM0040 TO GS_DISPLAY200.
+    MOVE-CORRESPONDING LS_ZTBMM0040 TO ZTBMM0040.
+
+<font color ="#0000FF">*   ALV200에 띄울 데이터 SELECT문.</font>
+    SELECT FROM ZTBMM0040 AS A        " 자재문서 HEADER
+      LEFT JOIN ZTBMM0041 AS B        " 자재문서 ITEM
+             ON A~DOCNUM EQ B~DOCNUM  " 자재문서번호.
+           JOIN ZTBMM1020  AS C       " PLANT 마스터.
+             ON A~PLTCODE EQ C~PLTCODE" 플랜트 코드.
+           JOIN ZTBMM1010 AS D        " 자재 마스터.
+             ON B~MATCODE EQ D~MATCODE" 자재 번호.
+           JOIN ZTBMM1011 AS E        " 자재 TEXT TABLE.
+             ON D~MATCODE EQ E~MATCODE" 자재 번호.
+            AND E~SPRAS EQ @SY-LANGU  " 언어 키.
+      FIELDS *
+      WHERE A~DOCNUM = @GS_DISPLAY200-DOCNUM
+       INTO CORRESPONDING FIELDS OF TABLE @GT_DISPLAY200.
+
+    SORT GT_DISPLAY200 BY MATCODE.
+
+<font color ="#0000FF">* 'KRW' 화폐단위의 표기 오류 수정을 위한 BAPI FM 호출.</font>
+    LOOP AT GT_DISPLAY200 INTO GS_DISPLAY200.
+      LV_BEFORE_AMT = GS_DISPLAY200-MVPRICE.
+      LV_CURR = GS_DISPLAY200-CURRENCY.
+
+      CALL FUNCTION 'BAPI_CURRENCY_CONV_TO_INTERNAL'
+        EXPORTING
+          AMOUNT_EXTERNAL      = LV_BEFORE_AMT
+          CURRENCY             = LV_CURR
+          MAX_NUMBER_OF_DIGITS = 21  "출력할 금액필드의 자릿수"
+        IMPORTING
+          AMOUNT_INTERNAL      = LV_AFTER_AMT.
+
+      GS_DISPLAY200-MVPRICE = LV_AFTER_AMT.
+
+      MODIFY GT_DISPLAY200 FROM GS_DISPLAY200.
+    ENDLOOP.
+
+<font color ="#0000FF">*   현재 자재문서의 다음다음 데이터가 있는지 확인.</font>
+    READ TABLE LT_ZTBMM0040 TRANSPORTING NO FIELDS INDEX 2.
+
+<font color ="#0000FF">*   다음다음 데이터의 존재유무에 따라 GV_PAGE 값 변경.</font>
+    IF SY-SUBRC = 0.
+      GV_PAGE = LV_VALID. " 다음다음 데이터 있으면, GV_PAGE = 0.
+    ELSE.
+      GV_PAGE = LV_INVALID. " 다음다음 데이터 있으면, GV_PAGE = 1.
+    ENDIF.
+
+<font color ="#0000FF">*   GV_PAGE 바뀐 값으로 STATUS 변경.</font>
+    CL_GUI_CFW=&gt;SET_NEW_OK_CODE(
+      EXPORTING
+        NEW_CODE = 'ENTER').              " New OK_CODE
+
+    PERFORM REFRESH_ALV200.
+
+  ELSE. " 선택한 자재 문서의 다음 자재 문서가 없을 때.
+    GV_PAGE = LV_INVALID. " 'NEXT' 버튼 비활성화.
+
+<font color ="#0000FF">*   GV_PAGE 바뀐 값으로 STATUS 변경.</font>
+    CL_GUI_CFW=&gt;SET_NEW_OK_CODE(
+          EXPORTING
+            NEW_CODE = 'ENTER').              " New OK_CODE
+
+    PERFORM REFRESH_ALV200.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_BUTTON</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& 클릭한 자재문서 번호에 대해 '이전', '다음' 번호가 있는지 여부 확인.</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_BUTTON .
+  DATA: LV_VALID   LIKE GV_PAGE,
+        LV_INVALID LIKE GV_PAGE.
+
+  LV_VALID = 0.
+  LV_INVALID = 1.
+
+  SELECT DOCYEAR, DOCNUM
+    FROM ZTBMM0040
+   WHERE DOCYEAR LE @GS_DISPLAY-DOCYEAR " 현재 자재문서의 생성연도 이하 포함.
+     AND DOCNUM LT @GS_DISPLAY-DOCNUM " 현재 자재문서의 번호보다 작은값.
+ORDER BY DOCNUM DESCENDING
+    INTO TABLE @DATA(LT_ZTBMM0040)
+   UP TO 1 ROWS.
+
+  IF SY-SUBRC = 0. " 선택한 자재 문서의 이전 자재 문서가 있을 때.
+    GV_PAGE = LV_VALID. " 'PREV' 버튼 활성화.
+
+  ELSE. " 선택한 자재 문서의 이전 자재 문서가 없을 때.
+    GV_PAGE = LV_INVALID. " 'PREV' 버튼 비활성화.
+  ENDIF.
+
+  IF GV_PAGE EQ LV_INVALID. " 이전 자재 문서가 존재하지 않을 때.
+    CALL SCREEN 200
+      STARTING AT 15 7.
+
+  ELSE. " 선택한 문서의 이전 자재 문서가 존재할 때, 다음 자재 문서가 존재하는지 확인.
+    CLEAR: LV_INVALID, LT_ZTBMM0040.
+    LV_INVALID = -1.
+
+    SELECT DOCYEAR, DOCNUM
+      FROM ZTBMM0040
+     WHERE DOCYEAR GE @GS_DISPLAY-DOCYEAR " 현재 자재문서의 생성연도 이상 포함.
+       AND DOCNUM GT @GS_DISPLAY-DOCNUM " 현재 자재문서의 번호보다 큰 값.
+  ORDER BY DOCNUM ASCENDING
+      INTO TABLE @LT_ZTBMM0040
+     UP TO 1 ROWS.
+
+    IF SY-SUBRC = 0. " 선택한 자재 문서의 다음 자재 문서가 있을 때.
+      GV_PAGE = LV_VALID. " 'NEXT' 버튼 활성화.
+
+    ELSE. " 선택한 자재 문서의 다음 자재 문서가 없을 때.
+      GV_PAGE = LV_INVALID. " 'NEXT' 버튼 비활성화.
+    ENDIF.
+    CALL SCREEN 200
+      STARTING AT 15 7.
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJECT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_OBJECT .
+  CREATE OBJECT GO_DOCK
+    EXPORTING
+      REPID     = SY-REPID
+      DYNNR     = SY-DYNNR
+      SIDE      = GO_DOCK-&gt;DOCK_AT_RIGHT
+<font color ="#0000FF">*     side      = cl_gui_docking_container=&gt;dock_at_top</font>
+      EXTENSION = 2000.
+
+  CREATE OBJECT GO_SPLIT
+    EXPORTING
+      PARENT  = GO_DOCK
+      ROWS    = 1
+      COLUMNS = 2.
+
+  CALL METHOD GO_SPLIT-&gt;GET_CONTAINER
+    EXPORTING
+      ROW       = 1                 " Row
+      COLUMN    = 1                 " Column
+    RECEIVING
+      CONTAINER = GO_CONT1.                 " Container
+
+  CALL METHOD GO_SPLIT-&gt;GET_CONTAINER
+    EXPORTING
+      ROW       = 1                 " Row
+      COLUMN    = 2                 " Column
+    RECEIVING
+      CONTAINER = GO_CONT2.                 " Container
+
+  CALL METHOD GO_SPLIT-&gt;SET_COLUMN_WIDTH
+    EXPORTING
+      ID                = 1                " Column ID
+      WIDTH             = 20                 " NPlWidth
+    EXCEPTIONS
+      CNTL_ERROR        = 1                " See CL_GUI_CONTROL
+      CNTL_SYSTEM_ERROR = 2                " See CL_GUI_CONTROL
+      OTHERS            = 3.
+  IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*     WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+  ENDIF.
+
+<font color ="#0000FF">* DOCKING CONTAINER에 TREE 생성.</font>
+  CREATE OBJECT GO_TREE100
+    EXPORTING
+      PARENT              = GO_CONT1 " Parent Container
+      NODE_SELECTION_MODE = CL_GUI_SIMPLE_TREE=&gt;NODE_SEL_MODE_SINGLE
+    EXCEPTIONS
+      OTHERS              = 1.
+  IF SY-SUBRC NE 0.
+    MESSAGE S201 DISPLAY LIKE 'E'. " Tree 객체 생성 중 오류가 발생하였습니다.
+  ENDIF.
+
+
+<font color ="#0000FF">* CUSTOM CONTAINER에 ALV 생성.</font>
+  CREATE OBJECT GO_ALV100
+    EXPORTING
+      I_PARENT = GO_CONT2 " Parent Container
+    EXCEPTIONS
+      OTHERS   = 1.
+  IF SY-SUBRC NE 0.
+    MESSAGE S202 DISPLAY LIKE 'E'. " ALV 객체 생성 중 오류가 발생하였습니다.
+  ENDIF.
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

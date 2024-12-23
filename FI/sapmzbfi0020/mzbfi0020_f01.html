@@ -1,0 +1,570 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBFI0020_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBFI0020_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0020_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBFI0020_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT .
+  GS_LAYOUT-GRID_TITLE = '전표유형 리스트'.
+  GS_LAYOUT-CWIDTH_OPT = 'A'.
+  GS_LAYOUT-ZEBRA = 'X'.
+  GS_LAYOUT-SEL_MODE = 'B'. "셀 선택모드 - 단일행.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT .
+
+  DATA: LS_FCAT TYPE LVC_S_FCAT.
+
+  LS_FCAT-FIELDNAME = 'COMCODE'.
+  LS_FCAT-NO_OUT = 'X'.
+  APPEND Ls_fcat TO GT_FCAT.
+  CLEAR: LS_FCAT.
+
+  LS_FCAT-FIELDNAME = 'DELFLG'.
+  LS_FCAT-CHECKBOX = 'X'.
+  APPEND LS_FCAT TO GT_FCAT.
+  CLEAR: LS_FCAT.
+
+  LS_FCAT-FIELDNAME = 'STAMP_USER_F'.
+  LS_FCAT-HOTSPOT = 'X'.
+  APPEND LS_FCAT TO GT_FCAT.
+  CLEAR: LS_FCAT.
+
+  LS_FCAT-FIELDNAME = 'STAMP_USER_L'.
+  LS_FCAT-HOTSPOT = 'X'.
+  APPEND LS_FCAT TO GT_FCAT.
+  CLEAR: LS_FCAT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_DATA .
+
+  "입력 값으로 조회 시 조회 가능한 조건을 설정하기 위한 변수 선언
+  DATA : LV_BLART TYPE ZTBFI0020-BLART,
+         LV_BLTXT TYPE ZTBFI0020-BLTXT.
+
+  "전표유형, 전표유형명 조회가능조건 설정.
+  LV_BLART = ZSBFI0020-BLART && '%'.
+  LV_BLTXT = '%' && ZSBFI0020-BLTXT && '%'.
+
+  " 라디오버튼에 따른 필터 설정.
+  DATA: LV_RAD TYPE CHAR1.
+  CASE 'X'.
+    WHEN ZSBFI0020-ALL.
+      LV_RAD = '%'.
+    WHEN ZSBFI0020-VALID.
+      LV_RAD = ''.
+    WHEN ZSBFI0020-DELETED.
+      LV_RAD = 'X'.
+  ENDCASE.
+
+  " 전표유형, 전표유형명 조건 적용.
+  SELECT *
+    FROM ZTBFI0020
+    INTO CORRESPONDING FIELDS OF TABLE @GT_ZTBFI0020
+    WHERE BLART LIKE @LV_BLART
+      AND BLTXT LIKE @LV_BLTXT
+      AND DELFLG LIKE @LV_RAD.
+
+  " 조회조건에 일치하는 데이터 없는 경우 에러메시지 노출.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE S015 DISPLAY LIKE 'E'.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SAVE_TYPE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SAVE_TYPE .
+
+  " CONFIRM POPUP.
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      TITLEBAR              = '전표유형 MASTER 데이터 생성'
+      TEXT_QUESTION         = '데이터를 생성하시겠습니까?'
+      TEXT_BUTTON_1         = 'YES'
+      ICON_BUTTON_1         = 'ICON_OKAY'
+      TEXT_BUTTON_2         = 'NO'
+      ICON_BUTTON_2         = 'ICON_CANCEL'
+      DISPLAY_CANCEL_BUTTON = ''
+    IMPORTING
+      ANSWER                = GV_ANSWER
+    EXCEPTIONS
+      TEXT_NOT_FOUND        = 1
+      OTHERS                = 2.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE E016.
+  ENDIF.
+
+  "CONFIRM POPUP 에서 선택 .
+  CASE GV_ANSWER.
+      "YES 선택 시
+    WHEN  1.
+      DATA: LS_ZTBFI0020 LIKE GS_ZTBFI0020.
+      LS_ZTBFI0020-BLART = BLART110.
+      LS_ZTBFI0020-BLTXT = BLTXT110.
+      LS_ZTBFI0020-COMCODE = '1000'.
+      LS_ZTBFI0020-STAMP_DATE_F = SY-DATUM.
+      LS_ZTBFI0020-STAMP_TIME_F = SY-UZEIT.
+      PERFORM GET_EMPID.
+      LS_ZTBFI0020-STAMP_USER_F = GV_EMPID.
+
+      APPEND LS_ZTBFI0020 TO GT_ZTBFI0020. "ALV
+      INSERT ZTBFI0020 FROM LS_ZTBFI0020. "DB
+
+      MESSAGE S095 WITH '생성'. "생성 성공
+
+      CLEAR : BLART110, BLTXT110.
+
+      "NO 선택 시
+    WHEN 2.
+      MESSAGE S043 WITH '생성' DISPLAY LIKE 'W'. "생성 취소
+      CLEAR : BLART110, BLTXT110.
+
+  ENDCASE.
+
+
+
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_ROW</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_ROW .
+  CALL METHOD GO_ALV-&gt;GET_SELECTED_ROWS
+    IMPORTING
+      ET_INDEX_ROWS = ET_INDEX_ROW.                " Indexes of Selected Rows
+
+  "ALV에서 행 미선택시.
+  IF ET_INDEX_ROW IS INITIAL.
+    MESSAGE S008 DISPLAY LIKE 'E'.
+
+    "ALV에서 행 선택시.
+  ELSE.
+    READ TABLE ET_INDEX_ROW INTO ES_INDEX_ROW INDEX 1.
+    ROW_IDX = ES_INDEX_ROW-INDEX.
+
+    READ TABLE GT_ZTBFI0020 INTO GS_ZTBFI0020 INDEX ROW_IDX.
+
+    IF SY-SUBRC = 0.
+      BLART120 = GS_ZTBFI0020-BLART.  "선택한 행의 전표유형을 수정팝업창으로.
+      BLTXT120 = GS_ZTBFI0020-BLTXT.  "선택한 행의 전표유형명을 수정팝업창으로.
+      GV_BLTXT = GS_ZTBFI0020-BLTXT.
+    ENDIF.
+
+    IF GS_ZTBFI0020-DELFLG = 'X'.
+      MESSAGE S014 DISPLAY LIKE 'E'.
+
+    ELSE.
+      CASE OK_CODE.
+        WHEN 'UPDATE'. "선택 행 수정.
+          CALL SCREEN 120
+          STARTING AT 80 5.
+
+        WHEN 'DELETE'. "선택 행 삭제.
+          PERFORM DELETE_TYPE.
+      ENDCASE.
+
+    ENDIF.
+
+
+  ENDIF.
+
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form UPDATE_TYPE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM UPDATE_TYPE .
+  "CONFIRM POPUP.
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      TITLEBAR              = '전표유형 MASTER 데이터 수정'
+      TEXT_QUESTION         = '데이터를 수정하시겠습니까?'
+      TEXT_BUTTON_1         = 'YES'
+      ICON_BUTTON_1         = 'ICON_OKAY'
+      TEXT_BUTTON_2         = 'NO'
+      ICON_BUTTON_2         = 'ICON_CANCEL'
+      DISPLAY_CANCEL_BUTTON = ''
+    IMPORTING
+      ANSWER                = GV_ANSWER
+    EXCEPTIONS
+      TEXT_NOT_FOUND        = 1
+      OTHERS                = 2.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  "CONFIRM POPUP 에서 'YES' 선택 시.
+  IF GV_ANSWER = 1.
+
+    GS_ZTBFI0020-BLTXT = BLTXT120.
+    GS_ZTBFI0020-STAMP_DATE_L = SY-DATUM.
+    GS_ZTBFI0020-STAMP_TIME_L = SY-UZEIT.
+    PERFORM GET_EMPID.
+    GS_ZTBFI0020-STAMP_USER_L = GV_EMPID.
+
+    UPDATE ZTBFI0020 FROM GS_ZTBFI0020. "DB
+
+    IF SY-SUBRC = 0.                                       " DB 테이블에 UPDATE 성공한 경우
+      MODIFY GT_ZTBFI0020 FROM GS_ZTBFI0020 INDEX ROW_IDX. " 인터널 테이블도 수정해줌 - 인터널 테이블 수정 시 인덱스가 필요하기 때문에 이전에 받아둔 ROW_IDX 사용
+      MESSAGE S095 WITH '수정'.                    " 수정 성공했다고 메세지 출력
+    ELSE.                                                 " DB 테이블에 UPDATE 실패한 경우
+      MESSAGE S094 WITH '수정' DISPLAY LIKE 'E'.                    " 실패했다고 메세지 출력
+    ENDIF.
+
+    CLEAR: BLART120, BLTXT120.
+
+  ELSE.
+    MESSAGE S043 WITH '수정' DISPLAY LIKE 'W'.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form MATCH_TYPE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM MATCH_TYPE .
+  "입력한 값의 유효값 여부
+  DATA: LV_PATTERN TYPE STRING VALUE '^([A-Za-z]{2}|[A-Za-z]\d)$', "전표유형 : 영어2글자 or 영어+숫자.
+        LV_MATCH   TYPE ABAP_BOOL. "검증결과 저장.
+
+  FIND REGEX LV_PATTERN IN BLART110 MATCH COUNT LV_MATCH.         "정규표현식 사용하여 검증.
+
+  "입력값이 유효하지 않은 경우.
+  IF LV_MATCH = 0.
+    MESSAGE S024 DISPLAY LIKE 'E'.
+
+    CLEAR: BLART110, BLTXT110.
+    LEAVE TO SCREEN 110.
+
+    "입력값이 중복인 경우
+  ELSE.
+    DATA: LV_DELFLG TYPE ZTBFI0020-DELFLG.
+
+    SELECT SINGLE DELFLG
+      INTO LV_DELFLG
+      FROM ZTBFI0020
+      WHERE BLART = BLART110.
+
+    IF SY-SUBRC = 0.
+      CASE LV_DELFLG.
+        WHEN 'X'. "입력값이 삭제된 전표유형과 동일
+          MESSAGE S042 DISPLAY LIKE 'E'.
+          CLEAR: BLART110, BLTXT110.
+          LEAVE TO SCREEN 110.
+        WHEN OTHERS. " 입력값이 기존 전표유형과 동일
+          MESSAGE S017 DISPLAY LIKE 'E'.
+          CLEAR: BLART110, BLTXT110.
+          LEAVE TO SCREEN 110.
+      ENDCASE.
+    ENDIF.
+
+<font color ="#0000FF">*    IF SY-SUBRC = 0. "중복 값 있는 경우.</font>
+<font color ="#0000FF">*      MESSAGE S017 DISPLAY LIKE 'E'.</font>
+<font color ="#0000FF">*      CLEAR: BLART110, BLTXT110.</font>
+<font color ="#0000FF">*      LEAVE TO SCREEN 110.</font>
+<font color ="#0000FF">*    ENDIF.</font>
+
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DELETE_TYPE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM DELETE_TYPE .
+  "CONFIRM POPUP.
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      TITLEBAR              = '전표유형 MASTER 데이터 삭제'
+      TEXT_QUESTION         = '데이터를 삭제하시겠습니까?'
+      TEXT_BUTTON_1         = 'YES'
+      ICON_BUTTON_1         = 'ICON_OKAY'
+      TEXT_BUTTON_2         = 'NO'
+      ICON_BUTTON_2         = 'ICON_CANCEL'
+      DISPLAY_CANCEL_BUTTON = ''
+    IMPORTING
+      ANSWER                = GV_ANSWER
+    EXCEPTIONS
+      TEXT_NOT_FOUND        = 1
+      OTHERS                = 2.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  "CONFIRM POPUP 에서 'YES' 선택 시.
+  IF GV_ANSWER = 1.
+
+    "타임스탬프(최종) Update.
+    GS_ZTBFI0020-STAMP_DATE_L = SY-DATUM.
+    GS_ZTBFI0020-STAMP_TIME_L = SY-UZEIT.
+    PERFORM GET_EMPID.
+    GS_ZTBFI0020-STAMP_USER_L = GV_EMPID.
+
+    "데이터의 DELFLG 필드 값에 'X' 할당.
+    GS_ZTBFI0020-DELFLG = 'X'.
+
+    UPDATE ZTBFI0020 FROM GS_ZTBFI0020.
+
+    "ALV에 데이터 DISPLAY 하는 INTERNAL TABLE의 해당 DATA Update.
+    IF SY-SUBRC = 0.
+      MODIFY GT_ZTBFI0020 FROM GS_ZTBFI0020 INDEX ROW_IDX.
+      MESSAGE S095 WITH '삭제'. "삭제 성공.
+    ELSE.
+      MESSAGE S094 WITH '삭제' DISPLAY LIKE 'E'. "삭제 실패.
+    ENDIF.
+  ELSE.
+    MESSAGE S043 WITH '삭제' DISPLAY LIKE 'W'. "삭제 취소
+  ENDIF.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CHECK_TYPE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CHECK_TYPE .
+
+  IF GV_BLTXT = BLTXT120.
+    MESSAGE S018 DISPLAY LIKE 'E'.
+    CLEAR: BLTXT120.
+    LEAVE TO SCREEN 120.
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_SORT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_SORT .
+  DATA: LS_SORT TYPE LVC_S_SORT.
+
+  LS_SORT-FIELDNAME = 'BLART'.
+  LS_SORT-DOWN = ''.
+
+  APPEND LS_SORT TO GT_SORT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_EMPID</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_EMPID .
+  SELECT SINGLE EMPID
+         FROM ZTBSD1030
+         INTO GV_EMPID
+         WHERE LOGID = SY-UNAME.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_CONT_ALV</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_CONT_ALV .
+
+  CREATE OBJECT GO_CONT
+    EXPORTING
+      CONTAINER_NAME              = 'AREA'
+    EXCEPTIONS
+      CNTL_ERROR                  = 1
+      CNTL_SYSTEM_ERROR           = 2
+      CREATE_ERROR                = 3
+      LIFETIME_ERROR              = 4
+      LIFETIME_DYNPRO_DYNPRO_LINK = 5
+      OTHERS                      = 6.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+  CREATE OBJECT GO_ALV
+    EXPORTING
+      I_PARENT          = GO_CONT
+    EXCEPTIONS
+      ERROR_CNTL_CREATE = 1
+      ERROR_CNTL_INIT   = 2
+      ERROR_CNTL_LINK   = 3
+      ERROR_DP_CREATE   = 4
+      OTHERS            = 5.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_HANDLER</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_HANDLER .
+  SET HANDLER LCL_EVENT_HANDLER=&gt;ON_HOTSPOT_CLICK FOR GO_ALV.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_DISPLAY</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_DISPLAY .
+
+  CALL METHOD GO_ALV-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+    EXPORTING
+      I_STRUCTURE_NAME              = 'ZTBFI0020' "Dictionary에 있는 structure
+      IS_LAYOUT                     = GS_LAYOUT
+    CHANGING
+      IT_OUTTAB                     = GT_ZTBFI0020
+      IT_FIELDCATALOG               = GT_FCAT
+      IT_SORT                       = GT_SORT
+    EXCEPTIONS
+      INVALID_PARAMETER_COMBINATION = 1
+      PROGRAM_ERROR                 = 2
+      TOO_MANY_LINES                = 3
+      OTHERS                        = 4.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ALV_REFRESH</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ALV_REFRESH .
+
+  GO_ALV-&gt;REFRESH_TABLE_DISPLAY(
+   EXCEPTIONS
+     FINISHED       = 1                " Display was Ended (by Export)
+     OTHERS         = 2
+ ).
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form INIT_CONDITION</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM INIT_CONDITION .
+  SELECT SINGLE COMCODE "1
+    FROM ZTBFI0020
+    INTO ZSBFI0020-COMCODE.
+
+<font color ="#0000FF">*  SELECT SINGLE COMCODE "2</font>
+<font color ="#0000FF">*    FROM ZTBSD1010</font>
+<font color ="#0000FF">*    WHERE DELFLG &lt;&gt; 'X'.</font>
+
+  IF ZSBFI0020-ALL IS INITIAL
+  AND ZSBFI0020-VALID IS INITIAL
+  AND ZSBFI0020-DELETED IS INITIAL.
+    ZSBFI0020-VALID = 'X'.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_EMPINFO</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_EMPINFO .
+
+  SELECT SINGLE *
+    FROM ZTBSD1030
+    WHERE EMPID = GV_EMPID.
+
+  SELECT SINGLE DEPNAME
+    FROM ZTBSD1020
+    INTO ZTBSD1020-DEPNAME
+    WHERE DEPCODE = ZTBSD1030-DEPCODE.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

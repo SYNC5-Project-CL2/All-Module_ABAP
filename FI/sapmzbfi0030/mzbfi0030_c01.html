@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBFI0030_C01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBFI0030_C01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0030_C01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBFI0030_C01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">*클래스 정의</font>
+CLASS LCL_EVENT_HANDLER DEFINITION.
+  PUBLIC SECTION.
+    CLASS-METHODS: ON_TOOLBAR FOR EVENT TOOLBAR
+                              OF CL_GUI_ALV_GRID
+                              IMPORTING E_OBJECT E_INTERACTIVE,
+                   ON_USER_COMMAND FOR EVENT USER_COMMAND
+                                   OF CL_GUI_ALV_GRID
+                                   IMPORTING E_UCOMM.
+ENDCLASS.
+
+<font color ="#0000FF">*클래스 구현</font>
+CLASS LCL_EVENT_HANDLER IMPLEMENTATION.
+
+  METHOD ON_TOOLBAR.
+
+    " 툴바에 버튼 추가
+    DATA: LT_TOOLBAR TYPE TABLE OF STB_BUTTON,
+          LS_TOOLBAR TYPE STB_BUTTON.
+
+<font color ="#0000FF">*   [내역 삭제] 버튼</font>
+    LS_TOOLBAR-FUNCTION = 'DROW'.
+    LS_TOOLBAR-ICON     = ICON_DELETE_ROW.
+    LS_TOOLBAR-TEXT     = '내역 삭제'.
+
+<font color ="#0000FF">*   ALV 데이터가 1건 이상일 때만 버튼 활성화</font>
+    IF LINES( GT_ZTBFI0031 ) &gt; 0.
+      LS_TOOLBAR-DISABLED = ''.          " 버튼 활성화
+    ELSE.
+      LS_TOOLBAR-DISABLED = 'X'.          " 버튼 비활성화
+    ENDIF.
+
+    APPEND LS_TOOLBAR TO LT_TOOLBAR.
+
+    " ALV 툴바에 버튼 추가
+    APPEND LINES OF LT_TOOLBAR TO E_OBJECT-&gt;MT_TOOLBAR.
+  ENDMETHOD.
+
+  METHOD ON_USER_COMMAND.
+    CASE E_UCOMM.
+      WHEN 'DROW'.
+        PERFORM CLICK_DROW.
+    ENDCASE.
+  ENDMETHOD.
+
+ENDCLASS.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0030I01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0030I01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRFI0030I01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRFI0030I01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE exit INPUT.
+
+  CASE ok_code.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+    WHEN 'CANCEL'.
+      LEAVE TO SCREEN 0.
+
+  ENDCASE.
+
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0100  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0100 INPUT.
+
+  CASE ok_code.
+    WHEN 'BACK'.
+
+      LEAVE TO SCREEN 0.
+
+    WHEN 'BTN1'.
+
+      READ TABLE gt_alv1 INTO gs_alv1 INDEX gs_hot_index-index.
+      IF gs_alv1-revrs = 'X'.
+        MESSAGE i439(zcommon_msg) DISPLAY LIKE 'E'.
+
+      ELSE.
+        CALL SCREEN 110 STARTING AT 5 5.
+      ENDIF.
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0110  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0110 INPUT.
+
+  DATA: lv_answer TYPE char1.
+
+  DATA: lt_ztbfi0030 TYPE TABLE OF ztbfi0030,
+        ls_ztbfi0030 LIKE LINE OF lt_ztbfi0030,
+
+        lt_ztbfi0031 TYPE TABLE OF ztbfi0031,
+        ls_ztbfi0031 LIKE LINE OF lt_ztbfi0031.
+
+  DATA: lv_num_range TYPE char10.
+
+  CASE ok_code.
+    WHEN 'OKAY'.
+
+      IF zsbfi0031_pop1-stgrd IS INITIAL.
+
+        MESSAGE i438(zcommon_msg) DISPLAY LIKE 'E'.
+
+      ELSE.
+
+<font color ="#0000FF">*        READ TABLE gt_alv1 INTO gs_alv1 INDEX gs_hot_index-index.</font>
+<font color ="#0000FF">*        IF sy-subrc = 0.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*          IF gs_alv1-revrs = 'X'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*            MESSAGE '이미 역분개 처리 되었습니다' TYPE 'I' DISPLAY LIKE 'E'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*          ELSE.</font>
+        MOVE-CORRESPONDING zsbfi0031_pop1 TO ls_ztbfi0031.
+
+        CALL FUNCTION 'NUMBER_GET_NEXT'
+          EXPORTING
+            nr_range_nr             = '01'
+            object                  = 'ZBBFI0030'
+<font color ="#0000FF">*           QUANTITY                = '1'</font>
+<font color ="#0000FF">*           SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*           TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*           IGNORE_BUFFER           = ' '</font>
+          IMPORTING
+            number                  = lv_num_range
+<font color ="#0000FF">*           QUANTITY                =</font>
+<font color ="#0000FF">*           RETURNCODE              =</font>
+          EXCEPTIONS
+            interval_not_found      = 1
+            number_range_not_intern = 2
+            object_not_found        = 3
+            quantity_is_0           = 4
+            quantity_is_not_1       = 5
+            interval_overflow       = 6
+            buffer_overflow         = 7
+            OTHERS                  = 8.
+        IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+        ENDIF.
+
+        DATA: lv_user TYPE ztbfi0031-stamp_user_l.
+
+        SELECT SINGLE empid
+          FROM ztbsd1030
+          INTO lv_user
+          WHERE logid = sy-uname.
+
+        UPDATE ztbfi0031 SET stodt = @ls_ztbfi0031-stodt, " 현재 꺼 역분개 치는거 아이템 업뎃
+                             stblg = @lv_num_range,
+                             stgrd = @ls_ztbfi0031-stgrd,
+                             stamp_date_l = @sy-datum,
+                             stamp_time_l = @sy-uzeit,
+                             stamp_user_l = @lv_user
+                         WHERE belnr = @zsbfi0031_pop1-belnr.
+
+        LOOP AT gt_alv2 INTO gs_alv2.
+
+          IF gs_alv2-shkzg = 'S'.
+            MOVE-CORRESPONDING gs_alv2 TO ls_ztbfi0031.
+            MOVE-CORRESPONDING zsbfi0031_pop1 TO ls_ztbfi0031.
+            ls_ztbfi0031-belnr = lv_num_range.
+            ls_ztbfi0031-shkzg = 'H'.
+
+            ls_ztbfi0031-stamp_date_f = sy-datum.
+            ls_ztbfi0031-stamp_time_f = sy-uzeit.
+            SELECT SINGLE empid
+              FROM ztbsd1030
+              INTO ls_ztbfi0031-stamp_user_f
+              WHERE logid = sy-uname.
+
+            INSERT ztbfi0031 FROM ls_ztbfi0031.
+<font color ="#0000FF">*                UPDATE ztbfi0031 SET shkzg = 'H'</font>
+<font color ="#0000FF">*                                 WHERE belnr = gs_alv2-belnr</font>
+<font color ="#0000FF">*                                  AND buzei = gs_alv2-buzei.</font>
+
+          ELSEIF gs_alv2-shkzg = 'H'.
+
+            MOVE-CORRESPONDING gs_alv2 TO ls_ztbfi0031.
+            MOVE-CORRESPONDING zsbfi0031_pop1 TO ls_ztbfi0031.
+            ls_ztbfi0031-belnr = lv_num_range.
+            ls_ztbfi0031-shkzg = 'S'.
+
+            ls_ztbfi0031-stamp_date_f = sy-datum.
+            ls_ztbfi0031-stamp_time_f = sy-uzeit.
+            SELECT SINGLE empid
+              FROM ztbsd1030
+              INTO ls_ztbfi0031-stamp_user_f
+              WHERE logid = sy-uname.
+
+            INSERT ztbfi0031 FROM ls_ztbfi0031.
+
+<font color ="#0000FF">*                UPDATE ztbfi0031 SET shkzg = 'S'</font>
+<font color ="#0000FF">*                                 WHERE belnr = gs_alv2-belnr</font>
+<font color ="#0000FF">*                                 AND buzei = gs_alv2-buzei.</font>
+          ENDIF.
+
+        ENDLOOP.
+
+
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*            UPDATE ztbfi0031 SET stodt = @ls_ztbfi0031-stodt,</font>
+<font color ="#0000FF">*                                 stblg = @ls_ztbfi0031-stblg,</font>
+<font color ="#0000FF">*                                 stgrd = @ls_ztbfi0031-stgrd</font>
+<font color ="#0000FF">*                             WHERE belnr = @zsbfi0031_pop1-belnr.</font>
+
+
+        IF sy-subrc = 0.
+          LOOP AT gt_alv2 INTO gs_alv2. " 바로 업뎃 전 전표
+            gs_alv2-stodt = zsbfi0031_pop1-stodt.
+            gs_alv2-stblg = lv_num_range.
+            gs_alv2-stgrd = zsbfi0031_pop1-stgrd.
+            IF gs_alv2-shkzg = 'S'.
+
+              gs_alv2-shkzg = 'H'.
+
+            ELSEIF gs_alv2-shkzg = 'H'.
+
+              gs_alv2-shkzg = 'S'.
+
+            ENDIF.
+
+            MODIFY gt_alv2 FROM gs_alv2.
+
+          ENDLOOP.
+          SORT gt_alv2 BY shkzg DESCENDING. """"""""""""""""""""""""""차대변 순서
+          PERFORM refresh_alv2.
+        ENDIF.
+
+<font color ="#0000FF">********************************************************************** " 위까지 아이템</font>
+
+<font color ="#0000FF">*            UPDATE ztbfi0030 SET revrs = 'X'</font>
+<font color ="#0000FF">*                             WHERE belnr = @zsbfi0031_pop1-belnr.</font>
+
+        READ TABLE gt_alv1 INTO gs_alv1 INDEX gs_hot_index-index.
+        IF sy-subrc = 0.
+          MOVE-CORRESPONDING gs_alv1 TO ls_ztbfi0030.
+<font color ="#0000FF">*            ls_ztbfi0030-revrs = 'X'.</font>
+
+          DATA: lv_user2 TYPE ztbfi0030-stamp_user_l.
+
+          SELECT SINGLE empid
+            FROM ztbsd1030
+            INTO lv_user2
+            WHERE logid = sy-uname.
+
+          UPDATE ztbfi0030 SET revrs = 'X',
+                               stamp_date_l = @sy-datum,
+                               stamp_time_l = @sy-uzeit,
+                               stamp_user_l = @lv_user2
+                           WHERE belnr = @zsbfi0031_pop1-belnr.
+
+          ls_ztbfi0030-belnr = lv_num_range.
+
+          SELECT SINGLE empid
+            INTO ls_ztbfi0030-usnam
+            FROM ztbsd1030
+            WHERE logid = sy-uname.
+
+          ls_ztbfi0030-stamp_date_f = sy-datum.
+          ls_ztbfi0030-stamp_time_f = sy-uzeit.
+          SELECT SINGLE empid
+            FROM ztbsd1030
+            INTO ls_ztbfi0030-stamp_user_f
+            WHERE logid = sy-uname.
+
+
+          INSERT ztbfi0030 FROM ls_ztbfi0030. " 헤더 추가 뉴 역분개 전표
+          APPEND ls_ztbfi0030 TO gt_alv1. " 추가 하고 바로 보여줄려고
+          PERFORM refresh_alv1.
+        ENDIF.
+
+
+        IF sy-subrc = 0.
+          MOVE-CORRESPONDING gs_alv1 TO ls_ztbfi0030.
+          ls_ztbfi0030-revrs = 'X'.
+          MODIFY gt_alv1 FROM ls_ztbfi0030 INDEX gs_hot_index.
+          PERFORM refresh_alv1.
+        ENDIF.
+
+        LEAVE TO SCREEN 0.
+
+<font color ="#0000FF">*          ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*        ENDIF.</font>
+
+      ENDIF.
+
+  ENDCASE.
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

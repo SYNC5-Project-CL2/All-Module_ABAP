@@ -1,0 +1,664 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBFI0010F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBFI0010F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0010F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBFI0010F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout .
+
+  gs_layout-cwidth_opt = 'A'.
+  gs_layout-zebra = 'X'.
+  gs_layout-grid_title = '계정과목 MASTER ALV'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat .
+
+  PERFORM fill_fcat USING:
+        '1' 'RTYPE' 'ZTBFI0010' '' '',
+        '2' 'GCODE' 'ZTBFI0010' '' '',
+        '3' 'CATCODE' 'ZTBFI0010' '' '',
+        '4' 'ACODE' 'ZTBFI0010' '' '',
+        '5' 'ANAME' 'ZTBFI0011' '' '',
+        '6' 'STAMP_DATE_F' 'ZTBFI0010' '' '',
+        '7' 'STAMP_TIME_F' 'ZTBFI0010' '' '',
+        '8' 'STAMP_USER_F' 'ZTBFI0010' '' '',
+        '9' 'STAMP_DATE_L' 'ZTBFI0010' '' '',
+        '10' 'STAMP_TIME_L' 'ZTBFI0010' '' '',
+        '11' 'STAMP_USER_L' 'ZTBFI0010' '' '',
+        '12' 'DELFLG' 'ZTBFI0010' '' ''.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat  USING pv_colpos TYPE lvc_s_fcat-col_pos
+                      pv_fieldname TYPE lvc_s_fcat-fieldname
+                      pv_reftable TYPE lvc_s_fcat-ref_table
+                      pv_reffield TYPE lvc_s_fcat-ref_field
+                      pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname = pv_fieldname.
+  ls_fcat-ref_table = pv_reftable.
+  ls_fcat-ref_field = pv_reffield.
+  ls_fcat-coltext = pv_coltext.
+
+  APPEND ls_fcat TO gt_fcat.
+
+  CLEAR: ls_fcat.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_data_for_alv</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_data_for_alv .
+
+  DATA: lv_aname TYPE zsbfi0010-aname.
+
+  lv_aname = '%' && zsbfi0010-aname && '%'.
+
+  PERFORM range_for_acode_gcode_catcode.
+  PERFORM rad_condition.
+
+  SELECT *
+    FROM ztbfi0010 AS a
+    INNER JOIN ztbfi0011 AS b
+    ON a~acode = b~acode AND
+       a~delflg = b~delflg
+    INTO CORRESPONDING FIELDS OF TABLE gt_alv
+    WHERE a~gcode IN rt_gcode
+      AND a~catcode IN rt_catcode
+      AND a~acode IN rt_acode
+      AND b~aname LIKE lv_aname
+      AND a~delflg LIKE gv_radcon.
+
+  PERFORM get_name.
+
+  CLEAR: rt_acode, rs_acode, rt_gcode, rs_gcode, rt_catcode, rs_catcode." lv_aname, gv_radcon.
+
+  go_alv-&gt;refresh_table_display(
+
+    EXCEPTIONS
+      finished       = 1                " Display was Ended (by Export)
+      OTHERS         = 2
+  ).
+  IF sy-subrc &lt;&gt; 0.
+
+  ENDIF.
+
+  IF gt_alv IS INITIAL.
+
+    MESSAGE s015(zcommon_msg) DISPLAY LIKE 'E'.
+
+  ELSE.
+
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form range_for_acode</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM range_for_acode_gcode_catcode .
+
+  IF zsbfi0010-acode IS NOT INITIAL.
+
+    CLEAR rs_acode.
+    rs_acode-sign = 'I'.
+    rs_acode-option = 'EQ'.
+    rs_acode-low = zsbfi0010-acode.
+
+    APPEND rs_acode TO rt_acode.
+
+  ELSE.
+
+  ENDIF.
+
+<font color ="#0000FF">*  APPEND rs_acode TO rt_acode.</font>
+
+  IF zsbfi0010-gcode IS NOT INITIAL.
+
+    CLEAR rs_gcode.
+    rs_gcode-sign = 'I'.
+    rs_gcode-option = 'EQ'.
+    rs_gcode-low = zsbfi0010-gcode.
+
+    APPEND rs_gcode TO rt_gcode.
+
+  ELSE.
+
+  ENDIF.
+
+  IF zsbfi0010-catcode IS NOT INITIAL.
+
+    CLEAR rs_catcode.
+    rs_catcode-sign = 'I'.
+    rs_catcode-option = 'EQ'.
+    rs_catcode-low = zsbfi0010-catcode.
+    APPEND rs_catcode TO rt_catcode.
+
+  ELSE. "암것도 입력안하면 다 가져옴
+
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form rad_condition</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM rad_condition .
+
+<font color ="#0000FF">*  data: lv_radcon TYPE char1.</font>
+
+  CASE 'X'.
+    WHEN zsbfi0010-all.
+      gv_radcon = '%'.
+    WHEN zsbfi0010-val.
+      gv_radcon = ''.
+    WHEN zsbfi0010-del.
+      gv_radcon = 'X'.
+  ENDCASE.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form refresh_srch_con</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM refresh_srch_con .
+
+  CLEAR: zsbfi0010, gt_alv, gs_alv.
+
+  zsbfi0010-all = ''.
+  zsbfi0010-val = 'X'.
+  zsbfi0010-del = ''.
+
+  go_alv-&gt;refresh_table_display(
+
+    EXCEPTIONS
+      finished       = 1                " Display was Ended (by Export)
+      OTHERS         = 2
+  ).
+  IF sy-subrc &lt;&gt; 0.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_nr_range</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_nr_range .
+
+  DATA: lv_nr TYPE nrnr.
+
+  CASE zsbfi00102-gcode.
+    WHEN 'AS'.
+      lv_nr = '1'.
+    WHEN 'LI'.
+      lv_nr = '2'.
+    WHEN 'EQ'.
+      lv_nr = '3'.
+    WHEN 'RV'.
+      lv_nr = '4'.
+    WHEN 'EXP'.
+      lv_nr = '5'.
+  ENDCASE.
+
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      nr_range_nr             = lv_nr
+      object                  = 'ZBBFI0010'
+<font color ="#0000FF">*     QUANTITY                = '1'</font>
+<font color ="#0000FF">*     SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*     TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*     IGNORE_BUFFER           = ' '</font>
+    IMPORTING
+      number                  = gs_alv-acode
+<font color ="#0000FF">*     QUANTITY                =</font>
+<font color ="#0000FF">*     RETURNCODE              =</font>
+    EXCEPTIONS
+      interval_not_found      = 1
+      number_range_not_intern = 2
+      object_not_found        = 3
+      quantity_is_0           = 4
+      quantity_is_not_1       = 5
+      interval_overflow       = 6
+      buffer_overflow         = 7
+      OTHERS                  = 8.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_empid</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_empid .
+
+  DATA: lv_empid TYPE ztbsd1030-empid.
+
+  SELECT SINGLE empid
+    FROM ztbsd1030
+    INTO lv_empid
+    WHERE logid = sy-uname.
+
+  MOVE lv_empid TO gv_empid.
+
+  CLEAR lv_empid.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form delete_data</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM delete_data .
+
+  DATA: lt_row       TYPE lvc_t_row,
+        ls_row       TYPE lvc_s_row,
+
+        lv_answer    TYPE char1,
+
+        ls_ztbfi0010 TYPE ztbfi0010,
+        ls_ztbfi0011 TYPE ztbfi0011.
+
+  go_alv-&gt;get_selected_rows(
+    IMPORTING
+      et_index_rows = lt_row                  " Indexes of Selected Rows
+<font color ="#0000FF">*      et_row_no     =                  " Numeric IDs of Selected Rows</font>
+  ).
+
+  IF lt_row IS INITIAL.
+
+    MESSAGE s008(zcommon_msg) DISPLAY LIKE 'E'.
+
+  ELSE.
+
+    READ TABLE lt_row INTO ls_row INDEX 1.
+    IF sy-subrc = 0.
+
+      READ TABLE gt_alv INTO gs_alv INDEX ls_row-index.
+      IF sy-subrc = 0.
+
+        IF gs_alv-delflg = 'X'.
+
+          MESSAGE s014(zcommon_msg) DISPLAY LIKE 'E'.
+
+        ELSE.
+
+          CALL FUNCTION 'POPUP_TO_CONFIRM'
+            EXPORTING
+<font color ="#0000FF">*             TITLEBAR              = ' '</font>
+<font color ="#0000FF">*             DIAGNOSE_OBJECT       = ' '</font>
+              text_question         = '해당 데이터를 삭제하시겠습니끼?'
+<font color ="#0000FF">*             TEXT_BUTTON_1         = 'Ja'(001)</font>
+<font color ="#0000FF">*             ICON_BUTTON_1         = ' '</font>
+<font color ="#0000FF">*             TEXT_BUTTON_2         = 'Nein'(002)</font>
+<font color ="#0000FF">*             ICON_BUTTON_2         = ' '</font>
+<font color ="#0000FF">*             DEFAULT_BUTTON        = '1'</font>
+              display_cancel_button = ''
+<font color ="#0000FF">*             USERDEFINED_F1_HELP   = ' '</font>
+<font color ="#0000FF">*             START_COLUMN          = 25</font>
+<font color ="#0000FF">*             START_ROW             = 6</font>
+<font color ="#0000FF">*             POPUP_TYPE            =</font>
+<font color ="#0000FF">*             IV_QUICKINFO_BUTTON_1 = ' '</font>
+<font color ="#0000FF">*             IV_QUICKINFO_BUTTON_2 = ' '</font>
+            IMPORTING
+              answer                = lv_answer
+<font color ="#0000FF">*               TABLES</font>
+<font color ="#0000FF">*             PARAMETER             =</font>
+            EXCEPTIONS
+              text_not_found        = 1
+              OTHERS                = 2.
+          IF lv_answer = 1.
+
+
+            MOVE-CORRESPONDING gs_alv TO ls_ztbfi0010.
+            ls_ztbfi0010-stamp_date_l = sy-datum.
+            ls_ztbfi0010-stamp_time_l = sy-uzeit.
+            PERFORM get_empid.
+            ls_ztbfi0010-stamp_user_l = gv_empid.
+            CLEAR gv_empid.
+            ls_ztbfi0010-delflg = 'X'.
+
+            MOVE-CORRESPONDING gs_alv TO ls_ztbfi0011.
+            ls_ztbfi0011-spras = sy-langu.
+            ls_ztbfi0011-delflg = 'X'.
+            PERFORM get_empid.
+            ls_ztbfi0011-stamp_user_l = gv_empid.
+            ls_ztbfi0011-stamp_date_l = sy-datum.
+            ls_ztbfi0011-stamp_time_l = sy-uzeit.
+            CLEAR gv_empid.
+
+            UPDATE ztbfi0010 FROM ls_ztbfi0010.
+            UPDATE ztbfi0011 FROM ls_ztbfi0011.
+
+            IF sy-subrc = 0.
+              gs_alv-delflg = 'X'.
+
+              MESSAGE s095(zcommon_msg) WITH '삭제'.
+<font color ="#0000FF">*                  CLEAR: zsbfi0010. "생성후 조회 조건 초기화</font>
+
+              IF zsbfi0010-del = 'X'.
+
+                MODIFY gt_alv FROM gs_alv INDEX ls_row-index.
+                go_alv-&gt;refresh_table_display(
+                  EXCEPTIONS
+                    finished       = 1                " Display was Ended (by Export)
+                    OTHERS         = 2
+                ).
+                IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*                   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                     WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+                ENDIF.
+              ELSE.
+
+                DELETE gt_alv WHERE acode = gs_alv-acode.
+                go_alv-&gt;refresh_table_display(
+                  EXCEPTIONS
+                    finished       = 1                " Display was Ended (by Export)
+                    OTHERS         = 2
+                ).
+                IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*                   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                     WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+                ENDIF.
+
+              ENDIF.
+
+            ELSE.
+
+            ENDIF.
+
+
+
+          ELSE.
+
+            MESSAGE s097(zcommon_msg) WITH '삭제' DISPLAY LIKE 'E'.
+
+          ENDIF.
+
+        ENDIF.
+
+      ELSE.
+
+      ENDIF.
+
+    ELSE.
+
+    ENDIF.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form update_edited_data</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM update_edited_data .
+
+  DATA: ls_ztbfi0010 TYPE ztbfi0010,
+        ls_ztbfi0011 TYPE ztbfi0011.
+
+  ls_ztbfi0010-comcode = '1000'.
+  ls_ztbfi0010-stamp_date_f = gs_alv-stamp_date_f.
+  ls_ztbfi0010-stamp_time_f = gs_alv-stamp_time_f.
+  ls_ztbfi0010-stamp_user_f = gs_alv-stamp_user_f.
+
+  ls_ztbfi0010-stamp_date_l = sy-datum.
+  ls_ztbfi0010-stamp_time_l = sy-uzeit.
+  PERFORM get_empid.
+  ls_ztbfi0010-stamp_user_l = gv_empid.
+  CLEAR gv_empid.
+  MOVE-CORRESPONDING zsbfi00103 TO ls_ztbfi0010.
+
+<font color ="#0000FF">*  ls_ztbfi0011-comcode = '1000'.</font>
+  ls_ztbfi0011-stamp_date_f = gs_alv-stamp_date_f.
+  ls_ztbfi0011-stamp_time_f = gs_alv-stamp_time_f.
+  ls_ztbfi0011-stamp_user_f = gs_alv-stamp_user_f.
+
+  ls_ztbfi0011-stamp_date_l = sy-datum.
+  ls_ztbfi0011-stamp_time_l = sy-uzeit.
+  PERFORM get_empid.
+  ls_ztbfi0011-stamp_user_l = gv_empid.
+  CLEAR gv_empid.
+  ls_ztbfi0011-spras = sy-langu.
+  MOVE-CORRESPONDING zsbfi00103 TO ls_ztbfi0011.
+
+  UPDATE ztbfi0010 FROM ls_ztbfi0010.
+
+  IF sy-subrc = 0.
+
+    UPDATE ztbfi0011 FROM ls_ztbfi0011.
+
+    IF sy-subrc = 0.
+
+      MOVE-CORRESPONDING ls_ztbfi0010 TO gs_alv.
+      MOVE-CORRESPONDING ls_ztbfi0011 TO gs_alv.
+      MODIFY gt_alv FROM gs_alv INDEX gs_row-index.
+      IF sy-subrc = 0.
+
+
+        go_alv-&gt;refresh_table_display(
+          EXCEPTIONS
+            finished       = 1                " Display was Ended (by Export)
+            OTHERS         = 2
+        ).
+        IF sy-subrc &lt;&gt; 0.
+        ENDIF.
+
+        MESSAGE s095(zcommon_msg) WITH '수정'.
+      ELSE.
+      ENDIF.
+
+    ELSE.
+
+      MESSAGE s097(zcommon_msg) WITH '수정'.
+
+    ENDIF.
+  ELSE.
+
+    MESSAGE s097(zcommon_msg) WITH '수정'.
+
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_name</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_name .
+
+
+  DATA: lt_dom1 TYPE TABLE OF dd07v,
+        ls_dom1 LIKE LINE OF lt_dom1,
+        lt_dom2 TYPE TABLE OF dd07v,
+        ls_dom2 LIKE LINE OF lt_dom1,
+        lt_dom3 TYPE TABLE OF dd07v,
+        ls_dom3 LIKE LINE OF lt_dom1.
+
+  CALL FUNCTION 'GET_DOMAIN_VALUES'
+    EXPORTING
+      domname         = 'ZDB_RTYPE'
+      text            = 'X'
+<font color ="#0000FF">*     FILL_DD07L_TAB  = ' '</font>
+    TABLES
+      values_tab      = lt_dom1
+<font color ="#0000FF">*     VALUES_DD07L    =</font>
+    EXCEPTIONS
+      no_values_found = 1
+      OTHERS          = 2.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  CALL FUNCTION 'GET_DOMAIN_VALUES'
+    EXPORTING
+      domname         = 'ZDB_GCODE'
+      text            = 'X'
+<font color ="#0000FF">*     FILL_DD07L_TAB  = ' '</font>
+    TABLES
+      values_tab      = lt_dom2
+<font color ="#0000FF">*     VALUES_DD07L    =</font>
+    EXCEPTIONS
+      no_values_found = 1
+      OTHERS          = 2.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  CALL FUNCTION 'GET_DOMAIN_VALUES'
+    EXPORTING
+      domname         = 'ZDB_CATCODE'
+      text            = 'X'
+<font color ="#0000FF">*     FILL_DD07L_TAB  = ' '</font>
+    TABLES
+      values_tab      = lt_dom3
+<font color ="#0000FF">*     VALUES_DD07L    =</font>
+    EXCEPTIONS
+      no_values_found = 1
+      OTHERS          = 2.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+
+  LOOP AT gt_alv INTO gs_alv.
+
+    IF gs_alv-rtype = 'BS'. """"""""""""""""""""""""""""""""""""
+
+      READ TABLE lt_dom1 INTO ls_dom1 WITH KEY domvalue_l = gs_alv-rtype.
+
+      IF sy-subrc = 0.
+
+        gs_alv-rtname = ls_dom1-ddtext.
+
+      ENDIF.
+
+    ELSEIF gs_alv-rtype = 'PL'.
+
+      READ TABLE lt_dom1 INTO ls_dom1 WITH KEY domvalue_l = gs_alv-rtype.
+
+      IF sy-subrc = 0.
+
+        gs_alv-rtname = ls_dom1-ddtext.
+
+      ENDIF.
+
+
+    ENDIF.
+
+<font color ="#0000FF">*    IF gs_alv-rtype = 'BS'. """"""""""""""""""""""""""""""""""""</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      READ TABLE lt_dom1 INTO ls_dom1 WITH KEY domvalue_l = gs_alv-rtype.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      IF sy-subrc = 0.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*        gs_alv-rtname = ls_dom1-ddtext.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ELSEIF gs_alv-rtype = 'PL'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      READ TABLE lt_dom1 INTO ls_dom1 WITH KEY domvalue_l = gs_alv-rtype.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      IF sy-subrc = 0.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*        gs_alv-rtname = ls_dom1-ddtext.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ENDIF.</font>
+
+
+
+
+
+    MODIFY gt_alv FROM gs_alv.
+
+
+  ENDLOOP.
+
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

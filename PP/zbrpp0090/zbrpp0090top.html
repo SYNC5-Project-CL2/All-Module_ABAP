@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRPP0090TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRPP0090TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRPP0090TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRPP0090TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+data: ok_code TYPE sy-ucomm.
+
+data: gs_ztbsd0010 TYPE ztbsd0010.
+
+data: BEGIN OF gs_date.
+      data: SALESDATE type dats,
+            WEEK TYPE int1,
+      end of gs_date.
+data: gt_date like TABLE OF gs_date.
+
+
+
+data: go_cont1 TYPE ref to cl_gui_custom_container,
+      go_alv1 TYPE REF TO cl_gui_alv_grid,
+
+      go_cont2 TYPE ref to cl_gui_custom_container,
+      go_alv2 TYPE REF TO cl_gui_alv_grid,
+
+      go_cont3 TYPE ref to cl_gui_custom_container,
+      go_alv3 TYPE REF TO cl_gui_alv_grid,
+
+      go_cont4 TYPE ref to cl_gui_custom_container,
+      go_alv4 TYPE REF TO cl_gui_alv_grid,
+
+      gs_layout1 TYPE lvc_s_layo,
+      gt_fcat1 TYPE lvc_t_fcat,
+
+      gs_layout2 TYPE lvc_s_layo,
+      gt_fcat2 TYPE lvc_t_fcat,
+
+      gs_layout3 TYPE lvc_s_layo,
+      gt_fcat3 TYPE lvc_t_fcat,
+
+      gs_layout4 TYPE lvc_s_layo,
+      gt_fcat4 TYPE lvc_t_fcat.
+
+data: gt_alv1 TYPE TABLE of ztbsd0010,
+      gs_alv1 like LINE OF gt_alv1,
+
+      gt_alv2 TYPE TABLE of ztbsd0011,
+      gs_alv2 like LINE OF gt_alv2,
+
+      gt_alv3 TYPE TABLE of ztbpp0010,
+      gs_alv3 like LINE OF gt_alv3,
+
+      gt_alv4 TYPE TABLE of ztbpp0011,
+      gs_alv4 like LINE OF gt_alv4.
+
+
+
+
+
+
+
+SELECTION-SCREEN BEGIN OF BLOCK blk1 WITH FRAME TITLE text-t01.
+
+  SELECT-OPTIONS: so_yr for gs_ztbsd0010-salesyear.
+
+SELECTION-SCREEN END OF BLOCK blk1.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

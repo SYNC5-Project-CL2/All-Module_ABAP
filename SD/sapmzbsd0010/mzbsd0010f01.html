@@ -1,0 +1,600 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBSD0010F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBSD0010F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0010F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBFI0010F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout .
+
+  gs_layout-zebra = 'X'.
+  gs_layout-cwidth_opt = 'A'.
+  gs_layout-grid_title = '납품처 리스트'.
+  gs_layout-sel_mode = 'B'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_sort</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_sort .
+
+  gs_sort-fieldname = 'SUPCODE'.
+  gs_sort-down = 'X'.
+
+  APPEND gs_sort TO gt_sort.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_row_no</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_row_no .
+
+  CALL METHOD go_alv-&gt;get_selected_rows
+    IMPORTING
+      et_index_rows = gt_rows.
+
+  IF gt_rows IS INITIAL.
+    MESSAGE s008 DISPLAY LIKE 'E'.
+  ELSE.
+    READ TABLE gt_rows INTO gs_row INDEX 1. "선택된 행의 정보를 gs_row로 가져옴
+    READ TABLE gt_zsbsd0030 INTO zsbsd0030 INDEX gs_row-index. "gs_row의 인덱스 정보를 갖고 alv 인터널 테이블에서 alv str로 read
+
+    IF zsbsd0030-delflg = 'X'. "이미 삭제된 데이터 선택하면 에러 메시지
+      MESSAGE s014 DISPLAY LIKE 'E'.
+    ELSE.
+      CASE ok_code.
+        WHEN 'UPDATE'.
+          CALL SCREEN 120
+            STARTING AT 5 5.
+        WHEN 'DELETE'.
+          PERFORM delete.
+      ENDCASE.
+    ENDIF.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_alv_data</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_alv_data .
+
+CLEAR: rt_bpcode, rt_supcode. "BP 코드 + 납품처 코드 SELECT-OPTION 인터널 테이블 클리어
+
+<font color ="#0000FF">*라디오 버튼 선택에 따라 gv_del의 값을 설정하고, 나중에 데이터 selection에서 where 조건에 붙임</font>
+IF zsbsd0040-rad_all = 'X'.
+  gv_del = '%'.
+ELSEIF zsbsd0040-rad_val = 'X'.
+  gv_del = ''.
+ELSE.
+  gv_del = 'X'.
+ENDIF.
+
+
+IF zsbsd0040-bpcode IS NOT INITIAL. "BP코드 검색필드에 값 있는 경우
+  rs_bpcode-sign = 'I'.
+  rs_bpcode-option = 'EQ'.
+  rs_bpcode-low = zsbsd0040-bpcode.
+  APPEND rs_bpcode TO rt_bpcode.
+ELSE.
+  CLEAR zsbsd0040-bpname.
+ENDIF.
+
+
+IF zsbsd0040-supcode IS NOT INITIAL. "납품처 코드 검색필드에 값 있는 경우
+  rs_supcode-sign = 'I'.
+  rs_supcode-option = 'EQ'.
+  rs_supcode-low = zsbsd0040-supcode.
+  APPEND rs_supcode TO rt_supcode.
+ELSE.
+  CLEAR zsbsd0040-supname.
+ENDIF.
+
+
+SELECT *
+  FROM ztbsd1051 INNER JOIN ztbsd1050
+  ON ztbsd1051~bpcode = ztbsd1050~bpcode
+                 INNER JOIN ztbsd1060
+  ON ztbsd1050~bpcode = ztbsd1060~bpcode
+                 INNER JOIN ztbsd1061
+  ON ztbsd1060~supcode = ztbsd1061~supcode
+                 INNER JOIN ztbmm1030
+  ON ztbsd1060~whcode = ztbmm1030~whcode
+  INTO CORRESPONDING FIELDS OF TABLE gt_zsbsd0030
+  WHERE ztbsd1060~supcode IN rt_supcode
+    AND ztbsd1060~bpcode IN rt_bpcode
+    AND ztbsd1060~delflg LIKE gv_del.
+
+
+IF sy-subrc &lt;&gt; 0. "조건에 맞는 데이터 못 가져오면 에러 메시지
+  MESSAGE s015 DISPLAY LIKE 'E'.
+ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form refresh</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM erase .
+
+CLEAR: zsbsd0040, gt_zsbsd0030. "검색조건 필드와 alv 인터널 테이블 클리어
+zsbsd0040-rad_val = 'X'.
+
+  CALL METHOD go_alv-&gt;refresh_table_display
+    EXCEPTIONS
+      finished = 1
+      OTHERS   = 2.
+  IF sy-subrc &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create .
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      titlebar              = '납품처 MASTER 데이터 생성'
+      text_question         = '데이터를 생성하시겠습니까?'
+      text_button_1         = 'YES'
+      icon_button_1         = 'ICON_OKAY'
+      text_button_2         = 'NO'
+      icon_button_2         = 'ICON_CANCEL'
+      display_cancel_button = ''
+    IMPORTING
+      answer                = gv_answer
+    EXCEPTIONS
+      text_not_found        = 1
+      OTHERS                = 2.
+  IF sy-subrc &lt;&gt; 0.
+  ENDIF.
+
+  IF gv_answer = 1.
+    PERFORM get_empid.
+    PERFORM get_number_range CHANGING gv_nr.
+
+    MOVE-CORRESPONDING zsbsd0020 TO zsbsd0030. "팝업 str -&gt; alv str로 값 이동
+    PERFORM calc_suptel.
+    zsbsd0030-supcode = 'DES' && gv_nr."alv 스트럭쳐에 코드값 넣음
+    PERFORM get_timestamp_f. "alv 스트럭쳐에 타임스탬프 데이터 채움
+
+    MOVE-CORRESPONDING zsbsd0030 TO gs_ztbsd1060. "BP 마스터 STR에 alv STR 데이터 MOVE
+    MOVE-CORRESPONDING zsbsd0030 TO gs_ztbsd1061. "BP 텍스트 STR에 alv STR 데이터 MOVE
+    gs_ztbsd1061-spras = sy-langu.
+
+    INSERT ztbsd1060 FROM gs_ztbsd1060. "BP 마스터 DB 테이블에 데이터 추가
+    INSERT ztbsd1061 FROM gs_ztbsd1061."BP 텍스트 DB 테이블에 데이터 추가
+
+    IF sy-subrc = 0.
+      MESSAGE s095 WITH '생성'.
+    ELSE.
+      MESSAGE s094 WITH '생성' DISPLAY LIKE 'E'.
+    ENDIF.
+
+    CLEAR: gt_zsbsd0030. "생성된 건만 보여주기 위해 itab clear
+    APPEND zsbsd0030 TO gt_zsbsd0030. "ALV 인터널 테이블에 alv str 어펜드
+
+    CLEAR: zsbsd0030, zsbsd0020. "팝업 스트럭쳐와 alv 스트럭쳐 초기화
+
+    CALL METHOD go_alv-&gt;refresh_table_display "ALV REFRESH
+      EXCEPTIONS
+        finished = 1
+        OTHERS   = 2.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_empid</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_empid .
+<font color ="#0000FF">*현재 로그인한 유저의 empid 가져오기</font>
+SELECT SINGLE empid
+  FROM ztbsd1030
+  INTO gv_empid
+  WHERE logid = sy-uname.
+
+SELECT SINGLE empname
+  FROM ztbsd1030
+  INTO gv_empname
+  WHERE logid = sy-uname.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_number_range</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_number_range CHANGING gv_nr.
+
+    CALL FUNCTION 'NUMBER_GET_NEXT' "납품처 코드의 number range
+      EXPORTING
+        nr_range_nr             = '01'
+        object                  = 'ZBBSD1060'
+      IMPORTING
+        number                  = gv_nr
+      EXCEPTIONS
+        interval_not_found      = 1
+        number_range_not_intern = 2
+        object_not_found        = 3
+        quantity_is_0           = 4
+        quantity_is_not_1       = 5
+        interval_overflow       = 6
+        buffer_overflow         = 7
+        OTHERS                  = 8.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_timestamp</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_timestamp_f .
+
+zsbsd0030-stamp_date_f = sy-datum.
+zsbsd0030-stamp_time_f = sy-uzeit.
+zsbsd0030-stamp_user_f = gv_empid.
+zsbsd0030-username_f = gv_empname.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DELETE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM delete .
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      titlebar              = '납품처 MASTER 데이터 삭제'
+      text_question         = '데이터를 삭제하시겠습니까?'
+      text_button_1         = 'YES'
+      icon_button_1         = 'ICON_OKAY'
+      text_button_2         = 'NO'
+      icon_button_2         = 'ICON_CANCEL'
+      display_cancel_button = ''
+    IMPORTING
+      answer                = gv_answer
+    EXCEPTIONS
+      text_not_found        = 1
+      OTHERS                = 2.
+  IF sy-subrc &lt;&gt; 0.
+  ENDIF.
+
+  IF gv_answer = 1.
+    PERFORM get_empid.
+    PERFORM get_timestamp_l.
+    zsbsd0030-delflg = 'X'.
+
+    MOVE-CORRESPONDING zsbsd0030 TO gs_ztbsd1060.
+    MOVE-CORRESPONDING zsbsd0030 TO gs_ztbsd1061.
+    gs_ztbsd1061-spras = sy-langu.
+
+    UPDATE ztbsd1060 FROM gs_ztbsd1060.
+    UPDATE ztbsd1061 FROM gs_ztbsd1061.
+
+    IF sy-subrc = 0.
+      MESSAGE s095 WITH '삭제'.
+    ELSE.
+      MESSAGE s094 WITH '삭제' DISPLAY LIKE 'E'.
+    ENDIF.
+
+    MODIFY gt_zsbsd0030 FROM zsbsd0030 INDEX gs_row-index.
+    CLEAR: zsbsd0030, zsbsd0020.
+
+    PERFORM get_alv_data.
+
+    CALL METHOD go_alv-&gt;refresh_table_display "ALV REFRESH
+      EXCEPTIONS
+        finished = 1
+        OTHERS   = 2.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form UPDATE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM update .
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      titlebar              = '납품처 MASTER 데이터 수정'
+      text_question         = '데이터를 수정하시겠습니까?'
+      text_button_1         = 'YES'
+      icon_button_1         = 'ICON_OKAY'
+      text_button_2         = 'NO'
+      icon_button_2         = 'ICON_CANCEL'
+      display_cancel_button = ''
+    IMPORTING
+      answer                = gv_answer
+    EXCEPTIONS
+      text_not_found        = 1
+      OTHERS                = 2.
+  IF sy-subrc &lt;&gt; 0.
+  ENDIF.
+
+  IF gv_answer = 1.
+    MOVE-CORRESPONDING zsbsd0020 TO zsbsd0030. "수정된 팝업창 데이터를 alv str에 다시 move
+    PERFORM get_empid.
+    PERFORM get_timestamp_l. "alv str에 최종 타임스탬프 필드 데이터 채움
+
+    PERFORM calc_suptel. "전화번호 form
+    MOVE-CORRESPONDING zsbsd0030 TO gs_ztbsd1060. "alv str -&gt; 납품처 헤더 스트럭쳐
+    MOVE-CORRESPONDING zsbsd0030 TO gs_ztbsd1061. "alv str -&gt; 납품처 텍스트 스트럭쳐
+    gs_ztbsd1061-spras = sy-langu.
+
+    UPDATE ztbsd1060 FROM gs_ztbsd1060.
+    UPDATE ztbsd1061 FROM gs_ztbsd1061.
+
+    IF sy-subrc = 0.
+      MESSAGE s095 WITH '수정'.
+    ELSE.
+      MESSAGE s094 WITH '수정' DISPLAY LIKE 'E'.
+    ENDIF.
+
+    MODIFY gt_zsbsd0030 FROM zsbsd0030 INDEX gs_row-index.
+    CLEAR: zsbsd0030, zsbsd0020.
+
+    CALL METHOD go_alv-&gt;refresh_table_display "ALV REFRESH
+      EXCEPTIONS
+        finished = 1
+        OTHERS   = 2.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_timestamp_l</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_timestamp_l .
+
+zsbsd0030-stamp_date_l = sy-datum.
+zsbsd0030-stamp_time_l = sy-uzeit.
+zsbsd0030-stamp_user_l = gv_empid.
+zsbsd0030-username_l = gv_empname.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat .
+
+  gs_fcat-fieldname = 'DELFLG'.
+  gs_fcat-no_out = 'X'.
+  APPEND gs_fcat TO gt_fcat.
+  CLEAR gs_fcat.
+
+  gs_fcat-fieldname = 'USERNAME_F'.
+  gs_fcat-coltext = '최초 생성자 이름'.
+  APPEND gs_fcat TO gt_fcat.
+  CLEAR gs_fcat.
+
+  gs_fcat-fieldname = 'USERNAME_L'.
+  gs_fcat-coltext = '최종 수정자 이름'.
+  APPEND gs_fcat TO gt_fcat.
+  CLEAR gs_fcat.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form check_supcode</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM check_supcode .
+
+SELECT SINGLE supcode
+  FROM ztbsd1060
+  INTO gs_ztbsd1060-supcode
+  WHERE supcode = zsbsd0040-supcode.
+
+IF sy-subrc &lt;&gt; 0.
+  MESSAGE e002 WITH '납품처 코드'.
+  CLEAR zsbsd0040-supcode.
+ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form check_bpcode</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; LV_BPCODE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM check_bpcode  CHANGING    p_lv_bpcode.
+
+SELECT SINGLE bpcode
+  FROM ztbsd1060
+  INTO p_lv_bpcode
+  WHERE bpcode = zsbsd0040-bpcode.
+
+IF sy-subrc &lt;&gt; 0.
+  MESSAGE E002 WITH 'BP코드'.
+  CLEAR zsbsd0040-bpcode.
+ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  CHECK_TEL  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE check_tel INPUT.
+
+CASE OK_CODE.
+  WHEN 'CREATE'.
+    PERFORM check_data_type_c. "숫자 외 타입 및 마이너스 값 들어갔는지 체크
+ENDCASE.
+
+<font color ="#0000FF">*PERFORM check_data_type. "숫자 외 타입 및 마이너스 값 들어갔는지 체크</font>
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form check_data_type</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      &lt;-- LV_TYPE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM check_data_type_u.
+<font color ="#0000FF">*전화번호 유효성 검사 문제 없으면 그때서야 생성함.</font>
+
+IF zsbsd0020-tel_1 IS NOT INITIAL AND zsbsd0020-tel_2 IS NOT INITIAL
+    AND zsbsd0020-tel_3 IS NOT INITIAL.
+  IF  zsbsd0020-tel_1 CO '0123456789' AND zsbsd0020-tel_2 CO '0123456789'
+      AND zsbsd0020-tel_3 CO '0123456789'.
+
+     PERFORM update.
+     LEAVE TO SCREEN 0.
+  ELSE.
+      MESSAGE s002 WITH '연락처' DISPLAY LIKE 'E'.
+  ENDIF.
+
+ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_tel_field</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_tel_field .
+DATA: lv_tel_1 TYPE c LENGTH 4,
+      lv_tel_2 TYPE c LENGTH 4,
+      lv_tel_3 TYPE c LENGTH 4.
+
+SPLIT zsbsd0030-suptel AT '-' INTO lv_tel_1 lv_tel_2 lv_tel_3.
+
+zsbsd0020-tel_1 = lv_tel_1.
+zsbsd0020-tel_2 = lv_tel_2.
+zsbsd0020-tel_3 = lv_tel_3.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form calc_suptel</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM calc_suptel .
+
+zsbsd0030-suptel = zsbsd0020-tel_1 && '-' && zsbsd0020-tel_2 && '-' && zsbsd0020-tel_3.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form check_data_type_c</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM check_data_type_c .
+
+<font color ="#0000FF">*전화번호 유효성 검사 문제 없으면 그때서야 생성함.</font>
+
+IF zsbsd0020-tel_1 IS NOT INITIAL AND zsbsd0020-tel_2 IS NOT INITIAL
+    AND zsbsd0020-tel_3 IS NOT INITIAL.
+  IF  zsbsd0020-tel_1 CO '0123456789' AND zsbsd0020-tel_2 CO '0123456789'
+      AND zsbsd0020-tel_3 CO '0123456789'.
+
+        PERFORM create.
+        LEAVE TO SCREEN 0.
+  ELSE.
+      MESSAGE i002 WITH '연락처' DISPLAY LIKE 'E'.
+
+
+  ENDIF.
+
+ENDIF.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

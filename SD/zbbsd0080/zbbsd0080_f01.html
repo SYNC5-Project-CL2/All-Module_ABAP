@@ -1,0 +1,307 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBBSD0080_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBBSD0080_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRSD0080_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRSD0080_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form complete_deliv</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM COMPLETE_DELIV .
+
+  PERFORM GET_DELIV_DATA. "배송 데이터 불러오기
+  PERFORM GET_SO_DATA. "판매오더 데이터 불러오기
+  PERFORM FILL_DELIVDAT. "배송완료일 채워넣기 + 판매오더 상태 업데이트
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_deliv_data</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_DELIV_DATA .
+
+  SELECT *
+    FROM ZTBSD0060
+    WHERE DELIVFDAT IS INITIAL
+    INTO TABLE @GT_ZTBSD0060.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_so_data</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_SO_DATA .
+
+<font color ="#0000FF">* 배송완료 안 된 판매오더 데이터 불러오기</font>
+  SELECT *
+    FROM ZTBSD0030
+    INTO TABLE GT_ZTBSD0030
+    WHERE STATUS &lt; 5.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_delivdat</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM FILL_DELIVDAT .
+
+  LOOP AT GT_ZTBSD0060 INTO ZTBSD0060.
+    READ TABLE GT_ZTBSD0030 INTO ZTBSD0030 WITH KEY SONUM = ZTBSD0060-SONUM.
+    IF ZTBSD0030-DELIVDATE = SY-DATUM. "납기일 = 현재일
+      PERFORM UPDATE_SD.
+      PERFORM UPDATE_FI.
+    ENDIF.
+    CLEAR: ZTBSD0030, ZTBSD0060.
+  ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form update_fi</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM UPDATE_FI .
+  PERFORM GET_EMPID.
+  PERFORM GET_NUMBER_RANGE.
+  PERFORM UPDATE_HEADER. "전표헤더 업데이트
+  PERFORM UPDATE_ITEM. "전표아이템 업데이트
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form update_sd</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM UPDATE_SD .
+
+  UPDATE ZTBSD0060 SET DELIVFDAT = SY-DATUM WHERE DONUM = ZTBSD0060-DONUM. "배송완료일 = 현재일
+  UPDATE ZTBSD0030 SET STATUS = 5 WHERE SONUM = ZTBSD0060-SONUM. "상태를 배송완료로 설정
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_number_range</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_NUMBER_RANGE .
+
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      NR_RANGE_NR             = '01'
+      OBJECT                  = 'ZBBFI0030'
+    IMPORTING
+      NUMBER                  = GV_NR
+    EXCEPTIONS
+      INTERVAL_NOT_FOUND      = 1
+      NUMBER_RANGE_NOT_INTERN = 2
+      OBJECT_NOT_FOUND        = 3
+      QUANTITY_IS_0           = 4
+      QUANTITY_IS_NOT_1       = 5
+      INTERVAL_OVERFLOW       = 6
+      BUFFER_OVERFLOW         = 7
+      OTHERS                  = 8.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form update_header</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM UPDATE_HEADER .
+
+  CONCATENATE SY-DATUM+4(2)'월 배송비' INTO DATA(LV_BKTXT).
+
+  ZTBFI0030-BELNR = GV_NR.
+  ZTBFI0030-COMCODE = '1000'.
+  ZTBFI0030-GJAHR = SY-DATUM+0(4).
+  ZTBFI0030-BLART = 'KA'.
+  ZTBFI0030-BUDAT = SY-DATUM.
+  ZTBFI0030-BLDAT = SY-DATUM.
+  ZTBFI0030-XBLNR = ZTBSD0060-DONUM.
+  ZTBFI0030-BKTXT = LV_BKTXT.
+  ZTBFI0030-USNAM = GV_EMPID.
+<font color ="#0000FF">**********************************************************************</font>
+  ZTBFI0030-STAMP_DATE_F = SY-DATUM.
+  ZTBFI0030-stamp_TIME_f = SY-UZEIT.
+  ZTBFI0030-STAMP_USER_F = GV_EMPID.
+<font color ="#0000FF">**********************************************************************</font>
+
+  INSERT ZTBFI0030 FROM ZTBFI0030.
+  CLEAR ZTBFI0030.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_empid</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_EMPID .
+
+  SELECT SINGLE EMPID
+    FROM ZTBSD1030
+    INTO GV_EMPID
+    WHERE LOGID = SY-UNAME.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form update_item</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM UPDATE_ITEM .
+  PERFORM UPDATE_S. "차변 데이터 업데이트
+  PERFORM UPDATE_H. "대변 데이터 업데이트
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form update_s</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM UPDATE_S .
+  CONCATENATE SY-DATUM+4(2)'월 배송비' INTO DATA(LV_ITTXT).
+  PERFORM GET_ZTERM. "BP코드의 지급조건 가져오기
+
+  ZTBFI0031-BELNR = GV_NR.
+  ZTBFI0031-BUZEI = 1.
+  ZTBFI0031-SHKZG = 'S'.
+  ZTBFI0031-ACODE = '50007'.
+  ZTBFI0031-ANAME = '배송비'.
+  ZTBFI0031-WRBTR = ZTBSD0060-DELIVFEE.
+  ZTBFI0031-CURRENCY = 'KRW'.
+  ZTBFI0031-ITTXT = LV_ITTXT.
+  ZTBFI0031-BPCODE = 'CJ'.
+  ZTBFI0031-ZTERM = GV_ZTERM.
+  ZTBFI0031-HWRBTR = ZTBSD0060-DELIVFEE.
+  ZTBFI0031-CURRENCY_F = 'KRW'.
+<font color ="#0000FF">**********************************************************************</font>
+  ZTBFI0031-STAMP_DATE_F = SY-DATUM.
+  ZTBFI0031-stamp_TIME_F = SY-UZEIT.
+  ZTBFI0031-STAMP_USER_F = GV_EMPID.
+<font color ="#0000FF">**********************************************************************</font>
+
+  INSERT ZTBFI0031 FROM ZTBFI0031.
+  CLEAR ZTBFI0031.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form update_h</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM UPDATE_H .
+
+  CONCATENATE SY-DATUM+4(2)'월 배송비' INTO DATA(LV_ITTXT).
+
+  ZTBFI0031-BELNR = GV_NR.
+  ZTBFI0031-BUZEI = 2.
+  ZTBFI0031-SHKZG = 'H'.
+  ZTBFI0031-ACODE = '10003'.
+  ZTBFI0031-ANAME = '보통예금'.
+  ZTBFI0031-WRBTR = ZTBSD0060-DELIVFEE.
+  ZTBFI0031-CURRENCY = 'KRW'.
+  ZTBFI0031-ITTXT = LV_ITTXT.
+  ZTBFI0031-BPCODE = 'CJ'.
+  ZTBFI0031-ZTERM = GV_ZTERM.
+  ZTBFI0031-HWRBTR = ZTBSD0060-DELIVFEE.
+  ZTBFI0031-CURRENCY_F = 'KRW'.
+<font color ="#0000FF">**********************************************************************</font>
+  ZTBFI0031-STAMP_DATE_F = SY-DATUM.
+  ZTBFI0031-stamp_TIME_F = SY-UZEIT.
+  ZTBFI0031-STAMP_USER_F = GV_EMPID.
+<font color ="#0000FF">**********************************************************************</font>
+
+  INSERT ZTBFI0031 FROM ZTBFI0031.
+  CLEAR ZTBFI0031.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_zterm</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_ZTERM .
+
+  SELECT SINGLE ZTERM
+    FROM ZTBSD1050
+    INTO GV_ZTERM
+    WHERE BPCODE = ZTBSD0030-BPCODE.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form screen_output</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SCREEN_OUTPUT .
+  LOOP AT SCREEN.
+    IF SCREEN-NAME EQ 'PA_NEXT'.
+      SCREEN-INPUT = '0'.
+    ENDIF.
+    MODIFY SCREEN.
+  ENDLOOP.
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBBPP0050TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBBPP0050TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBBPP0050TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBBPP0050TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+data: gt_ztbpp0030 TYPE TABLE OF ztbpp0030, "생산오더 header T
+      gs_Ztbpp0030 like LINE OF gt_ztbpp0030,
+
+      gt_ztbpp0030A TYPE TABLE OF ztbpp0030, "생산오더 header T
+      gs_Ztbpp0030A like LINE OF gt_ztbpp0030,
+
+      gt_ztbpp0031 type TABLE OF ztbpp0031, "생산오더 item T
+      gs_ztbpp0031 LIKE LINE OF gt_ztbpp0031,
+
+      gt_ztbpp0031A type TABLE OF ztbpp0031, "생산오더 item T
+      gs_ztbpp0031A LIKE LINE OF gt_ztbpp0031,
+
+
+      gt_ztbmm0030 TYPE TABLE of ztbmm0030, "재고 현황 T 1
+      gs_ztbmm0030 like LINE OF gt_ztbmm0030,
+
+      gt_ztbmm0040 TYPE table of ztbmm0040, "자재 문서 header T 2
+      gs_ztbmm0040 like LINE OF gt_ztbmm0040,
+
+      gt_ztbmm0041 TYPE TABLE OF ztbmm0041, "자재 문서 item T 3
+      gs_ztbmm0041 LIKE LINE OF gt_ztbmm0041,
+
+      gt_ztbfi0030 TYPE TABLE OF ztbfi0030, "전표 header T 4
+      gs_ztbfi0030 like LINE OF gt_ztbfi0030,
+
+      gt_ztbfi0031 TYPE TABLE OF ztbfi0031, "전표 item T 5
+      gs_ztbfi0031 like LINE OF gt_ztbfi0031,
+
+
+      gt_time TYPE TABLE OF ztbpp0100, "배치실행시 매일 실행되는데 일마다 실행되는 로직을 다르게 할려고
+      gs_time like LINE OF gt_time.
+
+data: BEGIN OF gs_consp.  " 소요량 계산
+      data: matcode TYPE ztbpp0070-matcode,
+            consp TYPE ztbpp0071-matquan,
+      end of gs_consp.
+
+data: gt_consp like TABLE OF gs_consp.
+DATA: GV_PRICE_SUM TYPE INT4,
+      gv_price_submat_sum TYPE int4,
+      gv_price_pexp_sum TYPE int4.
+
+data: BEGIN OF gs_submat.  " 소요량 계산
+      data: matcode TYPE ztbpp0070-matcode,
+            price TYPE ztbmm0070-infprice,
+      end of gs_submat.
+data: gt_submat like TABLE OF gs_submat.
+
+data: gv_mm0041_docnum1 TYPE char10, "자재문서 생성시 전표에 줄 참조 번호 받을려고
+      gv_mm0041_docnum2 TYPE char10,
+      gv_mm0041_docnum3 TYPE char10.
+
+SELECTION-SCREEN BEGIN OF BLOCK blk1. "배치 실행시 VARIANTS 줄려고
+ PARAMETERS: pa_bat TYPE char1.
+SELECTION-SCREEN END OF BLOCK blk1.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

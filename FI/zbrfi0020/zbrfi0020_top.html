@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0020_TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0020_TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRFI0020_TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRFI0020_TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+DATA: OK_CODE TYPE SY-UCOMM.
+
+TABLES: ZTBFI0050, ZTBFI0030, ZTBFI0031.
+
+TYPES: BEGIN OF TS_DATA.
+         include structure <a href ="ztbfi0050/dictionary-ztbfi0050.html">ZTBFI0050</a>.
+<font color ="#0000FF">*TYPES: GS_ZTBFI0050 TYPE XXXXXX.</font>
+TYPES:   AVG_FB TYPE CHAR10,
+       END OF TS_DATA.
+
+DATA: GT_ZTBFI0050 TYPE TABLE OF TS_DATA,
+      GS_ZTBFI0050 LIKE LINE OF GT_ZTBFI0050,
+      SH_ICON      TYPE ICONS-TEXT,
+      SH2_ICON     TYPE ICONS-TEXT,
+      SH3_ICON     TYPE ICONS-TEXT.
+
+<font color ="#0000FF">*ALV용 변수</font>
+DATA: GO_CONT    TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV     TYPE REF TO CL_GUI_ALV_GRID,
+      GS_STABLE  TYPE LVC_S_STBL,
+      GT_FCAT    TYPE LVC_T_FCAT,
+      GS_FCAT    TYPE LVC_S_FCAT,
+      GT_SORT    TYPE LVC_T_SORT,
+      GS_SORT    TYPE LVC_S_SORT,
+      GT_TOOLBAR TYPE UI_FUNCTIONS,
+      GS_LAYOUT  TYPE LVC_S_LAYO,
+      GV_ANSWER  TYPE CHAR1,
+      GV_INDEX   TYPE SY-INDEX.
+
+DATA: GV_TTB     TYPE TS_DATA-TTB,
+      GV_RES_TTB TYPE TS_DATA-TTB,
+      GV_CHG_TTB TYPE TS_DATA-TTB.
+
+DATA Gv_foreign_amount TYPE P DECIMALS 2 VALUE 1000. " 외화 금액 예제
+DATA GV_TEXT TYPE CHAR50.
+DATA GV_FLAG TYPE CHAR1.
+
+DATA: LV_TTB TYPE CHAR10.
+DATA: LV_RES TYPE CHAR10.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

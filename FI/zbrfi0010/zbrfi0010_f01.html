@@ -1,0 +1,493 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0010_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0010_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRFI0010_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRFI0010_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT .
+  DATA: LS_FCAT TYPE LVC_S_FCAT.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BPCODE'.
+  LS_FCAT-COL_POS = 2.
+  LS_FCAT-COLTEXT = '거래처코드'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'ACCNAME'.
+  LS_FCAT-COL_POS = 3.
+  LS_FCAT-COLTEXT = '거래처명'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  "총 금액
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'CTRYCODE'.
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-COLTEXT = '국가코드'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  " 통화
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'CTRYNAME'.
+  LS_FCAT-COL_POS = 5.
+  LS_FCAT-COLTEXT = '국가명'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'WRBTR'.
+  LS_FCAT-COL_POS = 6.
+<font color ="#0000FF">*  LS_FCAT-HOTSPOT = 'X'.</font>
+  LS_FCAT-COLTEXT = '금액'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'CURRENCY'.
+  LS_FCAT-COL_POS = 7.
+  LS_FCAT-COLTEXT = '통화'.
+  APPEND LS_FCAT TO GT_FCAT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT .
+  GS_LAYOUT-ZEBRA = 'X'.
+  GS_LAYOUT-CWIDTH_OPT = 'A'.
+  GS_LAYOUT-SEL_MODE = 'B'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form EXCLUDE_TOOLBAR</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM EXCLUDE_TOOLBAR .
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT2 .
+  GS_LAYOUT2-ZEBRA = 'X'.
+  GS_LAYOUT2-CWIDTH_OPT = 'X'.
+  GS_LAYOUT2-GRID_TITLE = '미결전표 리스트'.
+  GS_LAYOUT2-SEL_MODE = 'D'.
+  GS_LAYOUT2-EXCP_FNAME = 'EXCP'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT3 .
+  GS_LAYOUT3-ZEBRA = 'X'.
+  GS_LAYOUT3-CWIDTH_OPT = 'A'.
+  GS_LAYOUT3-GRID_TITLE = '반제처리 결과 확인'.
+  GS_LAYOUT3-SEL_MODE = 'B'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT3 .
+  DATA: LS_FCAT TYPE LVC_S_FCAT.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BELNR'.
+  LS_FCAT-COL_POS = 1.
+  LS_FCAT-COLTEXT = '전표번호'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BUZEI'.
+  LS_FCAT-COL_POS = 2.
+  LS_FCAT-COLTEXT = '전표라인번호'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  "총 금액
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BPCODE'.
+  LS_FCAT-COL_POS = 2.
+  LS_FCAT-COLTEXT = '전기일'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  " 통화
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BPCODE'.
+  LS_FCAT-COL_POS = 2.
+  LS_FCAT-COLTEXT = '고객사 코드'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'ZTERM'.
+  LS_FCAT-COL_POS = 3.
+<font color ="#0000FF">*  LS_FCAT-HOTSPOT = 'X'.</font>
+  LS_FCAT-COLTEXT = '지급조건'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'SHKZG'.
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-COLTEXT = '차변/대변'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'ACODE'.
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-COLTEXT = '계정과목코드'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'ANAME'.
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-COLTEXT = '계정과목명'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'WRBTR'.
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-COLTEXT = '금액'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'CURRENCY'.
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-COLTEXT = '통화'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'HWRBTR'.
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-COLTEXT = '거래통화금액'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'CURRENCY_F'.
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-COLTEXT = '거래통화'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'AUGBL'.
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-COLTEXT = '반제전표'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'AUGDT'.
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-COLTEXT = '반제일'.
+  APPEND LS_FCAT TO GT_FCAT3.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT2 .
+  DATA: LS_FCAT TYPE LVC_S_FCAT.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'EXCP'.
+  LS_FCAT-COL_POS = 1.
+  LS_FCAT-COLTEXT = '만기'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BELNR'.
+  LS_FCAT-COL_POS = 2.
+  LS_FCAT-COLTEXT = '전표번호'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  "총 금액
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BUZEI'.
+  LS_FCAT-COL_POS = 3.
+  LS_FCAT-COLTEXT = '전표라인번호'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'C_BUDAT'. "
+  LS_FCAT-COL_POS = 4.
+  LS_FCAT-COLTEXT = '출금 예정일'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BUDAT'. "
+  LS_FCAT-COL_POS = 5.
+<font color ="#0000FF">*  LS_FCAT-HOTSPOT = 'X'.</font>
+  LS_FCAT-COLTEXT = '전기일'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BPCODE'.
+  LS_FCAT-COL_POS = 6.
+  LS_FCAT-COLTEXT = '거래처코드'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BPNAME'. "
+  LS_FCAT-COL_POS = 7.
+  LS_FCAT-COLTEXT = '거래처명'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'ZTERM'.
+  LS_FCAT-COL_POS = 8.
+  LS_FCAT-COLTEXT = '지급조건'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'SHKZG'.
+  LS_FCAT-COL_POS = 9.
+  LS_FCAT-COLTEXT = '차변/대변'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'ANAME'.
+  LS_FCAT-COL_POS = 10.
+  LS_FCAT-COLTEXT = '계정과목명'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'WRBTR'.
+  LS_FCAT-COL_POS = 11.
+  LS_FCAT-COLTEXT = '금액'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'CURRENCY'.
+  LS_FCAT-COL_POS = 12.
+  LS_FCAT-COLTEXT = '통화'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'HWRBTR'.
+  LS_FCAT-COL_POS = 13.
+  LS_FCAT-COLTEXT = '거래금액통화'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'CURRENCY_F'.
+  LS_FCAT-COL_POS = 14.
+  LS_FCAT-COLTEXT = '거래통화'.
+  APPEND LS_FCAT TO GT_FCAT3.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form EXE_CLEAR</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM EXE_CLEAR .
+  "반제 처리시
+  DATA : ET_INDEX_ROW TYPE LVC_T_ROW,
+         ES_INDEX_ROW TYPE LVC_S_ROW.
+  DATA : ROW_IDX TYPE I.
+  DATA: LV_ANSWER TYPE CHAR1.
+  DATA: LV_EMPID TYPE ZTBSD1030-EMPID.
+  DATA: LV_NR     TYPE NUM10.
+
+  CALL METHOD GO_ALV2-&gt;GET_SELECTED_ROWS
+    IMPORTING
+      ET_INDEX_ROWS = ET_INDEX_ROW.                " Indexes of Selected Rows
+
+  "ALV에서 행 미선택시.
+  IF ET_INDEX_ROW IS INITIAL.
+    MESSAGE ID 'ZCOMMON_MSG' TYPE 'E' NUMBER '008'.
+    "ALV에서 행 선택시.
+  ELSE.
+    "반제 처리 행 선택"
+    READ TABLE ET_INDEX_ROW INTO ES_INDEX_ROW INDEX 1.
+    ROW_IDX = ES_INDEX_ROW-INDEX.
+
+    READ TABLE GT_ZTBFI0031 INTO GS_ZTBFI0031 INDEX ROW_IDX.
+
+    CALL FUNCTION 'POPUP_TO_CONFIRM'
+      EXPORTING
+        TITLEBAR              = 'Confim'
+        TEXT_QUESTION         = '해당 전표를 반제처리 하시겠습니까 ? '
+        TEXT_BUTTON_1         = '예'
+        TEXT_BUTTON_2         = '아니요'
+        ICON_BUTTON_1         = 'ICON_OKAY'
+        ICON_BUTTON_2         = 'ICON_CANCEL'
+        DEFAULT_BUTTON        = '1'
+        DISPLAY_CANCEL_BUTTON = ''
+      IMPORTING
+        ANSWER                = LV_ANSWER.
+
+    "예
+    IF LV_ANSWER = '1'.
+
+      CALL SCREEN 120 STARTING AT 10 3.
+
+    ENDIF.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form EXE_BUDER</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM EXE_BUDER .
+
+  "반제 생성용 전표 TYPE
+  DATA: LS_ZTBFI0030 TYPE ZTBFI0030,
+        LS_ZTBFI0031 TYPE ZTBFI0031.
+
+  DATA: LV_NR     TYPE NUM10. "반제 전표 response.
+
+  "현재 로그인한 유저 찾기
+  SELECT SINGLE EMPID
+    FROM ZTBSD1030
+   WHERE LOGID EQ @SY-UNAME
+    INTO @DATA(LV_EMPID).
+
+  DATA(LV_MONTH) = SY-DATUM+4(2).
+  DATA(LV_BPNAME) = GS_ZTBFI0031-BPNAME.
+
+  CONCATENATE LV_MONTH '월' LV_BPNAME ' 외상대금 지급 ' INTO LS_ZTBFI0030-BKTXT.
+
+  "반제 전표 생성
+  CALL FUNCTION 'NUMBER_GET_NEXT'
+    EXPORTING
+      NR_RANGE_NR             = '01'
+      OBJECT                  = 'ZBBFI0030'
+    IMPORTING
+      NUMBER                  = LV_NR
+    EXCEPTIONS
+      INTERVAL_NOT_FOUND      = 1
+      NUMBER_RANGE_NOT_INTERN = 2
+      OBJECT_NOT_FOUND        = 3
+      QUANTITY_IS_0           = 4
+      QUANTITY_IS_NOT_1       = 5
+      INTERVAL_OVERFLOW       = 6
+      BUFFER_OVERFLOW         = 7
+      OTHERS                  = 8.
+  IF SY-SUBRC = 0.
+    "반제 전표 되는 Table Update
+    LOOP AT GT_ZTBFI0031 INTO GS_ZTBFI0031.
+      GS_ZTBFI0031-AUGBL = LV_NR. "반제전표
+      GS_ZTBFI0031-AUGDT = SY-DATUM. "반제일
+
+      UPDATE ZTBFI0031 FROM GS_ZTBFI0031. "DB 테이블 업데이트
+
+      MODIFY GT_ZTBFI0031 FROM GS_ZTBFI0031. "Internal 테이블 업데이트
+    ENDLOOP.
+
+    "반제 전표 생성
+    LS_ZTBFI0030-BELNR = LV_NR.
+    LS_ZTBFI0030-COMCODE = '1000'.
+    LS_ZTBFI0030-GJAHR = SY-DATUM+0(4).
+    LS_ZTBFI0030-BLART = 'KZ'.
+    LS_ZTBFI0030-BUDAT = SY-DATUM.
+    LS_ZTBFI0030-BLDAT = SY-DATUM.
+    LS_ZTBFI0030-REVRS = SPACE.
+    LS_ZTBFI0030-USNAM = LV_EMPID.
+    LS_ZTBFI0030-XBLNR = GS_ZTBFI0031-XBLNR.
+
+    INSERT ZTBFI0030 FROM LS_ZTBFI0030.
+
+    "반제 전표 아이템 생성
+    LS_ZTBFI0031-BELNR = LV_NR.
+    LS_ZTBFI0031-BUZEI = '1'.
+    LS_ZTBFI0031-SHKZG = 'S'.
+    LS_ZTBFI0031-ACODE = '20002'.
+    LS_ZTBFI0031-ANAME = '외상매입금'.
+    LS_ZTBFI0031-CURRENCY = 'KRW'.
+    LS_ZTBFI0031-BPCODE = LV_BPNAME.
+    LS_ZTBFI0031-WRBTR = GS_ZTBFI0031-WRBTR.
+    LS_ZTBFI0031-HWRBTR = GS_ZTBFI0031-HWRBTR.
+    LS_ZTBFI0031-AUGBL = GS_ZTBFI0031-AUGBL.
+    LS_ZTBFI0031-AUGDT = GS_ZTBFI0031-AUGDT.
+    LS_ZTBFI0031-ITTXT = GS_ZTBFI0031-ITTXT.
+    LS_ZTBFI0031-CURRENCY_F = GS_ZTBFI0031-CURRENCY_F.
+    LS_ZTBFI0031-ZTERM = GS_ZTBFI0031-ZTERM.
+
+    INSERT ZTBFI0031 FROM LS_ZTBFI0031.
+
+    LS_ZTBFI0031-BUZEI = '2'.
+    LS_ZTBFI0031-SHKZG = 'H'.
+    LS_ZTBFI0031-ACODE = '10003'.
+    LS_ZTBFI0031-ANAME = '보통예금'.
+    LS_ZTBFI0031-CURRENCY = 'KRW'.
+    LS_ZTBFI0031-BPCODE = LV_BPNAME.
+    LS_ZTBFI0031-WRBTR = GS_ZTBFI0031-WRBTR.
+    LS_ZTBFI0031-HWRBTR = GS_ZTBFI0031-HWRBTR.
+    LS_ZTBFI0031-AUGBL = GS_ZTBFI0031-AUGBL.
+    LS_ZTBFI0031-AUGDT = GS_ZTBFI0031-AUGDT.
+    LS_ZTBFI0031-ITTXT = GS_ZTBFI0031-ITTXT.
+    LS_ZTBFI0031-CURRENCY_F = GS_ZTBFI0031-CURRENCY_F.
+    LS_ZTBFI0031-ZTERM = GS_ZTBFI0031-ZTERM.
+
+    INSERT ZTBFI0031 FROM LS_ZTBFI0031.
+
+    CALL METHOD GO_ALV-&gt;REFRESH_TABLE_DISPLAY
+      EXCEPTIONS
+        FINISHED = 1
+        OTHERS   = 2.
+    CALL METHOD GO_ALV2-&gt;REFRESH_TABLE_DISPLAY
+      EXCEPTIONS
+        FINISHED = 1
+        OTHERS   = 2.
+    CALL METHOD GO_ALV3-&gt;REFRESH_TABLE_DISPLAY
+      EXCEPTIONS
+        FINISHED = 1
+        OTHERS   = 2.
+
+    CLEAR: LV_SUM, LV_ACCOUNT.
+    CLEAR: GS_40_DETAIL_DATA, GT_40_DETAIL_DATA, GT_ZTBFI0031. "전표
+  ENDIF.
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

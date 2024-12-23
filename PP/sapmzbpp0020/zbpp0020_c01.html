@@ -1,0 +1,364 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBPP0020_C01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBPP0020_C01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBPP0020_C01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBPP0020_C01</font>
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+CLASS LCL_EVENT_HANDLER DEFINITION.
+
+  PUBLIC SECTION.
+    CLASS-METHODS:
+
+      ON_TOOLBAR FOR EVENT TOOLBAR OF CL_GUI_ALV_GRID
+        IMPORTING E_OBJECT,
+
+      ON_USER_COMMAND FOR EVENT USER_COMMAND OF CL_GUI_ALV_GRID
+        IMPORTING E_UCOMM,
+
+      ON_TOOLBAR2 FOR EVENT TOOLBAR OF CL_GUI_ALV_GRID
+        IMPORTING E_OBJECT,
+
+      ON_USER_COMMAND2 FOR EVENT USER_COMMAND OF CL_GUI_ALV_GRID
+        IMPORTING E_UCOMM,
+
+<font color ="#0000FF">*      ON_TOOLBAR3 FOR EVENT TOOLBAR OF CL_GUI_ALV_GRID</font>
+<font color ="#0000FF">*        IMPORTING E_OBJECT,</font>
+
+      ON_USER_COMMAND3 FOR EVENT USER_COMMAND OF CL_GUI_ALV_GRID
+        IMPORTING E_UCOMM,
+
+      ON_HOTSPOT_CLICK FOR EVENT HOTSPOT_CLICK OF CL_GUI_ALV_GRID
+        IMPORTING ES_ROW_NO E_COLUMN_ID.
+
+
+
+
+
+ENDCLASS.
+
+
+CLASS LCL_EVENT_HANDLER IMPLEMENTATION.
+  METHOD ON_TOOLBAR.
+
+    DATA: LS_BUTTON TYPE STB_BUTTON.
+
+    LS_BUTTON-BUTN_TYPE = 3.
+
+    APPEND LS_BUTTON TO E_OBJECT-&gt;MT_TOOLBAR.
+
+    CLEAR: LS_BUTTON.
+    LS_BUTTON-FUNCTION = 'SEARCH'.
+    LS_BUTTON-TEXT = '상세 정보 조회'.
+    LS_BUTTON-BUTN_TYPE = 0.
+    LS_BUTTON-ICON = ICON_ZOOM_IN.
+    LS_BUTTON-QUICKINFO = 'SEARCH'.
+
+    APPEND LS_BUTTON TO E_OBJECT-&gt;MT_TOOLBAR.
+
+
+  ENDMETHOD.
+
+  METHOD ON_USER_COMMAND.
+
+    CASE E_UCOMM.
+      WHEN 'SEARCH'.
+
+        CLEAR: ZTBMM1010, ZTBMM1011.
+
+        GO_ALV1-&gt;GET_SELECTED_ROWS(
+          IMPORTING
+            ET_INDEX_ROWS = ET_INDEX_ROW                " Indexes of Selected Rows
+        ).
+
+        READ TABLE ET_INDEX_ROW INTO ES_INDEX_ROW INDEX 1.
+        SEL_IDX = ES_INDEX_ROW-INDEX.
+
+        IF SY-SUBRC = 0.
+
+          READ TABLE GT_ZTBPP0070_PLUS INTO GS_ZTBPP0070_PLUS INDEX SEL_IDX.
+          MOVE-CORRESPONDING GS_ZTBPP0070_PLUS TO GS_ZTBPP0070.
+
+<font color ="#0000FF">**********************************************************************</font>
+<font color ="#0000FF">*       자재마스터 정보 보여주기</font>
+          SELECT SINGLE *
+            FROM ZTBMM1010
+            WHERE MATCODE = @GS_ZTBPP0070-MATCODE
+            INTO @ZTBMM1010.
+
+          SELECT SINGLE *
+            FROM ZTBMM1011
+            WHERE MATCODE = @GS_ZTBPP0070-MATCODE
+            INTO @ZTBMM1011.
+
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    " PBO 실행.</font>
+          CL_GUI_CFW=&gt;SET_NEW_OK_CODE(
+                    EXPORTING
+                      NEW_CODE = 'ENTER').
+
+<font color ="#0000FF">**********************************************************************</font>
+
+
+          SELECT A~MATCODE,
+                C~MATNAME,
+                A~BOMID,
+                A~MATQUAN,
+                A~UNITCODE,
+                A~DELFLG,
+                DIVISION( B~INFPRICE,B~INFQUANT,2 ) AS INFPRICE,
+                B~CURRENCY
+          FROM ZTBPP0071 AS A LEFT OUTER JOIN ZTBMM0070 AS B
+            ON A~MATCODE = B~MATCODE
+            JOIN ZTBMM1011 AS C
+            ON A~MATCODE = C~MATCODE
+          WHERE A~BOMID = @GS_ZTBPP0070-BOMID
+          INTO CORRESPONDING FIELDS OF TABLE @GT_INFO_ZTBPP0071.
+
+          GO_ALV2-&gt;REFRESH_TABLE_DISPLAY(
+            EXCEPTIONS
+              FINISHED       = 1                " Display was Ended (by Export)
+              OTHERS         = 2
+          ).
+          IF SY-SUBRC &lt;&gt; 0.
+          ENDIF.
+
+        ELSE.
+          CLEAR: ZTBMM1010, ZTBMM1011, GT_INFO_ZTBPP0071.
+          MESSAGE S008(ZCOMMON_MSG) DISPLAY LIKE 'E'.
+          " PBO 실행.
+          CL_GUI_CFW=&gt;SET_NEW_OK_CODE(
+                    EXPORTING
+                      NEW_CODE = 'ENTER').
+        ENDIF.
+
+    ENDCASE.
+
+  ENDMETHOD.
+
+  METHOD ON_TOOLBAR2.
+
+    DATA: LS_BUTTON TYPE STB_BUTTON.
+
+    CLEAR: LS_BUTTON.
+    LS_BUTTON-FUNCTION = 'ADD'.
+    LS_BUTTON-TEXT = 'ADD'.
+    LS_BUTTON-BUTN_TYPE = 0.
+    LS_BUTTON-ICON = ICON_INSERT_ROW.
+    LS_BUTTON-QUICKINFO = 'ADD'.
+
+
+    APPEND LS_BUTTON TO E_OBJECT-&gt;MT_TOOLBAR.
+
+    CLEAR: LS_BUTTON.
+    LS_BUTTON-FUNCTION = 'DEL'.
+    LS_BUTTON-TEXT = 'DEL'.
+    LS_BUTTON-BUTN_TYPE = 0.
+    LS_BUTTON-ICON = ICON_DELETE_ROW.
+    LS_BUTTON-QUICKINFO = 'DELETE'.
+
+    APPEND LS_BUTTON TO E_OBJECT-&gt;MT_TOOLBAR.
+
+    CLEAR LS_BUTTON.
+    LS_BUTTON-FUNCTION = 'APP'.
+    LS_BUTTON-TEXT = '적용'.
+    LS_BUTTON-BUTN_TYPE = 0.
+    LS_BUTTON-QUICKINFO = '적용'.
+
+    APPEND LS_BUTTON TO E_OBJECT-&gt;MT_TOOLBAR.
+
+  ENDMETHOD.
+
+  METHOD ON_USER_COMMAND2.
+    DATA: LS_CELL TYPE LVC_S_STYL.
+
+    CASE E_UCOMM.
+      WHEN 'ADD'.
+        CLEAR GS_EDIT_ZTBPP0071.
+        CLEAR GS_ZTBPP0071.
+
+<font color ="#0000FF">*        INSERT GS_ZTBPP0071 INTO GT_ZTBPP0071 INDEX 1.</font>
+
+        CLEAR: LS_CELL.
+        LS_CELL-FIELDNAME = 'MATCODE'.
+        LS_CELL-STYLE = CL_GUI_ALV_GRID=&gt;MC_STYLE_ENABLED.
+        INSERT LS_CELL INTO TABLE GS_EDIT_ZTBPP0071-IT_CELL.
+
+        CLEAR: LS_CELL.
+        LS_CELL-FIELDNAME = 'MATNAME'.
+        LS_CELL-STYLE = CL_GUI_ALV_GRID=&gt;MC_STYLE_DISABLED.
+        INSERT LS_CELL INTO TABLE GS_EDIT_ZTBPP0071-IT_CELL.
+
+        CLEAR: LS_CELL.
+        LS_CELL-FIELDNAME = 'MATQUAN'.
+        LS_CELL-STYLE = CL_GUI_ALV_GRID=&gt;MC_STYLE_ENABLED.
+        INSERT LS_CELL INTO TABLE GS_EDIT_ZTBPP0071-IT_CELL.
+
+        CLEAR: LS_CELL.
+        LS_CELL-FIELDNAME = 'UNITCODE'.
+        LS_CELL-STYLE = CL_GUI_ALV_GRID=&gt;MC_STYLE_DISABLED.
+        INSERT LS_CELL INTO TABLE GS_EDIT_ZTBPP0071-IT_CELL.
+
+
+        INSERT GS_EDIT_ZTBPP0071 INTO GT_EDIT_ZTBPP0071 INDEX 1.
+
+        CLEAR: GS_EDIT_ZTBPP0071, LS_CELL.
+
+      WHEN 'DEL'.
+
+        GO_ALV3-&gt;GET_SELECTED_ROWS(
+         IMPORTING
+           ET_INDEX_ROWS = ET_INDEX_ROW                " Indexes of Selected Rows
+       ).
+
+        READ TABLE ET_INDEX_ROW INTO ES_INDEX_ROW INDEX 1.
+        SEL_IDX = ES_INDEX_ROW-INDEX.
+
+<font color ="#0000FF">*        ROW를 선택했으면 해당 ROW 삭제</font>
+        IF SY-SUBRC = 0.
+
+          DELETE GT_EDIT_ZTBPP0071 INDEX SEL_IDX.
+
+        ENDIF.
+
+      WHEN 'APP'. " 기능이 없어도 클릭하면서 사용자의 입력값들이 정확하게 입력 확정됨
+
+
+    ENDCASE.
+
+    GO_ALV3-&gt;REFRESH_TABLE_DISPLAY(
+     EXCEPTIONS
+       FINISHED       = 1                " Display was Ended (by Export)
+       OTHERS         = 2
+   ).
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+  ENDMETHOD.
+
+  METHOD ON_USER_COMMAND3.
+    DATA: LS_CELL TYPE LVC_S_STYL.
+<font color ="#0000FF">*    DATA: LT_UPZTBPP0061 TYPE TABLE OF ZTBPP0061,</font>
+<font color ="#0000FF">*          LS_UPZTBPP0061 LIKE LINE OF LT_UPZTBPP0061,</font>
+<font color ="#0000FF">*          LS_CELL        TYPE LVC_S_STYL.</font>
+
+    CASE E_UCOMM.
+      WHEN 'ADD'.
+
+        CLEAR GS_EDIT_ZTBPP0071.
+
+        CLEAR: LS_CELL.
+        LS_CELL-FIELDNAME = 'MATCODE'.
+        LS_CELL-STYLE = CL_GUI_ALV_GRID=&gt;MC_STYLE_ENABLED.
+        INSERT LS_CELL INTO TABLE GS_EDIT_ZTBPP0071-IT_CELL.
+
+        CLEAR: LS_CELL.
+        LS_CELL-FIELDNAME = 'MATQUAN'.
+        LS_CELL-STYLE = CL_GUI_ALV_GRID=&gt;MC_STYLE_ENABLED.
+        INSERT LS_CELL INTO TABLE GS_EDIT_ZTBPP0071-IT_CELL.
+
+        CLEAR: LS_CELL.
+        LS_CELL-FIELDNAME = 'MATNAME'.
+        LS_CELL-STYLE = CL_GUI_ALV_GRID=&gt;MC_STYLE_DISABLED.
+        INSERT LS_CELL INTO TABLE GS_EDIT_ZTBPP0071-IT_CELL.
+
+        CLEAR: LS_CELL.
+        LS_CELL-FIELDNAME = 'UNITCODE'.
+        LS_CELL-STYLE = CL_GUI_ALV_GRID=&gt;MC_STYLE_DISABLED.
+        INSERT LS_CELL INTO TABLE GS_EDIT_ZTBPP0071-IT_CELL.
+
+
+        INSERT GS_EDIT_ZTBPP0071 INTO GT_EDIT_ZTBPP0071 INDEX 1.
+
+        CLEAR: GS_EDIT_ZTBPP0071, LS_CELL.
+
+
+      WHEN 'DEL'.
+
+        GO_ALV4-&gt;GET_SELECTED_ROWS(
+          IMPORTING
+            ET_INDEX_ROWS =  ET_INDEX_ROW                " Indexes of Selected Rows
+<font color ="#0000FF">*            et_row_no     =                  " Numeric IDs of Selected Rows</font>
+        ).
+
+        READ TABLE ET_INDEX_ROW INTO ES_INDEX_ROW INDEX 1.
+<font color ="#0000FF">*        SEL_IDX = ES_INDEX_ROW-INDEX.</font>
+
+        IF SY-SUBRC = 0.
+
+          READ TABLE GT_EDIT_ZTBPP0071 INTO GS_EDIT_ZTBPP0071 INDEX ES_INDEX_ROW-INDEX.
+
+          IF SY-SUBRC = 0.
+
+            GS_EDIT_ZTBPP0071-DELFLG = 'X'.
+
+
+            MOVE-CORRESPONDING GS_EDIT_ZTBPP0071 TO GS_ZTBPP0071.
+
+            UPDATE ZTBPP0071 FROM GS_ZTBPP0071.
+
+            DELETE GT_EDIT_ZTBPP0071 INDEX ES_INDEX_ROW-INDEX.
+
+          ENDIF.
+
+        ENDIF.
+
+      WHEN 'APP'.
+
+    ENDCASE.
+
+    GO_ALV4-&gt;REFRESH_TABLE_DISPLAY(
+     EXCEPTIONS
+       FINISHED       = 1                " Display was Ended (by Export)
+       OTHERS         = 2
+   ).
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD ON_HOTSPOT_CLICK.
+
+    GV_EMPID = ''.
+
+    "ALV에서 선택한 정보를 WORK AREA에 할당.
+    READ TABLE GT_ZTBPP0070_PLUS INTO GS_ZTBPP0070_PLUS INDEX ES_ROW_NO-ROW_ID.
+
+    IF E_COLUMN_ID-FIELDNAME = 'STAMP_USER_F'.
+      GV_EMPID = GS_ZTBPP0070_PLUS-STAMP_USER_F.
+    ELSEIF E_COLUMN_ID-FIELDNAME = 'STAMP_USER_L'.
+      GV_EMPID = GS_ZTBPP0070_PLUS-STAMP_USER_L.
+    ENDIF.
+
+    IF GV_EMPID IS NOT INITIAL.
+
+      CALL SCREEN 110
+        STARTING AT 5 5.
+    ENDIF.
+
+
+
+<font color ="#0000FF">*    " PBO 실행.</font>
+<font color ="#0000FF">*    CL_GUI_CFW=&gt;SET_NEW_OK_CODE(</font>
+<font color ="#0000FF">*              EXPORTING</font>
+<font color ="#0000FF">*                NEW_CODE = 'ENTER').</font>
+
+  ENDMETHOD.
+
+ENDCLASS.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

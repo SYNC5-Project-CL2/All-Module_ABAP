@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRMM0060_TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRMM0060_TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRMM0060_TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRMM0060_TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+DATA: OK_CODE TYPE SY-UCOMM.
+
+TABLES: ZSBMM0060,
+        ZTBMM0020, " 구매오더 HEADER
+        ZTBMM0021, " 구매오더 ITEM
+        ZTBSD1050, " BP MASTER
+        ZTBSD1051, " BP TEXT
+        ZTBFI0040, " 지급조건
+        ZSBMM0080,
+        ZSBMM0080_INFO,
+        ZTBFI0030. " 전표 HEADER
+
+TYPES: BEGIN OF TS_DATA.
+         include structure <a href ="zsbmm0080/dictionary-zsbmm0080.html">ZSBMM0080</a>.
+TYPES:   EXCP TYPE CHAR1,
+       END OF TS_DATA.
+
+<font color ="#0000FF">**********************************************************************</font>
+"구매오더리스트 ALV Internal table, WA
+DATA: GT_DATA TYPE TABLE OF TS_DATA,
+      GS_DATA LIKE LINE OF GT_DATA.
+
+DATA: GO_CONT TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV  TYPE REF TO CL_GUI_ALV_GRID,
+      GS_LAYO TYPE LVC_S_LAYO,
+      GT_SORT TYPE LVC_T_SORT,
+      GS_SORT TYPE LVC_S_SORT,
+      GT_FCAT TYPE LVC_T_FCAT,
+      GS_FCAT TYPE LVC_S_FCAT,
+      GS_VARI TYPE DISVARIANT.
+
+<font color ="#0000FF">*DATA: GT_ROW TYPE LVC_T_ROID,</font>
+<font color ="#0000FF">*      GS_ROW TYPE LVC_S_ROID.</font>
+
+DATA: GT_ROW TYPE LVC_T_ROW,
+      GS_ROW TYPE LVC_S_ROW.
+
+<font color ="#0000FF">**********************************************************************</font>
+"구매오더 아이템 리스트 ALV Internal Table, WA
+DATA:GT_DATA2 TYPE TABLE OF ZSBMM0080_LIST,
+     GS_DATA2 LIKE LINE OF GT_DATA2.
+
+DATA: GO_CONT2 TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV2  TYPE REF TO CL_GUI_ALV_GRID,
+      GS_LAYO2 TYPE LVC_S_LAYO,
+      GT_SORT2 TYPE LVC_T_SORT,
+      GS_SORT2 TYPE LVC_S_SORT,
+      GT_FCAT2 TYPE LVC_T_FCAT,
+      GS_FCAT2 TYPE LVC_S_FCAT.
+
+"실제 입고 수량 리스트
+DATA:GT_DATA3 TYPE TABLE OF ZSBMM0080_LIST,
+     GS_DATA3 LIKE LINE OF GT_DATA3.
+
+DATA: GO_CONT3 TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV3  TYPE REF TO CL_GUI_ALV_GRID,
+      GS_LAYO3 TYPE LVC_S_LAYO,
+      GT_SORT3 TYPE LVC_T_SORT,
+      GS_SORT3 TYPE LVC_S_SORT,
+      GT_FCAT3 TYPE LVC_T_FCAT,
+      GS_FCAT3 TYPE LVC_S_FCAT.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

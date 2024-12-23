@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRMM0060_O01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRMM0060_O01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRMM0060_O01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRMM0060_O01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0100 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0100 OUTPUT.
+  SET PF-STATUS 'S100'.
+  SET TITLEBAR 'T100'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module CLEAR_OKCODE OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE CLEAR_OKCODE OUTPUT.
+  CLEAR OK_CODE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module SET_ALV OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE SET_ALV OUTPUT.
+
+  IF GO_CONT IS INITIAL.
+    PERFORM CREATE_OBJECT.
+    PERFORM SET_LAYOUT.
+    PERFORM SET_FCAT.
+<font color ="#0000FF">*  PERFORM SET_SORT.</font>
+    PERFORM SET_HANDLER.
+    PERFORM SET_ALV.
+  ELSE.
+    PERFORM ALV_REFRESH.
+  ENDIF.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0150 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0150 OUTPUT.
+  SET PF-STATUS 'S150'.
+  SET TITLEBAR 'T150'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module SET_ALV2 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE SET_ALV2 OUTPUT.
+  IF GO_CONT2 IS INITIAL.
+    PERFORM CREATE_OBJECT2.
+    PERFORM SET_LAYOUT2.
+    PERFORM SET_FCAT2.
+    PERFORM SET_SORT2.
+<font color ="#0000FF">*    PERFORM SET_HANDLER2.</font>
+    PERFORM SET_ALV2.
+  ELSE.
+    PERFORM ALV_REFRESH2.
+
+  ENDIF.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module SET_ALV3 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE SET_ALV3 OUTPUT.
+  IF GO_CONT3 IS INITIAL.
+    PERFORM CREATE_OBJECT3.
+    PERFORM SET_LAYOUT3.
+    PERFORM SET_FCAT3.
+<font color ="#0000FF">**  PERFORM SET_SORT3.</font>
+    PERFORM SET_ALV3.
+  ELSE.
+    PERFORM ALV_REFRESH3.
+
+
+  ENDIF.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module LIST_AMT OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE LIST_AMT OUTPUT.
+  "구매자재 실제 입고량 리스트
+  MOVE-CORRESPONDING GT_DATA2 TO GT_DATA3.
+
+  LOOP AT GT_DATA3 INTO GS_DATA3.
+    GS_DATA3-POQUANT = ''.
+    MODIFY GT_DATA3 FROM GS_DATA3.
+  ENDLOOP.
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

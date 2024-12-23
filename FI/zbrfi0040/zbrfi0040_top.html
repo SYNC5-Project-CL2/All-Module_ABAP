@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0040_TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0040_TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRFI0040_TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRFI0040_TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+DATA: OK_CODE TYPE SY-UCOMM.
+
+TABLES: ZTBFI0010,  "계정과목 MASTER
+        ZTBFI0011,  "계정과목 TEXT
+        ZTBFI0030,  "전표 헤더.
+        ZTBFI0031,  "전표 아이템
+        ZSBFI0040,  "재무상태표 STRUCTURE
+        ZVBFI0050.  "재무상태표 & 손익계산서 DB VIEW
+
+DATA: GO_CONT   TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV    TYPE REF TO CL_GUI_ALV_GRID,
+      GS_LAYOUT TYPE LVC_S_LAYO,
+      GT_FCAT   TYPE LVC_T_FCAT,
+      GS_FCAT   TYPE LVC_S_FCAT,
+      GT_SORT   TYPE LVC_T_SORT,
+      GS_SORT   TYPE LVC_S_SORT.
+
+DATA: GS_VARIANT TYPE DISVARIANT.
+
+<font color ="#0000FF">*" Internal table & WA</font>
+<font color ="#0000FF">*DATA: GT_ZSBFI0040 TYPE TABLE OF ZSBFI0040,</font>
+<font color ="#0000FF">*      GS_ZSBFI0040 LIKE LINE OF GT_ZSBFI0040.</font>
+
+<font color ="#0000FF">*TYPES: BEGIN OF TS_DATA.</font>
+<font color ="#0000FF">*         INCLUDE TYPE ZSBFI0040.</font>
+<font color ="#0000FF">*TYPES:   ROW_COLOR TYPE LVC_T_SCOL,</font>
+<font color ="#0000FF">*       END OF TS_DATA.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*DATA: GT_ZSBFI0040 TYPE TABLE OF TS_DATA,</font>
+<font color ="#0000FF">*      GS_ZSBFI0040 LIKE LINE OF GT_ZSBFI0040.</font>
+
+<font color ="#0000FF">* Domain ZDB_PL_SORT의 Fixed Value 값을 가져오기 위한 IT</font>
+TYPES: BEGIN OF TY_S_LIST.
+          include structure <a href ="zsbfi0040/dictionary-zsbfi0040.html">ZSBFI0040</a>. " 재무상태표 STR
+TYPES:    ZSORT_G(30),                 "Domain Value Text를 담을 필드 설정
+          ZSORT_C(30),
+<font color ="#0000FF">**********************************************************************</font>
+          ZSORT_G_STYLE TYPE lvc_t_styl, " 스타일 필드 추가 (ZSORT_G용)
+<font color ="#0000FF">**********************************************************************</font>
+       END OF TY_S_LIST.
+
+DATA: GT_ZSBFI0040 TYPE STANDARD TABLE OF TY_S_LIST,
+      GS_ZSBFI0040 TYPE TY_S_LIST.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

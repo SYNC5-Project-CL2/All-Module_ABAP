@@ -1,0 +1,1045 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRMM0070_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRMM0070_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRMM0070_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRMM0070_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form hotspot1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; ES_ROW_NO</font>
+<font color ="#0000FF">*&      --&gt; E_COLUMN_ID</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM hotspot1  USING    p_es_row_no TYPE lvc_s_roid
+                        p_e_column_id.
+
+READ TABLE gt_ztbmm0021 INTO zsbmm0021 INDEX p_es_row_no-row_id.
+
+PERFORM select_po_item.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form hotspot2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; ES_ROW_NO</font>
+<font color ="#0000FF">*&      --&gt; E_COLUMN_ID</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM hotspot2  USING    p_es_row_no  TYPE lvc_s_roid
+                        p_e_column_id.
+READ TABLE gt_ztbmm0061 INTO zsbmm0061 INDEX p_es_row_no-row_id.
+PERFORM select_inv_item.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SELECT_PO</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM select_po .
+
+IF gt_ztbmm0021 IS INITIAL. "alv1의 itab이 빈 경우에만 select
+  SELECT *
+    FROM ztbmm0020
+    INTO CORRESPONDING FIELDS OF TABLE gt_ztbmm0021
+    WHERE ponum IN so_po
+      AND podate IN so_dat
+      AND status &lt;&gt; 'C'
+      AND status2 = 'A'.
+   PERFORM fill_name_alv1. "name 필드  + 신호등 값 채우기
+ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_name_alv1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_name_alv1 .
+
+PERFORM get_pltname. "플랜트명 구하기
+PERFORM get_whname. "창고명 구하기
+PERFORM get_bpname. "BP명 구하기
+PERFORM get_empname. "사원명 구하기
+PERFORM get_status_names. "status1 + status2 표시
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_pltname</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_pltname .
+DATA: lt_ztbmm1020 TYPE TABLE OF ztbmm1020, "플랜트 ITAB
+      ls_ztbmm1020 LIKE LINE OF lt_ztbmm1020.
+
+SELECT *
+  FROM ztbmm1020
+  INTO TABLE lt_ztbmm1020.
+
+LOOP AT gt_ztbmm0021 INTO zsbmm0021.
+  READ TABLE lt_ztbmm1020 INTO ls_ztbmm1020 WITH KEY pltcode = zsbmm0021-pltcode.
+  zsbmm0021-pltname = ls_ztbmm1020-pltname.
+  MODIFY gt_ztbmm0021 FROM zsbmm0021 TRANSPORTING pltname.
+ENDLOOP.
+
+CLEAR zsbmm0021.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_whname</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_whname .
+DATA: lt_ztbmm1030 TYPE TABLE OF ztbmm1030, "창고명  구하기
+      ls_ztbmm1030 LIKE LINE OF lt_ztbmm1030.
+
+SELECT *
+  FROM ztbmm1030
+  INTO TABLE lt_ztbmm1030.
+
+LOOP AT gt_ztbmm0021 INTO zsbmm0021.
+  READ TABLE lt_ztbmm1030 INTO ls_ztbmm1030 WITH KEY whcode = zsbmm0021-whcode.
+  zsbmm0021-whname = ls_ztbmm1030-whname.
+  MODIFY gt_ztbmm0021 FROM zsbmm0021 TRANSPORTING whname.
+ENDLOOP.
+
+CLEAR zsbmm0021.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_bpname</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_bpname .
+DATA: lt_ztbsd1051 TYPE TABLE OF ztbsd1051, "BP명 구하기
+      ls_ztbsd1051 LIKE LINE OF lt_ztbsd1051.
+
+SELECT *
+  FROM ztbsd1051
+  INTO TABLE lt_ztbsd1051.
+
+LOOP AT gt_ztbmm0021 INTO zsbmm0021.
+  READ TABLE lt_ztbsd1051 INTO ls_ztbsd1051 WITH KEY bpcode = zsbmm0021-bpcode.
+  zsbmm0021-bpname = ls_ztbsd1051-bpname.
+  MODIFY gt_ztbmm0021 FROM zsbmm0021 TRANSPORTING bpname.
+ENDLOOP.
+
+CLEAR zsbmm0021.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_empname</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_empname .
+DATA: lt_ztbsd1030 TYPE TABLE OF ztbsd1030, "사원명 구하기
+      ls_ztbsd1030 LIKE LINE OF lt_ztbsd1030.
+
+SELECT *
+  FROM ztbsd1030
+  INTO TABLE lt_ztbsd1030.
+
+LOOP AT gt_ztbmm0021 INTO zsbmm0021.
+  READ TABLE lt_ztbsd1030 INTO ls_ztbsd1030 WITH KEY empid = zsbmm0021-empid.
+  zsbmm0021-empname = ls_ztbsd1030-empname.
+  MODIFY gt_ztbmm0021 FROM zsbmm0021 TRANSPORTING empname.
+ENDLOOP.
+
+CLEAR zsbmm0021.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_status_names</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_status_names .
+
+LOOP AT gt_ztbmm0021 INTO zsbmm0021.
+  PERFORM set_status1_nam. "구매오더 상태값 표시
+  PERFORM set_status2_nam. "송장 등록여부 상태값 표시 + 신호등 세팅
+  MODIFY gt_ztbmm0021 FROM zsbmm0021 TRANSPORTING status_nam status2_nam light.
+ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_status1_nam</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_status1_nam .
+
+  IF zsbmm0021-status = 'A'.
+    zsbmm0021-status_nam = '입고 대기'.
+  ELSEIF zsbmm0021-status = 'B'.
+    zsbmm0021-status_nam = '입고 완료'.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_status2_nam</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_status2_nam .
+
+  IF zsbmm0021-status2 = 'A'.
+    zsbmm0021-status2_nam = '송장 미등록'.
+    zsbmm0021-light = '1'.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout1 .
+
+  gs_layout1-zebra = 'X'.
+  gs_layout1-cwidth_opt = 'A'.
+  gs_layout1-grid_title = '구매오더 리스트'.
+  gs_layout1-sel_mode = 'B'.
+  gs_layout1-excp_fname = 'LIGHT'.
+  gs_layout1-excp_led = 'X'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat1 .
+
+  gs_fcat1-fieldname = 'PONUM'.
+  gs_fcat1-hotspot = 'X'.
+  APPEND gs_fcat1 TO gt_fcat1.
+  CLEAR gs_fcat1.
+
+  gs_fcat1-fieldname = 'STATUS'.
+  gs_fcat1-no_out = 'X'.
+  APPEND gs_fcat1 TO gt_fcat1.
+  CLEAR gs_fcat1.
+
+  gs_fcat1-fieldname = 'LIGHT'.
+  gs_Fcat1-coltext = '상태'.
+  APPEND gs_fcat1 TO gt_fcat1.
+  CLEAR gs_fcat1.
+
+  gs_fcat1-fieldname = 'STATUS2'.
+  gs_fcat1-no_out = 'X'.
+  APPEND gs_fcat1 TO gt_fcat1.
+  CLEAR gs_fcat1.
+
+  gs_fcat1-fieldname = 'STATUS_NAM'.
+  gs_fcat1-coltext = '입고상태'.
+  APPEND gs_fcat1 TO gt_fcat1.
+  CLEAR gs_fcat1.
+
+  gs_fcat1-fieldname = 'STATUS2_NAM'.
+  gs_fcat1-coltext = '송장등록 여부'.
+  APPEND gs_fcat1 TO gt_fcat1.
+  CLEAR gs_fcat1.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_handler1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_handler1 .
+ SET HANDLER lcl_event_handler=&gt;on_hotspot_click1 FOR go_alv1.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout2 .
+
+  gs_layout2-zebra = 'X'.
+  gs_layout2-cwidth_opt = 'A'.
+  gs_layout2-grid_title = '거래처 송장 리스트'.
+  gs_layout2-sel_mode = 'B'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat2 .
+
+  gs_fcat2-fieldname = 'INVONUM'.
+  gs_fcat2-hotspot = 'X'.
+  APPEND gs_fcat2 TO gt_fcat2.
+  CLEAR gs_fcat2.
+
+  gs_fcat2-fieldname = 'STATUS'.
+  gs_fcat2-no_out = 'X'.
+  APPEND gs_fcat2 TO gt_fcat2.
+  CLEAR gs_fcat2.
+
+  gs_fcat2-fieldname = 'INVTEXT'.
+  gs_fcat2-no_out = 'X'.
+  APPEND gs_fcat2 TO gt_fcat2.
+  CLEAR gs_fcat2.
+
+  gs_fcat2-fieldname = 'EMPID'.
+  gs_fcat2-coltext = '송장 생성자ID'.
+  APPEND gs_fcat2 TO gt_fcat2.
+  CLEAR gs_fcat2.
+
+  gs_fcat2-fieldname = 'EMPID_NAM'.
+  gs_fcat2-coltext = '송장 생성자명'.
+  APPEND gs_fcat2 TO gt_fcat2.
+  CLEAR gs_fcat2.
+
+  gs_fcat2-fieldname = 'EMPID2'.
+  gs_fcat2-no_out = 'X'.
+  APPEND gs_fcat2 TO gt_fcat2.
+  CLEAR gs_fcat2.
+
+  gs_fcat2-fieldname = 'EMPID2_NAM'.
+  gs_fcat2-no_out = 'X'.
+  APPEND gs_fcat2 TO gt_fcat2.
+  CLEAR gs_fcat2.
+
+  gs_fcat2-fieldname = 'INVOPDATE'.
+  gs_fcat2-no_out = 'X'.
+  APPEND gs_fcat2 TO gt_fcat2.
+  CLEAR gs_fcat2.
+
+  gs_fcat2-fieldname = 'STATUS_NAM'.
+  gs_fcat2-coltext = '송장검증 여부'.
+  APPEND gs_fcat2 TO gt_fcat2.
+  CLEAR gs_fcat2.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_handler2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_handler2 .
+SET HANDLER lcl_event_handler=&gt;on_hotspot_click2 FOR go_alv2.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout3 .
+  gs_layout1-zebra = 'X'.
+  gs_layout1-cwidth_opt = 'A'.
+  gs_layout1-grid_title = '구매오더 아이템'.
+  gs_layout1-sel_mode = 'B'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat3 .
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form select_po_item</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM select_po_item .
+
+SELECT *
+  FROM ztbmm0021
+  INTO CORRESPONDING FIELDS OF TABLE gt_ztbmm0022
+  WHERE ponum = zsbmm0021-ponum.
+
+PERFORM get_matname1.
+
+CALL SCREEN 110 STARTING AT 5 5.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_matname1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_matname1 .
+DATA: lt_ZTBMM1011 TYPE TABLE OF ztbmm1011, "자재 마스터 텍스트 테이블
+      ls_ZTBMM1011 TYPE ztbmm1011.
+
+SELECT *
+  FROM ztbmm1011
+  INTO TABLE lt_ztbmm1011.
+
+LOOP AT gt_ztbmm0022 INTO zsbmm0022.
+  READ TABLE lt_ztbmm1011 INTO ls_ztbmm1011 WITH KEY matcode = zsbmm0022-matcode.
+  zsbmm0022-matname = ls_ztbmm1011-matname.
+  MODIFY gt_ztbmm0022 FROM zsbmm0022 TRANSPORTING matname.
+
+ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout4 .
+  gs_layout1-zebra = 'X'.
+  gs_layout1-cwidth_opt = 'A'.
+  gs_layout1-grid_title = '거래처 송장 아이템'.
+  gs_layout1-sel_mode = 'B'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat4 .
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form select_inv_item</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM select_inv_item .
+
+SELECT *
+  FROM ztbmm0061
+  INTO CORRESPONDING FIELDS OF TABLE gt_ztbmm0062
+  WHERE invonum = zsbmm0061-invonum.
+
+PERFORM get_matname2.
+
+CALL SCREEN 120 STARTING AT 5 5.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_matname2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_matname2 .
+
+DATA: lt_ZTBMM1011 TYPE TABLE OF ztbmm1011, "자재 마스터 텍스트 테이블
+      ls_ZTBMM1011 TYPE ztbmm1011.
+
+SELECT *
+  FROM ztbmm1011
+  INTO TABLE lt_ztbmm1011.
+
+LOOP AT gt_ztbmm0063 INTO zsbmm0062.
+  READ TABLE lt_ztbmm1011 INTO ls_ztbmm1011 WITH KEY matcode = zsbmm0062-matcode.
+  zsbmm0062-matname = ls_ztbmm1011-matname.
+  MODIFY gt_ztbmm0062 FROM zsbmm0062 TRANSPORTING matname WHERE matcode = zsbmm0062-matcode.
+  MODIFY gt_ztbmm0063 FROM zsbmm0062 TRANSPORTING matname WHERE matcode = zsbmm0062-matcode.
+ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA_ALV1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_data_alv1 .
+
+  SELECT *
+    FROM ztbmm0020
+    INTO CORRESPONDING FIELDS OF TABLE gt_ztbmm0021
+    WHERE ponum IN so_po
+      AND podate IN so_dat
+      AND status &lt;&gt; 'C'
+      AND status2 = 'A'.
+
+   IF gt_ztbmm0021 IS INITIAL.
+     MESSAGE e015 DISPLAY LIKE 'I'.
+   ENDIF.
+   CLEAR gt_ztbmm0021.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CHECK_PONUM</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM check_ponum .
+
+IF so_po-low+2(8) &gt; so_po-high+2(8).
+  MESSAGE e120 DISPLAY LIKE 'I'.
+ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create .
+
+PERFORM get_row_no.
+
+IF gt_rows IS INITIAL.
+  MESSAGE s008 DISPLAY LIKE 'E'. "행 선택 안한 경우
+ELSE.
+  READ TABLE gt_rows INTO gs_row INDEX 1.
+  PERFORM pop_up. "컨펌 팝업
+  IF gv_answer = 1.
+    CALL SCREEN 130 STARTING AT 5 5. "송장아이템 입력 스크린
+  ENDIF.
+
+CLEAR: zsbmm0021, gt_rows, gs_row.
+ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_row_no</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_row_no .
+CALL METHOD go_alv1-&gt;get_selected_rows
+  IMPORTING
+    et_index_rows = gt_rows.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form pop_up</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM pop_up .
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      titlebar              = '거래처 송장 등록'
+      text_question         = '송장을 등록하시겠습니까?'
+      text_button_1         = 'YES'
+      icon_button_1         = 'ICON_OKAY'
+      text_button_2         = 'NO'
+      icon_button_2         = 'ICON_CANCEL'
+      display_cancel_button = ''
+    IMPORTING
+      answer                = gv_answer
+    EXCEPTIONS
+      text_not_found        = 1
+      OTHERS                = 2.
+  IF sy-subrc &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form update_alv1_DB</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM update_alv1_DB .
+
+  READ TABLE gt_ztbmm0021 INTO zsbmm0021 INDEX gs_row-index. "gs_row의 index에 일치하는 데이터를 alv1에서 가져옴
+  PERFORM modify_zsbmm0021.
+  MODIFY gt_ztbmm0021 FROM zsbmm0021 INDEX gs_row-index TRANSPORTING status2 status2_nam light .
+  UPDATE ztbmm0020 SET status2 = 'B' WHERE ponum = zsbmm0021-ponum.
+  PERFORM refresh_alv1.
+  PERFORM fill_alv2.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form update_alv2_DB</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM update_alv2_DB .
+
+LOOP AT gt_ztbmm0061 INTO zsbmm0061.
+
+  PERFORM get_number_range. "거래처 송장 번호
+  PERFORM get_empid. "생성자 + 생성자명
+  PERFORM get_date. "송장 생성일
+  PERFORM get_zterm. "지급코드 + 지급코드명
+  PERFORM status. "status + status_nam
+  MODIFY gt_ztbmm0061 FROM ZSBMM0061.
+  MOVE-CORRESPONDING zsbmm0061 TO ztbmm0060.
+  INSERT ztbmm0060 FROM ztbmm0060. "송장 헤더 업데이트
+
+  IF sy-subrc = 0.
+    MESSAGE s096 WITH '거래처 송장' '생성'.
+  ELSE.
+    MESSAGE s097 WITH '거래처 송장' '생성'.
+  ENDIF.
+ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form modify_zsbmm0021</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM modify_zsbmm0021 .
+
+zsbmm0021-status2 = 'B'.
+zsbmm0021-status2_nam = '송장등록 완료'.
+zsbmm0021-light = '3'.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_alv2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_alv2 .
+DATA: ls_zsbmm061 LIKE zsbmm0061. "ALV2 임시 스트럭쳐
+
+MOVE-CORRESPONDING zsbmm0021 TO ls_zsbmm061.
+APPEND ls_zsbmm061 TO gt_ztbmm0061.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_number_range</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_number_range .
+
+    CALL FUNCTION 'NUMBER_GET_NEXT' "
+      EXPORTING
+        nr_range_nr             = '01'
+        object                  = 'ZBBMM0060'
+      IMPORTING
+        number                  = gv_nr
+      EXCEPTIONS
+        interval_not_found      = 1
+        number_range_not_intern = 2
+        object_not_found        = 3
+        quantity_is_0           = 4
+        quantity_is_not_1       = 5
+        interval_overflow       = 6
+        buffer_overflow         = 7
+        OTHERS                  = 8.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+
+   zsbmm0061-invonum = 'INV' && gv_nr.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_empid</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_empid .
+
+SELECT SINGLE empid
+  FROM ztbsd1030
+  INTO gv_empid
+  WHERE logid = sy-uname.
+
+zsbmm0061-empid = gv_empid.
+
+SELECT SINGLE empname
+  FROM ztbsd1030
+  INTO zsbmm0061-empid_nam
+  WHERE empid = zsbmm0061-empid.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_date</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_date .
+zsbmm0061-invodate = sy-datum.
+ENDFORM.
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_zterm</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_zterm .
+
+SELECT SINGLE zterm
+  FROM ztbsd1050
+  INTO zsbmm0061-zterm
+  WHERE bpcode = zsbmm0061-bpcode.
+
+SELECT SINGLE termtxt
+  FROM ztbfi0040
+  INTO zsbmm0061-termtxt
+  WHERE zterm = zsbmm0061-zterm.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_empname2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_empname2 .
+
+DATA: lt_ztbsd1030 TYPE TABLE OF ztbsd1030, "사원명 구하기
+      ls_ztbsd1030 LIKE LINE OF lt_ztbsd1030.
+
+SELECT *
+  FROM ztbsd1030
+  INTO TABLE lt_ztbsd1030.
+
+LOOP AT gt_ztbmm0021 INTO zsbmm0021.
+  READ TABLE lt_ztbsd1030 INTO ls_ztbsd1030 WITH KEY empid = zsbmm0021-empid.
+  zsbmm0021-empname = ls_ztbsd1030-empname.
+  MODIFY gt_ztbmm0021 FROM zsbmm0021 TRANSPORTING empname.
+ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form status</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM status .
+
+ZSBMM0061-status = 'A'.
+ZSBMM0061-status_nam = '송장검증 필요'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat5</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat5 .
+
+gs_fcat5-fieldname = 'INVONUM'.
+gs_fcat5-no_out = 'X'.
+APPEND gs_fcat5 TO gt_fcat5.
+CLEAR gs_fcat5.
+
+gs_fcat5-fieldname = 'INVOPRICE'.
+gs_fcat5-edit = 'X'.
+APPEND gs_fcat5 TO gt_fcat5.
+CLEAR gs_fcat5.
+
+gs_fcat5-fieldname = 'INBOQUANT'.
+gs_fcat5-edit = 'X'.
+APPEND gs_fcat5 TO gt_fcat5.
+CLEAR gs_fcat5.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form on_data_changed</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; ER_DATA_CHANGED</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM on_data_changed  USING    p_er_data_changed TYPE REF TO cl_alv_changed_data_protocol.
+
+DATA: ls_changed TYPE lvc_s_modi, "값 변경된 cell의 index 정보 저장하는 변수
+      lv_count TYPE ztbmm0061-inboquant, "변경된 입고수량 cell 값 저장할 변수
+      lv_amount TYPE ztbmm0061-invoprice. "변경된 금액 cell 값 저장할 변수
+
+READ TABLE  p_er_data_changed-&gt;mt_good_cells INTO ls_changed INDEX 1.
+  IF sy-subrc = 0.
+      PERFORM get_lv_count  USING ls_changed  p_er_data_changed
+                        CHANGING lv_count.
+      PERFORM get_lv_amount  USING ls_changed  p_er_data_changed
+                             CHANGING lv_amount.
+
+      READ TABLE gt_ztbmm0063 INTO zsbmm0062 INDEX ls_changed-row_id.
+      IF lv_count IS NOT INITIAL AND zsbmm0062-unitcode = 'EA'. "개수인 경우
+        IF lv_count - floor( lv_count ) &lt;&gt; 0.
+          lv_count = zsbmm0062-inboquant. "값 초기화
+          p_er_data_changed-&gt;modify_cell(
+          EXPORTING i_row_id = ls_changed-row_id
+                    i_fieldname = 'INBOQUANT'
+                    i_value = lv_count ).
+          MESSAGE i045 DISPLAY LIKE 'E'.
+        ELSEIF lv_count - floor( lv_count ) = 0.
+          READ TABLE gt_ztbmm0062 INTO zsbmm0062 INDEX ls_changed-row_id.
+          zsbmm0062-inboquant = lv_count.
+          zsbmm0062-invoprice = lv_amount.
+          MODIFY gt_ztbmm0062 FROM zsbmm0062 INDEX ls_changed-row_id.
+        ENDIF.
+      ELSEIF lv_count IS NOT INITIAL AND lv_amount IS NOT INITIAL.
+        READ TABLE gt_ztbmm0062 INTO zsbmm0062 INDEX ls_changed-row_id.
+          zsbmm0062-inboquant = lv_count.
+          zsbmm0062-invoprice = lv_amount.
+          MODIFY gt_ztbmm0062 FROM zsbmm0062 INDEX ls_changed-row_id.
+      ENDIF.
+      PERFORM refresh_alv5.
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_handler5</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_handler5 .
+SET HANDLER: lcl_event_handler=&gt;on_data_changed FOR go_alv5.
+
+
+CALL METHOD go_alv5-&gt;register_edit_event
+  EXPORTING
+    i_event_id = cl_gui_alv_grid=&gt;mc_evt_enter.
+
+CALL METHOD go_alv5-&gt;register_edit_event
+  EXPORTING
+    i_event_id = cl_gui_alv_grid=&gt;mc_evt_modified.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_lv_count</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      &lt;-- LV_COUNT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_lv_count  USING ls_changed TYPE lvc_s_modi
+                         p_er_data_changed TYPE REF TO cl_alv_changed_data_protocol
+                   CHANGING p_lv_count.
+
+
+    CALL METHOD p_er_data_changed-&gt;get_cell_value "값 변경된 cell 의 데이터 읽어옴
+      EXPORTING
+        i_row_id    = ls_changed-row_id
+        i_fieldname = 'INBOQUANT'
+      IMPORTING
+        e_value     = p_lv_count.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_lv_amount</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      &lt;-- LV_AMOUNT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_lv_amount  USING ls_changed TYPE lvc_s_modi
+                          p_er_data_changed TYPE REF TO cl_alv_changed_data_protocol
+                    CHANGING p_lv_amount.
+
+    CALL METHOD p_er_data_changed-&gt;get_cell_value "값 변경된 cell 의 데이터 읽어옴
+      EXPORTING
+        i_row_id    = ls_changed-row_id
+        i_fieldname = 'INVOPRICE'
+      IMPORTING
+        e_value     = p_lv_amount.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form refresh_alv5</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM refresh_alv5 .
+
+  CALL METHOD go_alv5-&gt;refresh_table_display
+    EXCEPTIONS
+      finished = 1
+      OTHERS   = 2.
+  IF sy-subrc &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form update_alv4_DB</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM update_alv4_DB .
+DATA: lv_count TYPE i.
+
+LOOP AT gt_ztbmm0063 INTO zsbmm0062.
+  READ TABLE gt_ztbmm0061 INTO zsbmm0061 INDEX 1. "ALV2의 송장번호 가져오기
+  zsbmm0062-invonum = zsbmm0061-invonum.
+  MOVE-CORRESPONDING zsbmm0062 TO ztbmm0061. "송장아이템 입력 팝업의 데이터를 옮기기
+  APPEND zsbmm0062 TO gt_ztbmm0062.
+  INSERT ztbmm0061 FROM ztbmm0061.
+  IF sy-subrc = 0.
+    lv_count = lv_count + 1.
+  ENDIF.
+ENDLOOP.
+
+IF lines( gt_ztbmm0062 ) = lv_count.
+  MESSAGE s096 WITH '거래처 송장' '생성'.
+ELSE.
+  MESSAGE s097 WITH '거래처 송장' '생성'.
+ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form refresh_alv1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM refresh_alv1 .
+CALL METHOD go_alv1-&gt;refresh_table_display
+  EXCEPTIONS
+    finished = 1
+    OTHERS   = 2.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form refresh_alv4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM refresh_alv4 .
+CALL METHOD go_alv4-&gt;refresh_table_display
+  EXCEPTIONS
+    finished = 1
+    OTHERS   = 2.
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

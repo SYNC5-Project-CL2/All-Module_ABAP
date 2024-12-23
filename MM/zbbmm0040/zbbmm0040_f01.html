@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBBMM0040_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBBMM0040_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBBMM0040_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBBMM0040_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_DEFAULT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_DEFAULT .
+  DATA: LV_LAST_RUN TYPE DATS,
+        LV_NEXT_RUN TYPE DATS.
+
+  SELECT PODATE
+    FROM ZTBMM0020
+   WHERE PRNUM EQ @SPACE
+    ORDER BY PODATE DESCENDING
+    INTO TABLE @DATA(LT_LAST_RUN)
+      UP TO 1 ROWS.
+
+  READ TABLE LT_LAST_RUN INTO LV_LAST_RUN INDEX 1.
+
+  LV_NEXT_RUN = LV_LAST_RUN + 7.
+
+  PA_NEXT = LV_NEXT_RUN.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SCREEN_OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SCREEN_OUTPUT .
+<font color ="#0000FF">* PA_NEXT 필드 아웃풋 처리.</font>
+  LOOP AT SCREEN.
+    IF SCREEN-NAME EQ 'PA_NEXT'.
+      SCREEN-INPUT = '0'.
+    ENDIF.
+    MODIFY SCREEN.
+  ENDLOOP.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_ORDER</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_ORDER .
+<font color ="#0000FF">* ZSBMM0020_BATCH 구매오더 헤더 & 아이템 STRUC.</font>
+  DATA: LS_ZSBMM0020_BATCH TYPE ZSBMM0020_BATCH,
+        LT_ZSBMM0020_BATCH LIKE TABLE OF LS_ZSBMM0020_BATCH.
+
+<font color ="#0000FF">* 구매오더 헤더 WA & ITAB.</font>
+  DATA: LS_ZTBMM0020 TYPE ZTBMM0020,
+        LT_ZTBMM0020 LIKE TABLE OF LS_ZTBMM0020.
+
+<font color ="#0000FF">* 구매오더 아이템 WA & ITAB.</font>
+  DATA: LS_ZTBMM0021 TYPE ZTBMM0021,
+        LT_ZTBMM0021 LIKE TABLE OF LS_ZTBMM0021.
+
+<font color ="#0000FF">* 인포레코드 WA & ITAB.</font>
+  DATA: LS_ZTBMM0070 TYPE ZTBMM0070,
+        LT_ZTBMM0070 LIKE TABLE OF LS_ZTBMM0070.
+
+<font color ="#0000FF">* 넘버레인지 변수.</font>
+  DATA: LV_NR    TYPE NUM8,
+        LV_PONUM TYPE C LENGTH 10.
+
+<font color ="#0000FF">* BPCODE 바뀌는지 확인하는 변수.</font>
+  DATA: LV_BPCODE TYPE C LENGTH 10.
+
+<font color ="#0000FF">* 인포레코드 DB ITAB에 할당.</font>
+  SELECT *
+    FROM ZTBMM0070
+    INTO TABLE @LT_ZTBMM0070
+    ORDER BY MATCODE ASCENDING.
+
+<font color ="#0000FF">* 구매오더 헤더와 아이템 테이블의 각 필드에 값 할당.</font>
+  LOOP AT LT_ZTBMM0070 INTO LS_ZTBMM0070.
+
+<font color ="#0000FF">*   구매오더 헤더 & 아이템 WA에 같은필드명에 해당하는 데이터 할당.</font>
+    MOVE-CORRESPONDING LS_ZTBMM0070 TO LS_ZSBMM0020_BATCH.
+
+<font color ="#0000FF">*   이전 행의 BPCODE와 현재 행의 BPCODE 값이 다르면 채번함.</font>
+    IF NOT LV_BPCODE EQ LS_ZSBMM0020_BATCH-BPCODE.
+
+      LV_BPCODE = LS_ZTBMM0070-BPCODE.
+
+      CALL FUNCTION 'NUMBER_GET_NEXT'
+        EXPORTING
+          NR_RANGE_NR             = '01'
+          OBJECT                  = 'ZBBMM0020'
+        IMPORTING
+          NUMBER                  = LV_NR
+        EXCEPTIONS
+          INTERVAL_NOT_FOUND      = 1
+          NUMBER_RANGE_NOT_INTERN = 2
+          OBJECT_NOT_FOUND        = 3
+          QUANTITY_IS_0           = 4
+          QUANTITY_IS_NOT_1       = 5
+          INTERVAL_OVERFLOW       = 6
+          BUFFER_OVERFLOW         = 7
+          OTHERS                  = 8.
+      IF SY-SUBRC &lt;&gt; 0.
+        MESSAGE S231 DISPLAY LIKE 'E'.
+      ENDIF.
+
+<font color ="#0000FF">* 넘버레인지 FM으로 채번.</font>
+      CONCATENATE 'PO' LV_NR INTO LV_PONUM.
+      LS_ZSBMM0020_BATCH-PONUM = LV_PONUM.
+    ENDIF.
+
+    LV_BPCODE = LS_ZSBMM0020_BATCH-BPCODE.
+    LS_ZSBMM0020_BATCH-PLTCODE = 'PLT0000001'.
+    LS_ZSBMM0020_BATCH-WHCODE = 'STP0000001'.
+    LS_ZSBMM0020_BATCH-PODATE = SY-DATUM.
+    LS_ZSBMM0020_BATCH-EINDT = SY-DATUM + LS_ZTBMM0070-LDTIME.
+    LS_ZSBMM0020_BATCH-EMPID = 'EMP0000007'.
+    LS_ZSBMM0020_BATCH-STATUS = 'A'.
+    LS_ZSBMM0020_BATCH-POQUANT = LS_ZTBMM0070-INFQUANT * 10.
+    LS_ZSBMM0020_BATCH-POPRICE = LS_ZTBMM0070-INFPRICE * 10.
+    LS_ZSBMM0020_BATCH-PRDATE = SPACE.
+    LS_ZSBMM0020_BATCH-INBODATE = SPACE.
+    LS_ZSBMM0020_BATCH-PRNUM = SPACE.
+
+<font color ="#0000FF">* 헤더 & 아이템 ITAB 에 데이터 할당.</font>
+    IF SY-SUBRC = 0.
+      MOVE-CORRESPONDING LS_ZSBMM0020_BATCH TO  LS_ZTBMM0020.
+      MOVE-CORRESPONDING LS_ZSBMM0020_BATCH TO  LS_ZTBMM0021.
+    ENDIF.
+
+<font color ="#0000FF">*  헤더 & 아이템 TP TABLE에 DB 생성.</font>
+    INSERT ZTBMM0020 FROM LS_ZTBMM0020.
+    INSERT ZTBMM0021 FROM LS_ZTBMM0021.
+  ENDLOOP.
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

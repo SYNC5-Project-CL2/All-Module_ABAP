@@ -1,0 +1,73 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBFI0030_TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBFI0030_TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0030_TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include MZBFI0030_TOP                            - Module Pool      SAPMZBFI0030</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+PROGRAM SAPMZBFI0030 MESSAGE-ID ZCOMMON_MSG.
+<font color ="#0000FF">**********************************************************************</font>
+<font color ="#0000FF">* 사용할 스트럭쳐, 테이블 선언</font>
+<font color ="#0000FF">**********************************************************************</font>
+TABLES: ZTBFI0030,  "전표헤더
+        ZTBFI0031,  "전표아이템
+        ZTBFI0050,  "환율
+        ZSBFI0020,  "전표유형
+        ZSBFI0031,  "전표 ITEM - 계정과목 / BP
+        ZTBSD1030,  "사원 Master
+        ZTBSD1051.  "BP Text Table
+
+<font color ="#0000FF">*--시스템 컨트롤 선언</font>
+DATA: OK_CODE TYPE SY-UCOMM.
+
+<font color ="#0000FF">**********************************************************************</font>
+<font color ="#0000FF">*ALV 관련 변수 선언</font>
+<font color ="#0000FF">**********************************************************************</font>
+"--ALV 변수
+DATA: GO_CONT    TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV     TYPE REF TO CL_GUI_ALV_GRID,
+      GS_LAYOUT  TYPE LVC_S_LAYO,
+      GT_FCAT    TYPE LVC_T_FCAT,
+      GS_FCAT    TYPE LVC_S_FCAT,
+      GT_TOOLBAR TYPE UI_FUNCTIONS. "툴바 숨김 처리.
+
+<font color ="#0000FF">*--전표 헤더 & 아이템 데이터 저장할 ITAB, WA</font>
+DATA: GT_ZTBFI0030 TYPE TABLE OF ZTBFI0030,
+      GS_ZTBFI0030 LIKE LINE OF GT_ZTBFI0030,   "전표 헤더
+      GT_ZTBFI0031 TYPE TABLE OF ZTBFI0031,
+      GS_ZTBFI0031 LIKE LINE OF GT_ZTBFI0031.   "전표 아이템
+
+"--ALV 행 선택
+DATA : ET_INDEX_ROW TYPE LVC_T_ROW,
+       ES_INDEX_ROW TYPE LVC_S_ROW.
+DATA : ROW_IDX TYPE I.
+
+<font color ="#0000FF">**********************************************************************</font>
+<font color ="#0000FF">*그 외 변수 선언</font>
+<font color ="#0000FF">**********************************************************************</font>
+"--전표번호 생성값 저장
+DATA: GV_BELNR TYPE ZTBFI0030-BELNR.
+
+
+<font color ="#0000FF">*--차변합계, 대변합계 저장 변수</font>
+DATA: SSUM TYPE P LENGTH 16 , "차변합계
+      HSUM TYPE P LENGTH 16 . "대변합계
+
+<font color ="#0000FF">*--차/대변 합계 일치여부 아이콘</font>
+DATA: ICON_SUM TYPE ICONS-TEXT.
+
+<font color ="#0000FF">*--내역삭제한 상황인지 확인하는 변수 선언</font>
+DATA : GV_CANC_VAL TYPE I.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

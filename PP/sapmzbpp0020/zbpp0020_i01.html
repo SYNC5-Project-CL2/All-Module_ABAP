@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBPP0020_I01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBPP0020_I01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBPP0020_I01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBPP0020_I01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0100  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0100 INPUT.
+  CASE OK_CODE.
+    WHEN 'BACK' OR 'EXIT' OR 'CANCEL'. " BACK, EXIT, CANCEL 누르는 경우 뒤로가기
+      LEAVE TO SCREEN 0.
+
+    WHEN 'CREATE'. " 생성 버튼 클릭
+      CALL SCREEN 200. " 생성 화면 이동
+      CLEAR: ZTBPP0070, GT_ZTBPP0071. " 사용한 변수 초기화
+
+    WHEN 'MODIFY'. " 수정 버튼 클릭
+      CLEAR: GT_EDIT_ZTBPP0071.
+      PERFORM MODIF_BOM. " 수정 진행 SUB ROUTINE 실행
+      CLEAR: ZTBPP0070, GT_EDIT_ZTBPP0071. " 사용한 변수 초기화
+
+    WHEN 'DELETE'. " 삭제 버튼 클릭
+      PERFORM DEL_BOM.
+
+
+    WHEN 'REFRESH'. " 초기화 버튼 클릭
+      PERFORM CLEAR_ALL.
+
+    WHEN 'BTN'. " 조회 버튼 클릭
+      PERFORM GET_DATA.
+
+  ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0200  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0200 INPUT.
+  CASE OK_CODE.
+    WHEN 'SAVE'. " 저장 버튼 클릭
+      PERFORM SAVE_BOM. " 저장 처리 SUB ROUTINE 실행
+  ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT_CREATE  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE EXIT_CREATE INPUT.
+  CASE OK_CODE.
+    WHEN 'BACK' OR 'CANCEL'.
+      PERFORM MESSAGE_CANCEL_C.
+      LEAVE TO SCREEN 0.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+  ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT_MODIFY  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE EXIT_MODIFY INPUT.
+  CASE OK_CODE.
+    WHEN 'BACK' OR 'CANCEL'.
+      PERFORM MESSAGE_CANCEL_M.
+      LEAVE TO SCREEN 0.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+  ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0300  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0300 INPUT.
+  CASE OK_CODE.
+    WHEN 'SAVE'. "저장 버튼 클릭
+      PERFORM SAVE_MODBOM. " 수정내용 저장 처리 SUB ROUTINE 실행
+
+    WHEN 'CANCEL' OR 'BACK'. " CANCEL 또는 BACK 버튼 클릭
+      PERFORM MESSAGE_CANCEL_M. "CANCEL 메세지처리 SUB ROUTINE 실행
+      LEAVE TO SCREEN 0. " 이전 화면으로 이동
+  ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0110  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0110 INPUT.
+  CASE OK_CODE.
+    WHEN 'OKAY' OR 'CANCEL' OR 'EXIT'.
+      CLEAR: ZTBSD1030.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBFI0030_I01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBFI0030_I01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0030_I01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBFI0030_I01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0100  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0100 INPUT.
+
+  PERFORM INSERT_DATA.
+
+  CASE OK_CODE.
+    WHEN 'BACK'.
+      LEAVE TO SCREEN 0.
+
+    WHEN 'RST'.           "[초기화] - 전표 상세내역
+      PERFORM RESET_ITEM.
+
+    WHEN 'REFR'.          "[초기화] - 전체
+      PERFORM REFRESH_PAGE.
+
+    WHEN 'SAVE'.          "[전표 생성]
+      PERFORM SAVE_DATA.
+
+
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE EXIT INPUT.
+  CASE OK_CODE.
+    WHEN 'CANCEL'.
+      LEAVE PROGRAM.
+    WHEN 'EXIT' OR 'BACK'.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  CHECK_HEADER  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE CHECK_HEADER INPUT.
+  PERFORM CHECK_HEADER.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  ICON  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE SET_ICON INPUT.
+  PERFORM SET_ICON.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  CHECK_ITEM  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE CHECK_ITEM INPUT.
+  PERFORM CHECK_ITEM.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  F4_ACODE  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE F4_ACODE INPUT.
+
+  " 서치헬프 스트럭처
+  TYPES: BEGIN OF TS_F4_ACODE,
+           ACODE TYPE ZSBFI0031-ACODE,
+           ANAME TYPE ZSBFI0031-ANAME,
+         END OF TS_F4_ACODE.
+
+  " 결과값 받을 Internal Table
+  DATA: LT_F4_ACODE TYPE TABLE OF TS_F4_ACODE,
+        LS_F4_ACODE LIKE LINE OF  LT_F4_ACODE,
+        LV_BLART    TYPE ZSBFI0020-BLART.
+
+  "스크린 데이터 받을 IT & WA
+  DATA: LT_DYNPREAD LIKE TABLE OF DYNPREAD,
+        LS_DYNPREAD LIKE LINE OF LT_DYNPREAD.
+
+  DATA: LT_RETURN TYPE TABLE OF DDSHRETVAL,
+        LS_RETURN LIKE LINE OF LT_RETURN.
+
+  CLEAR LS_DYNPREAD.
+
+  " 전체 스크린 데이터 읽어오기.
+  CALL FUNCTION 'DYNP_VALUES_READ'
+    EXPORTING
+      DYNAME             = SY-REPID
+      DYNUMB             = SY-DYNNR
+      TRANSLATE_TO_UPPER = 'X'         "값 모두 대문자로 변경
+      REQUEST            = 'A'         " 화면에 표시된 값 자동으로 읽어오기
+    TABLES
+      DYNPFIELDS         = LT_DYNPREAD
+    EXCEPTIONS
+      OTHERS             = 1.
+
+  IF SY-SUBRC = 0.
+    " 전표유형 필드에 입력된 값을
+    READ TABLE LT_DYNPREAD INTO LS_DYNPREAD WITH KEY FIELDNAME = 'ZSBFI0020-BLART'.
+    IF SY-SUBRC = 0.
+      LV_BLART = LS_DYNPREAD-FIELDVALUE. "전표유형 필드의 값을 변수에 저장
+    ELSE.
+      MESSAGE '전표유형을 읽을 수 없습니다.' TYPE 'I'. "메세지 수정하기
+      RETURN.
+    ENDIF.
+  ENDIF.
+
+  "전표유형(코드) 입력 안된 경우
+  IF LV_BLART IS INITIAL.
+    MESSAGE '전표유형을 입력하세요' TYPE 'I'.
+    RETURN.
+  ENDIF.
+
+
+
+  SELECT ACODE ANAME
+    INTO TABLE LT_F4_ACODE
+    FROM ZTBFI0031_2        "전표유형&계정과목 매칭 데이터 있는 테이블
+    WHERE BLART = LV_BLART.
+
+  IF SY-SUBRC &lt;&gt; 0.
+    "입력값이 존재하지 않는 전표유형인 경우.
+    MESSAGE S416 WITH LV_BLART DISPLAY LIKE 'E'.
+    RETURN.
+  ENDIF.
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      RETFIELD        = 'ACODE'
+      DYNPPROG        = SY-REPID            " 현재 프로그램
+      DYNPNR          = SY-DYNNR            " 스크린 번호
+      DYNPROFIELD     = 'ZSBFI0031-ACODE'   " 값이 들어갈 스크린 필드
+      WINDOW_TITLE    = '계정과목 선택'          "서치헬프 제목
+      VALUE_ORG       = 'S'                 " S : 스트럭쳐 타입
+    TABLES
+      VALUE_TAB       = LT_F4_ACODE       "서치헬프에 출력할 데이터 (테이블)
+      RETURN_TAB      = LT_RETURN        " Return the selected value
+    EXCEPTIONS
+      PARAMETER_ERROR = 1
+      NO_VALUES_FOUND = 2
+      OTHERS          = 3.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE '서치헬프에서 값을 찾을 수 없습니다.' TYPE 'E'. "메세지 수정하기
+  ENDIF.
+
+  READ TABLE LT_RETURN INTO LS_RETURN INDEX 1.
+  IF SY-SUBRC = 0.
+    READ TABLE LT_F4_ACODE INTO LS_F4_ACODE WITH KEY ACODE = LS_RETURN-FIELDVAL.
+
+    IF SY-SUBRC = 0.
+      CLEAR: LS_DYNPREAD, LT_DYNPREAD.
+
+      "DYNPREAD를 초기화 시키고 새롭게 값을 넣어준다.
+      LS_DYNPREAD-FIELDNAME = 'ZSBFI0031-ACODE'.
+      LS_DYNPREAD-FIELDVALUE = LS_F4_ACODE-ACODE.
+      APPEND LS_DYNPREAD TO LT_DYNPREAD.
+
+      LS_DYNPREAD-FIELDNAME = 'ZSBFI0031-ANAME'.
+      LS_DYNPREAD-FIELDVALUE = LS_F4_ACODE-ANAME.
+      APPEND LS_DYNPREAD TO LT_DYNPREAD.
+
+      CALL FUNCTION 'DYNP_VALUES_UPDATE'
+        EXPORTING
+          DYNAME               = SY-CPROG
+          DYNUMB               = SY-DYNNR
+        TABLES
+          DYNPFIELDS           = LT_DYNPREAD
+        EXCEPTIONS
+          INVALID_ABAPWORKAREA = 1
+          INVALID_DYNPROFIELD  = 2
+          INVALID_DYNPRONAME   = 3
+          INVALID_DYNPRONUMMER = 4
+          INVALID_REQUEST      = 5
+          NO_FIELDDESCRIPTION  = 6
+          UNDEFIND_ERROR       = 7
+          OTHERS               = 8.
+      IF SY-SUBRC &lt;&gt; 0.
+      ENDIF.
+
+    ENDIF.
+
+  ENDIF.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  F4_BPCODE  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE F4_BPCODE INPUT.
+
+  " 서치헬프 스트럭처
+  TYPES: BEGIN OF TS_F4_BPCODE,
+           BPTCODE TYPE ZTBFI0031_3-BPTCODE,
+           BPCODE TYPE ZSBFI0031-BPCODE,
+           BPNAME TYPE ZSBFI0031-BPNAME,
+         END OF TS_F4_BPCODE.
+
+  " 결과값 받을 Internal Table
+  DATA: LT_F4_BPCODE TYPE TABLE OF TS_F4_BPCODE,
+        LS_F4_BPCODE LIKE LINE OF  LT_F4_BPCODE,
+        LV_BLART2    TYPE ZSBFI0020-BLART.
+
+  "스크린 데이터 받을 IT & WA
+  DATA: LT_DYNPREAD2 LIKE TABLE OF DYNPREAD,
+        LS_DYNPREAD2 LIKE LINE OF LT_DYNPREAD2.
+
+  DATA: LT_RETURN2 TYPE TABLE OF DDSHRETVAL,
+        LS_RETURN2 LIKE LINE OF LT_RETURN2.
+
+  CLEAR LS_DYNPREAD.
+
+  " 전체 스크린 데이터 읽어오기.
+  CALL FUNCTION 'DYNP_VALUES_READ'
+    EXPORTING
+      DYNAME             = SY-REPID
+      DYNUMB             = SY-DYNNR
+      TRANSLATE_TO_UPPER = 'X'         "값 모두 대문자로 변경
+      REQUEST            = 'A'         " 화면에 표시된 값 자동으로 읽어오기
+    TABLES
+      DYNPFIELDS         = LT_DYNPREAD2
+    EXCEPTIONS
+      OTHERS             = 1.
+
+  IF SY-SUBRC = 0.
+    " 전표유형 필드에 입력된 값을
+    READ TABLE LT_DYNPREAD2 INTO LS_DYNPREAD2 WITH KEY FIELDNAME = 'ZSBFI0020-BLART'.
+    IF SY-SUBRC = 0.
+      LV_BLART2 = LS_DYNPREAD2-FIELDVALUE. "전표유형 필드의 값을 변수에 저장
+    ELSE.
+      MESSAGE '전표유형을 읽을 수 없습니다.' TYPE 'I'. "메세지 수정하기
+      RETURN.
+    ENDIF.
+  ENDIF.
+
+  "전표유형(코드) 입력 안된 경우
+  IF LV_BLART2 IS INITIAL.
+    MESSAGE '전표유형을 입력하세요' TYPE 'I'.
+    RETURN.
+  ENDIF.
+
+  SELECT BPTCODE BPCODE BPNAME
+    INTO TABLE LT_F4_BPCODE
+    FROM ZTBFI0031_3        "전표유형&BP코드 매칭 데이터 있는 테이블
+    WHERE BLART = LV_BLART2.
+
+  IF SY-SUBRC &lt;&gt; 0.
+    "입력값이 존재하지 않는 전표유형인 경우.
+    MESSAGE S441 WITH LV_BLART2 DISPLAY LIKE 'E'.
+    RETURN.
+  ENDIF.
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      RETFIELD        = 'BPCODE'
+      DYNPPROG        = SY-REPID            " 현재 프로그램
+      DYNPNR          = SY-DYNNR            " 스크린 번호
+      DYNPROFIELD     = 'ZSBFI0031-BPCODE'   " 값이 들어갈 스크린 필드
+      WINDOW_TITLE    = 'BP코드 선택'          "서치헬프 제목
+      VALUE_ORG       = 'S'                 " S : 스트럭쳐 타입
+    TABLES
+      VALUE_TAB       = LT_F4_BPCODE       "서치헬프에 출력할 데이터 (테이블)
+      RETURN_TAB      = LT_RETURN2        " Return the selected value
+    EXCEPTIONS
+      PARAMETER_ERROR = 1
+      NO_VALUES_FOUND = 2
+      OTHERS          = 3.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE '서치헬프에서 값을 찾을 수 없습니다.' TYPE 'E'.
+  ENDIF.
+
+  READ TABLE LT_RETURN2 INTO LS_RETURN2 INDEX 1.
+  IF SY-SUBRC = 0.
+    READ TABLE LT_F4_BPCODE INTO LS_F4_BPCODE WITH KEY BPCODE = LS_RETURN2-FIELDVAL.
+
+    IF SY-SUBRC = 0.
+      CLEAR: LS_DYNPREAD2, LT_DYNPREAD2.
+
+      "DYNPREAD를 초기화 시키고 새롭게 값을 넣어준다.
+      LS_DYNPREAD2-FIELDNAME = 'ZSBFI0031-BPCODE'.
+      LS_DYNPREAD2-FIELDVALUE = LS_F4_BPCODE-BPCODE.
+      APPEND LS_DYNPREAD2 TO LT_DYNPREAD2.
+
+      LS_DYNPREAD2-FIELDNAME = 'ZSBFI0031-BPNAME'.
+      LS_DYNPREAD2-FIELDVALUE = LS_F4_BPCODE-BPNAME.
+      APPEND LS_DYNPREAD2 TO LT_DYNPREAD2.
+
+      CALL FUNCTION 'DYNP_VALUES_UPDATE'
+        EXPORTING
+          DYNAME               = SY-CPROG
+          DYNUMB               = SY-DYNNR
+        TABLES
+          DYNPFIELDS           = LT_DYNPREAD2
+        EXCEPTIONS
+          INVALID_ABAPWORKAREA = 1
+          INVALID_DYNPROFIELD  = 2
+          INVALID_DYNPRONAME   = 3
+          INVALID_DYNPRONUMMER = 4
+          INVALID_REQUEST      = 5
+          NO_FIELDDESCRIPTION  = 6
+          UNDEFIND_ERROR       = 7
+          OTHERS               = 8.
+      IF SY-SUBRC &lt;&gt; 0.
+      ENDIF.
+
+    ENDIF.
+
+  ENDIF.
+
+
+
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

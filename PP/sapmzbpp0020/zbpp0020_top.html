@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBPP0020_TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBPP0020_TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBPP0020_TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include ZBPP0020_TOP                             - Module Pool      SAPMZBPP0020</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+PROGRAM SAPMZBPP0020.
+
+<font color ="#0000FF">* 사용 테이블 선언</font>
+TABLES: ZTBPP0070, ZTBMM1010, ZSBPP0070, ZTBSD1030, ZTBMM1011, ZTBSD1020.
+
+<font color ="#0000FF">* BOM TYPE, 자재이름 추가</font>
+TYPES BEGIN OF TS_ZTBPP0070_PLUS.
+         include structure <a href ="ztbpp0070/dictionary-ztbpp0070.html">ZTBPP0070</a>.
+TYPES: MATNAME TYPE ZTBMM1011-MATNAME,
+      BOMTYPE_TXT TYPE CHAR10.
+TYPES    END OF TS_ZTBPP0070_PLUS.
+
+
+DATA: GT_ZTBPP0070_PLUS TYPE TABLE OF TS_ZTBPP0070_PLUS,
+      GS_ZTBPP0070_PLUS TYPE TS_ZTBPP0070_PLUS.
+
+DATA: GS_ZTBPP0070 TYPE ZTBPP0070,
+      GT_ZTBPP0070 TYPE TABLE OF ZTBPP0070.
+
+DATA: GS_ZTBPP0071 TYPE ZTBPP0071,
+      GT_ZTBPP0071 TYPE TABLE OF ZTBPP0071.
+
+DATA: GS_INFO_ZTBPP0071 TYPE ZVBPP0070,
+      GT_INFO_ZTBPP0071 TYPE TABLE OF ZVBPP0070.
+
+DATA: GT_ZTBMM0070 TYPE TABLE OF ZTBMM0070,
+      GS_ZTBMM0070 TYPE ZTBMM0070.
+
+
+<font color ="#0000FF">* DATA EDIT을 위한 IT_CELL 포함</font>
+TYPES BEGIN OF TS_ZTBPP0071_EDIT.
+         include structure <a href ="zsbpp0071/dictionary-zsbpp0071.html">ZSBPP0071</a>.
+TYPES:    IT_CELL TYPE LVC_T_STYL.
+TYPES    END OF TS_ZTBPP0071_EDIT.
+
+DATA: GS_EDIT_ZTBPP0071 TYPE TS_ZTBPP0071_EDIT,
+      GT_EDIT_ZTBPP0071 TYPE TABLE OF TS_ZTBPP0071_EDIT.
+
+<font color ="#0000FF">* CELL EDIT 기능 설정 변수 선언</font>
+DATA: GS_CELL TYPE LVC_S_STYL.
+
+<font color ="#0000FF">* OK_CODE 변수 선언</font>
+DATA: OK_CODE TYPE SY-UCOMM.
+
+<font color ="#0000FF">* SCREEN LAYOUT BOMID 필드 변수 선언</font>
+DATA: BOMID1 TYPE ZTBPP0070-BOMID,
+      BOMID2 TYPE ZTBPP0070-BOMID.
+
+<font color ="#0000FF">* CONTAINER, ALV 변수 선언</font>
+DATA: GO_CONT1 TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV1  TYPE REF TO CL_GUI_ALV_GRID,
+
+      GO_CONT2 TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV2  TYPE REF TO CL_GUI_ALV_GRID,
+
+      GO_CONT3 TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV3  TYPE REF TO CL_GUI_ALV_GRID,
+
+      GO_CONT4 TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV4  TYPE REF TO CL_GUI_ALV_GRID.
+
+
+<font color ="#0000FF">* SELECT-OPTIONS를 위한 변수 선언</font>
+DATA: RT_BOMID TYPE RANGE OF ZTBPP0070-BOMID,
+      RS_BOMID LIKE LINE OF RT_BOMID.
+
+<font color ="#0000FF">* 선택한 ROW 정보 가져올 변수 선언</font>
+DATA: ET_INDEX_ROW TYPE LVC_T_ROW, " 결과로 받을 ITAB 변수 선언
+      ES_INDEX_ROW TYPE LVC_S_ROW. " WORK AREA 변수 선언
+DATA: SEL_IDX TYPE I.              " INDEX 받을 변수 선언
+
+
+<font color ="#0000FF">* ALV LAYOUT, SORT, FIELD CATALOG 변수 선언</font>
+DATA: GS_LAYO1    TYPE LVC_S_LAYO,
+      GT_SORT1    TYPE LVC_T_SORT,
+      GT_FCAT1    TYPE LVC_T_FCAT,
+
+      GS_LAYO2    TYPE LVC_S_LAYO,
+      GT_SORT2    TYPE LVC_T_SORT,
+      GT_FCAT2    TYPE LVC_T_FCAT,
+
+      GS_LAYO3    TYPE LVC_S_LAYO,
+      GT_SORT3    TYPE LVC_T_SORT,
+      GT_FCAT3    TYPE LVC_T_FCAT,
+      GT_TOOLBAR3 TYPE UI_FUNCTIONS,
+
+      GS_LAYO4    TYPE LVC_S_LAYO,
+      GT_SORT4    TYPE LVC_T_SORT,
+      GT_FCAT4    TYPE LVC_T_FCAT,
+      GT_TOOLBAR4 TYPE UI_FUNCTIONS.
+
+
+DATA: GV_DEL    TYPE CHAR1,             " 라디오버튼 변수 선언
+      GV_ANSWER TYPE C,                 " 컨펌 팝업 결과 변수 선언
+      GV_EMPID  TYPE ZTBSD1030-EMPID.   " 사원 아이디 변수 선언
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

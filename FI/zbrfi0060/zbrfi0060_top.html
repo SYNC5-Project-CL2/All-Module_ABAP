@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0060_TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0060_TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRFI0060_TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRFI0060_TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& TABLE, TYPE, STRUCTURE 선언.</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+DATA: OK_CODE    TYPE SY-UCOMM,
+      GV_DYNNR   TYPE SY-DYNNR,
+      GS_VARIANT TYPE DISVARIANT,
+      GV_MODE    TYPE I VALUE 1.
+
+TABLES: ZTBFI0030, ZTBFI0031, ZVBFI0030,
+        ZSBFI0030_BP, ZSBFI0030_POP1, ZSBFI0030_POP2.
+
+<font color ="#0000FF">* ALV1 DATA TYPE</font>
+DATA: GS_DISPLAY1 TYPE ZSBFI0030_ALV1,
+      GT_DISPLAY1 LIKE TABLE OF GS_DISPLAY1.
+
+<font color ="#0000FF">* ALV1 WA & ITAB</font>
+DATA: GO_CUST1 TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV1  TYPE REF TO CL_GUI_ALV_GRID,
+      GS_LAYO1 TYPE LVC_S_LAYO,
+      GT_SORT1 TYPE LVC_T_SORT,
+      GS_SORT1 TYPE LVC_S_SORT,
+      GT_FCAT1 TYPE LVC_T_FCAT,
+      GS_FCAT1 TYPE LVC_S_FCAT.
+
+<font color ="#0000FF">* ALV1 SELECTED ROW ITAB & WA.</font>
+DATA: GT_ROW1 TYPE LVC_T_ROID,
+      GS_ROW1 TYPE LVC_S_ROID.
+
+<font color ="#0000FF">* ALV2 DATA TYPE</font>
+DATA: GS_DISPLAY2 TYPE ZSBFI0030_ALV2,
+      GT_DISPLAY2 LIKE TABLE OF GS_DISPLAY2.
+
+<font color ="#0000FF">* ALV2 WA & ITAB</font>
+DATA: GO_CUST2 TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV2  TYPE REF TO CL_GUI_ALV_GRID,
+      GS_LAYO2 TYPE LVC_S_LAYO,
+      GT_SORT2 TYPE LVC_T_SORT,
+      GS_SORT2 TYPE LVC_S_SORT,
+      GT_FCAT2 TYPE LVC_T_FCAT,
+      GS_FCAT2 TYPE LVC_S_FCAT.
+
+<font color ="#0000FF">* ALV2 SELECTED ROW ITAB & WA.</font>
+DATA: GT_ROW2 TYPE LVC_T_ROID,
+      GS_ROW2 TYPE LVC_S_ROID.
+
+<font color ="#0000FF">* ALV3 DATA TYPE</font>
+DATA: GS_DISPLAY3 TYPE ZSBFI0030_ALV3,
+      GT_DISPLAY3 LIKE TABLE OF GS_DISPLAY3.
+
+<font color ="#0000FF">* ALV3 WA & ITAB</font>
+DATA: GO_CUST3 TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV3  TYPE REF TO CL_GUI_ALV_GRID,
+      GS_LAYO3 TYPE LVC_S_LAYO,
+      GT_SORT3 TYPE LVC_T_SORT,
+      GS_SORT3 TYPE LVC_S_SORT,
+      GT_FCAT3 TYPE LVC_T_FCAT,
+      GS_FCAT3 TYPE LVC_S_FCAT.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBFI0010O01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBFI0010O01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0010O01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBFI0010O01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0100 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE status_0100 OUTPUT.
+ SET PF-STATUS 'S100' EXCLUDING 'SAVE'.
+<font color ="#0000FF">* SET TITLEBAR 'xxx'.</font>
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module CLEAR_OK_CODE OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE clear_ok_code OUTPUT.
+
+  clear ok_code.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module INIT_ALV OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE init_alv OUTPUT.
+
+  IF go_cont is INITIAL.
+
+    CREATE OBJECT go_cont
+      EXPORTING
+<font color ="#0000FF">*        parent                      =</font>
+        container_name              = 'AREA'
+<font color ="#0000FF">*        style                       =</font>
+<font color ="#0000FF">*        lifetime                    = lifetime_default</font>
+<font color ="#0000FF">*        repid                       =</font>
+<font color ="#0000FF">*        dynnr                       =</font>
+<font color ="#0000FF">*        no_autodef_progid_dynnr     =</font>
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5
+        others                      = 6
+        .
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    CREATE OBJECT go_alv
+      EXPORTING
+<font color ="#0000FF">*        i_shellstyle      = 0</font>
+<font color ="#0000FF">*        i_lifetime        =</font>
+        i_parent          = go_cont
+<font color ="#0000FF">*        i_appl_events     = SPACE</font>
+<font color ="#0000FF">*        i_parentdbg       =</font>
+<font color ="#0000FF">*        i_applogparent    =</font>
+<font color ="#0000FF">*        i_graphicsparent  =</font>
+<font color ="#0000FF">*        i_name            =</font>
+<font color ="#0000FF">*        i_fcat_complete   = SPACE</font>
+<font color ="#0000FF">*        o_previous_sral_handler =</font>
+      EXCEPTIONS
+        error_cntl_create = 1
+        error_cntl_init   = 2
+        error_cntl_link   = 3
+        error_dp_create   = 4
+        others            = 5
+        .
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    PERFORM set_layout.
+    PERFORM set_fcat.
+
+    CALL METHOD go_alv-&gt;set_table_for_first_display
+      EXPORTING
+<font color ="#0000FF">*        i_buffer_active               =</font>
+<font color ="#0000FF">*        i_bypassing_buffer            =</font>
+<font color ="#0000FF">*        i_consistency_check           =</font>
+<font color ="#0000FF">*        i_structure_name              =</font>
+<font color ="#0000FF">*        is_variant                    =</font>
+<font color ="#0000FF">*        i_save                        =</font>
+<font color ="#0000FF">*        i_default                     = 'X'</font>
+        is_layout                     = gs_layout
+<font color ="#0000FF">*        is_print                      =</font>
+<font color ="#0000FF">*        it_special_groups             =</font>
+<font color ="#0000FF">*        it_toolbar_excluding          =</font>
+<font color ="#0000FF">*        it_hyperlink                  =</font>
+<font color ="#0000FF">*        it_alv_graphics               =</font>
+<font color ="#0000FF">*        it_except_qinfo               =</font>
+<font color ="#0000FF">*        ir_salv_adapter               =</font>
+      CHANGING
+        it_outtab                     = gt_alv
+        it_fieldcatalog               = gt_fcat
+<font color ="#0000FF">*        it_sort                       =</font>
+<font color ="#0000FF">*        it_filter                     =</font>
+      EXCEPTIONS
+        invalid_parameter_combination = 1
+        program_error                 = 2
+        too_many_lines                = 3
+        others                        = 4
+            .
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+
+  ENDIF.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module SET_RAD_INIT OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE set_rad_comp_init OUTPUT.
+  IF zsbfi0010-ALL = 'X' OR zsbfi0010-DEL = 'X'.
+
+  ELSE.
+
+    zsbfi0010-all = ''.
+    zsbfi0010-val = 'X'.
+    zsbfi0010-del = ''.
+
+  ENDIF.
+zsbfi0010-comcode = '1000'.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0110 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE status_0110 OUTPUT.
+ SET PF-STATUS 'S110'.
+<font color ="#0000FF">* SET TITLEBAR 'xxx'.</font>
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module CLEAR_110 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE clear_110 OUTPUT.
+
+if gv_create_refresh_once = 1.
+
+  clear zsbfi00102.
+  clear gv_create_refresh_once.
+
+else.
+
+endif.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0120 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE status_0120 OUTPUT.
+ SET PF-STATUS 'S120'.
+<font color ="#0000FF">* SET TITLEBAR 'xxx'.</font>
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module GET_DATA_FROM_ALV OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE get_data_from_alv OUTPUT.
+
+  data: lt_row TYPE lvc_t_row,
+        ls_row TYPE lvc_s_row.
+
+  go_alv-&gt;get_selected_rows(
+    IMPORTING
+      et_index_rows = lt_row            " Indexes of Selected Rows
+<font color ="#0000FF">*      et_row_no     =                  " Numeric IDs of Selected Rows</font>
+  ).
+
+  READ TABLE lt_row into ls_row INDEX 1.
+    IF sy-subrc = 0.
+      move ls_row to gs_row.
+      READ TABLE gt_alv into gs_alv INDEX ls_row-index.
+
+        IF sy-subrc = 0.
+
+           SELECT single gname
+             from ztbfi0010_gcona
+             into zsbfi00103-gname
+             WHERE gcode = gs_alv-gcode.
+
+           SELECT single catname
+             from ztbfi0010_cacona
+             into zsbfi00103-catname
+             WHERE catcode = gs_alv-catcode.
+
+
+           MOVE-CORRESPONDING gs_alv to zsbfi00103.
+
+        ENDIF.
+
+    ENDIF.
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

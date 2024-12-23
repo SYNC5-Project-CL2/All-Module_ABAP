@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBFI0020_TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBFI0020_TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0020_TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include MZBFI0020_TOP                            - Module Pool      SAPMZBFI0020</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+PROGRAM SAPMZBFI0020 MESSAGE-ID ZCOMMON_MSG.
+
+TABLES : ZTBFI0020, ZSBFI0020.
+TABLES : ZTBSD1020, ZTBSD1030.
+
+
+DATA: OK_CODE TYPE SY-UCOMM.
+
+DATA: GO_CONT TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV  TYPE REF TO CL_GUI_ALV_GRID.
+
+DATA: GS_LAYOUT TYPE LVC_S_LAYO,
+      GT_FCAT   TYPE LVC_T_FCAT,
+      GT_SORT   TYPE LVC_T_SORT.
+
+DATA: GT_ZTBFI0020 TYPE TABLE OF ZTBFI0020,
+      GS_ZTBFI0020 LIKE LINE OF GT_ZTBFI0020.
+
+DATA: GV_BLART TYPE ZTBFI0020-BLART.
+
+<font color ="#0000FF">*DATA : RT_BLART TYPE RANGE OF ZTBFI0020-BLART,</font>
+<font color ="#0000FF">*       RS_BLART LIKE LINE OF RT_BLART.</font>
+
+DATA: BLART110 TYPE ZTBFI0020-BLART, "생성시(110번)
+      BLTXT110 TYPE ZTBFI0020-BLTXT,
+      BLART120 TYPE ZTBFI0020-BLART, "수정시(120번)
+      BLTXT120 TYPE ZTBFI0020-BLTXT.
+
+DATA : ET_INDEX_ROW TYPE LVC_T_ROW,
+       ES_INDEX_ROW TYPE LVC_S_ROW.
+DATA : ROW_IDX TYPE I.
+
+"CONFIRM POPUP 결과 변수.
+DATA: GV_ANSWER TYPE C.
+
+"기존 전표유형명과 중복인지 확인하기 위한 변수 선언.
+DATA: GV_BLTXT TYPE ZTBFI0020-BLTXT.
+<font color ="#0000FF">* 전표유형 중복값 검증 위한 STRUCTURE.</font>
+  DATA : BEGIN OF GS_BLART,
+           GV_BLART  TYPE ZTBFI0020-BLART,
+           GV_DELFLG TYPE ZTBFI0020-DELFLG,
+         END OF GS_BLART.
+
+ "로그인 ID로 사원번호 받는 변수.
+ DATA: GV_EMPID TYPE ZTBSD1030-EMPID.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

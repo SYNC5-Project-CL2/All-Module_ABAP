@@ -1,0 +1,934 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRPP0051O01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRPP0051O01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRPP0051O01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRPP0051O01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0100 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE status_0100 OUTPUT.
+  SET PF-STATUS 'S100'.
+  SET TITLEBAR 'T100'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module CLEAR_OK_CODE OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE clear_ok_code OUTPUT.
+  CLEAR ok_code.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module INIT_ALV OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE init_alv OUTPUT.
+
+  IF go_cont1 IS INITIAL.
+
+    CREATE OBJECT go_cont1
+      EXPORTING
+<font color ="#0000FF">*       parent                      =</font>
+        container_name              = 'AREA1'
+<font color ="#0000FF">*       style                       =</font>
+<font color ="#0000FF">*       lifetime                    = lifetime_default</font>
+<font color ="#0000FF">*       repid                       =</font>
+<font color ="#0000FF">*       dynnr                       =</font>
+<font color ="#0000FF">*       no_autodef_progid_dynnr     =</font>
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5
+        OTHERS                      = 6.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    CREATE OBJECT go_alv1
+      EXPORTING
+<font color ="#0000FF">*       i_shellstyle      = 0</font>
+<font color ="#0000FF">*       i_lifetime        =</font>
+        i_parent          = go_cont1
+<font color ="#0000FF">*       i_appl_events     = SPACE</font>
+<font color ="#0000FF">*       i_parentdbg       =</font>
+<font color ="#0000FF">*       i_applogparent    =</font>
+<font color ="#0000FF">*       i_graphicsparent  =</font>
+<font color ="#0000FF">*       i_name            =</font>
+<font color ="#0000FF">*       i_fcat_complete   = SPACE</font>
+<font color ="#0000FF">*       o_previous_sral_handler =</font>
+      EXCEPTIONS
+        error_cntl_create = 1
+        error_cntl_init   = 2
+        error_cntl_link   = 3
+        error_dp_create   = 4
+        OTHERS            = 5.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+
+    gs_layout1-cwidth_opt = 'A'.
+    gs_layout1-zebra = 'X'.
+    gs_layout1-grid_title = '생산오더 HEADER'.
+
+    CALL METHOD go_alv1-&gt;set_table_for_first_display
+      EXPORTING
+<font color ="#0000FF">*       i_buffer_active               =</font>
+<font color ="#0000FF">*       i_bypassing_buffer            =</font>
+<font color ="#0000FF">*       i_consistency_check           =</font>
+        i_structure_name              = 'ZTBPP0030'
+<font color ="#0000FF">*       is_variant                    =</font>
+<font color ="#0000FF">*       i_save                        =</font>
+<font color ="#0000FF">*       i_default                     = 'X'</font>
+        is_layout                     = gs_layout1
+<font color ="#0000FF">*       is_print                      =</font>
+<font color ="#0000FF">*       it_special_groups             =</font>
+<font color ="#0000FF">*       it_toolbar_excluding          =</font>
+<font color ="#0000FF">*       it_hyperlink                  =</font>
+<font color ="#0000FF">*       it_alv_graphics               =</font>
+<font color ="#0000FF">*       it_except_qinfo               =</font>
+<font color ="#0000FF">*       ir_salv_adapter               =</font>
+      CHANGING
+        it_outtab                     = gt_alv1
+<font color ="#0000FF">*       it_fieldcatalog               =</font>
+<font color ="#0000FF">*       it_sort                       =</font>
+<font color ="#0000FF">*       it_filter                     =</font>
+      EXCEPTIONS
+        invalid_parameter_combination = 1
+        program_error                 = 2
+        too_many_lines                = 3
+        OTHERS                        = 4.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+
+
+  ENDIF.
+
+  IF go_cont2 IS INITIAL.
+
+    CREATE OBJECT go_cont2
+      EXPORTING
+<font color ="#0000FF">*       parent                      =</font>
+        container_name              = 'AREA2'
+<font color ="#0000FF">*       style                       =</font>
+<font color ="#0000FF">*       lifetime                    = lifetime_default</font>
+<font color ="#0000FF">*       repid                       =</font>
+<font color ="#0000FF">*       dynnr                       =</font>
+<font color ="#0000FF">*       no_autodef_progid_dynnr     =</font>
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5
+        OTHERS                      = 6.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    CREATE OBJECT go_alv2
+      EXPORTING
+<font color ="#0000FF">*       i_shellstyle      = 0</font>
+<font color ="#0000FF">*       i_lifetime        =</font>
+        i_parent          = go_cont2
+<font color ="#0000FF">*       i_appl_events     = SPACE</font>
+<font color ="#0000FF">*       i_parentdbg       =</font>
+<font color ="#0000FF">*       i_applogparent    =</font>
+<font color ="#0000FF">*       i_graphicsparent  =</font>
+<font color ="#0000FF">*       i_name            =</font>
+<font color ="#0000FF">*       i_fcat_complete   = SPACE</font>
+<font color ="#0000FF">*       o_previous_sral_handler =</font>
+      EXCEPTIONS
+        error_cntl_create = 1
+        error_cntl_init   = 2
+        error_cntl_link   = 3
+        error_dp_create   = 4
+        OTHERS            = 5.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+
+    gs_layout2-cwidth_opt = 'A'.
+    gs_layout2-zebra = 'X'.
+    gs_layout2-grid_title = '생산오더 ITEM'.
+
+    CALL METHOD go_alv2-&gt;set_table_for_first_display
+      EXPORTING
+<font color ="#0000FF">*       i_buffer_active               =</font>
+<font color ="#0000FF">*       i_bypassing_buffer            =</font>
+<font color ="#0000FF">*       i_consistency_check           =</font>
+        i_structure_name              = 'ZTBPP0031'
+<font color ="#0000FF">*       is_variant                    =</font>
+<font color ="#0000FF">*       i_save                        =</font>
+<font color ="#0000FF">*       i_default                     = 'X'</font>
+        is_layout                     = gs_layout2
+<font color ="#0000FF">*       is_print                      =</font>
+<font color ="#0000FF">*       it_special_groups             =</font>
+<font color ="#0000FF">*       it_toolbar_excluding          =</font>
+<font color ="#0000FF">*       it_hyperlink                  =</font>
+<font color ="#0000FF">*       it_alv_graphics               =</font>
+<font color ="#0000FF">*       it_except_qinfo               =</font>
+<font color ="#0000FF">*       ir_salv_adapter               =</font>
+      CHANGING
+        it_outtab                     = gt_alv2
+<font color ="#0000FF">*       it_fieldcatalog               =</font>
+<font color ="#0000FF">*       it_sort                       =</font>
+<font color ="#0000FF">*       it_filter                     =</font>
+      EXCEPTIONS
+        invalid_parameter_combination = 1
+        program_error                 = 2
+        too_many_lines                = 3
+        OTHERS                        = 4.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+
+
+  ENDIF.
+
+  IF go_cont3 IS INITIAL.
+
+    CREATE OBJECT go_cont3
+      EXPORTING
+<font color ="#0000FF">*       parent                      =</font>
+        container_name              = 'AREA3'
+<font color ="#0000FF">*       style                       =</font>
+<font color ="#0000FF">*       lifetime                    = lifetime_default</font>
+<font color ="#0000FF">*       repid                       =</font>
+<font color ="#0000FF">*       dynnr                       =</font>
+<font color ="#0000FF">*       no_autodef_progid_dynnr     =</font>
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5
+        OTHERS                      = 6.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    CREATE OBJECT go_alv3
+      EXPORTING
+<font color ="#0000FF">*       i_shellstyle      = 0</font>
+<font color ="#0000FF">*       i_lifetime        =</font>
+        i_parent          = go_cont3
+<font color ="#0000FF">*       i_appl_events     = SPACE</font>
+<font color ="#0000FF">*       i_parentdbg       =</font>
+<font color ="#0000FF">*       i_applogparent    =</font>
+<font color ="#0000FF">*       i_graphicsparent  =</font>
+<font color ="#0000FF">*       i_name            =</font>
+<font color ="#0000FF">*       i_fcat_complete   = SPACE</font>
+<font color ="#0000FF">*       o_previous_sral_handler =</font>
+      EXCEPTIONS
+        error_cntl_create = 1
+        error_cntl_init   = 2
+        error_cntl_link   = 3
+        error_dp_create   = 4
+        OTHERS            = 5.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+
+    gs_layout3-cwidth_opt = 'A'.
+    gs_layout3-zebra = 'X'.
+    gs_layout3-grid_title = '자재 현황'.
+    CALL METHOD go_alv3-&gt;set_table_for_first_display
+      EXPORTING
+<font color ="#0000FF">*       i_buffer_active               =</font>
+<font color ="#0000FF">*       i_bypassing_buffer            =</font>
+<font color ="#0000FF">*       i_consistency_check           =</font>
+        i_structure_name              = 'ZTBMM0030'
+<font color ="#0000FF">*       is_variant                    =</font>
+<font color ="#0000FF">*       i_save                        =</font>
+<font color ="#0000FF">*       i_default                     = 'X'</font>
+        is_layout                     = gs_layout3
+<font color ="#0000FF">*       is_print                      =</font>
+<font color ="#0000FF">*       it_special_groups             =</font>
+<font color ="#0000FF">*       it_toolbar_excluding          =</font>
+<font color ="#0000FF">*       it_hyperlink                  =</font>
+<font color ="#0000FF">*       it_alv_graphics               =</font>
+<font color ="#0000FF">*       it_except_qinfo               =</font>
+<font color ="#0000FF">*       ir_salv_adapter               =</font>
+      CHANGING
+        it_outtab                     = gt_alv3
+<font color ="#0000FF">*       it_fieldcatalog               =</font>
+<font color ="#0000FF">*       it_sort                       =</font>
+<font color ="#0000FF">*       it_filter                     =</font>
+      EXCEPTIONS
+        invalid_parameter_combination = 1
+        program_error                 = 2
+        too_many_lines                = 3
+        OTHERS                        = 4.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+
+
+  ENDIF.
+
+  IF go_cont4 IS INITIAL.
+
+    CREATE OBJECT go_cont4
+      EXPORTING
+<font color ="#0000FF">*       parent                      =</font>
+        container_name              = 'AREA4'
+<font color ="#0000FF">*       style                       =</font>
+<font color ="#0000FF">*       lifetime                    = lifetime_default</font>
+<font color ="#0000FF">*       repid                       =</font>
+<font color ="#0000FF">*       dynnr                       =</font>
+<font color ="#0000FF">*       no_autodef_progid_dynnr     =</font>
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5
+        OTHERS                      = 6.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    CREATE OBJECT go_alv4
+      EXPORTING
+<font color ="#0000FF">*       i_shellstyle      = 0</font>
+<font color ="#0000FF">*       i_lifetime        =</font>
+        i_parent          = go_cont4
+<font color ="#0000FF">*       i_appl_events     = SPACE</font>
+<font color ="#0000FF">*       i_parentdbg       =</font>
+<font color ="#0000FF">*       i_applogparent    =</font>
+<font color ="#0000FF">*       i_graphicsparent  =</font>
+<font color ="#0000FF">*       i_name            =</font>
+<font color ="#0000FF">*       i_fcat_complete   = SPACE</font>
+<font color ="#0000FF">*       o_previous_sral_handler =</font>
+      EXCEPTIONS
+        error_cntl_create = 1
+        error_cntl_init   = 2
+        error_cntl_link   = 3
+        error_dp_create   = 4
+        OTHERS            = 5.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+
+    gs_layout4-cwidth_opt = 'A'.
+    gs_layout4-zebra = 'X'.
+    gs_layout4-grid_title = '자재문서 HEADER'.
+
+    CALL METHOD go_alv4-&gt;set_table_for_first_display
+      EXPORTING
+<font color ="#0000FF">*       i_buffer_active               =</font>
+<font color ="#0000FF">*       i_bypassing_buffer            =</font>
+<font color ="#0000FF">*       i_consistency_check           =</font>
+        i_structure_name              = 'ZTBMM0040'
+<font color ="#0000FF">*       is_variant                    =</font>
+<font color ="#0000FF">*       i_save                        =</font>
+<font color ="#0000FF">*       i_default                     = 'X'</font>
+        is_layout                     = gs_layout4
+<font color ="#0000FF">*       is_print                      =</font>
+<font color ="#0000FF">*       it_special_groups             =</font>
+<font color ="#0000FF">*       it_toolbar_excluding          =</font>
+<font color ="#0000FF">*       it_hyperlink                  =</font>
+<font color ="#0000FF">*       it_alv_graphics               =</font>
+<font color ="#0000FF">*       it_except_qinfo               =</font>
+<font color ="#0000FF">*       ir_salv_adapter               =</font>
+      CHANGING
+        it_outtab                     = gt_alv4
+<font color ="#0000FF">*       it_fieldcatalog               =</font>
+<font color ="#0000FF">*       it_sort                       =</font>
+<font color ="#0000FF">*       it_filter                     =</font>
+      EXCEPTIONS
+        invalid_parameter_combination = 1
+        program_error                 = 2
+        too_many_lines                = 3
+        OTHERS                        = 4.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+
+
+  ENDIF.
+
+  IF go_cont5 IS INITIAL.
+
+    CREATE OBJECT go_cont5
+      EXPORTING
+<font color ="#0000FF">*       parent                      =</font>
+        container_name              = 'AREA5'
+<font color ="#0000FF">*       style                       =</font>
+<font color ="#0000FF">*       lifetime                    = lifetime_default</font>
+<font color ="#0000FF">*       repid                       =</font>
+<font color ="#0000FF">*       dynnr                       =</font>
+<font color ="#0000FF">*       no_autodef_progid_dynnr     =</font>
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5
+        OTHERS                      = 6.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    CREATE OBJECT go_alv5
+      EXPORTING
+<font color ="#0000FF">*       i_shellstyle      = 0</font>
+<font color ="#0000FF">*       i_lifetime        =</font>
+        i_parent          = go_cont5
+<font color ="#0000FF">*       i_appl_events     = SPACE</font>
+<font color ="#0000FF">*       i_parentdbg       =</font>
+<font color ="#0000FF">*       i_applogparent    =</font>
+<font color ="#0000FF">*       i_graphicsparent  =</font>
+<font color ="#0000FF">*       i_name            =</font>
+<font color ="#0000FF">*       i_fcat_complete   = SPACE</font>
+<font color ="#0000FF">*       o_previous_sral_handler =</font>
+      EXCEPTIONS
+        error_cntl_create = 1
+        error_cntl_init   = 2
+        error_cntl_link   = 3
+        error_dp_create   = 4
+        OTHERS            = 5.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+
+    gs_layout5-cwidth_opt = 'A'.
+    gs_layout5-zebra = 'X'.
+    gs_layout5-grid_title = '자재문서 ITEM'.
+
+    CALL METHOD go_alv5-&gt;set_table_for_first_display
+      EXPORTING
+<font color ="#0000FF">*       i_buffer_active               =</font>
+<font color ="#0000FF">*       i_bypassing_buffer            =</font>
+<font color ="#0000FF">*       i_consistency_check           =</font>
+        i_structure_name              = 'ZTBMM0041'
+<font color ="#0000FF">*       is_variant                    =</font>
+<font color ="#0000FF">*       i_save                        =</font>
+<font color ="#0000FF">*       i_default                     = 'X'</font>
+        is_layout                     = gs_layout5
+<font color ="#0000FF">*       is_print                      =</font>
+<font color ="#0000FF">*       it_special_groups             =</font>
+<font color ="#0000FF">*       it_toolbar_excluding          =</font>
+<font color ="#0000FF">*       it_hyperlink                  =</font>
+<font color ="#0000FF">*       it_alv_graphics               =</font>
+<font color ="#0000FF">*       it_except_qinfo               =</font>
+<font color ="#0000FF">*       ir_salv_adapter               =</font>
+      CHANGING
+        it_outtab                     = gt_alv5
+<font color ="#0000FF">*       it_fieldcatalog               =</font>
+<font color ="#0000FF">*       it_sort                       =</font>
+<font color ="#0000FF">*       it_filter                     =</font>
+      EXCEPTIONS
+        invalid_parameter_combination = 1
+        program_error                 = 2
+        too_many_lines                = 3
+        OTHERS                        = 4.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+
+
+  ENDIF.
+
+  IF go_cont6 IS INITIAL.
+
+    CREATE OBJECT go_cont6
+      EXPORTING
+<font color ="#0000FF">*       parent                      =</font>
+        container_name              = 'AREA6'
+<font color ="#0000FF">*       style                       =</font>
+<font color ="#0000FF">*       lifetime                    = lifetime_default</font>
+<font color ="#0000FF">*       repid                       =</font>
+<font color ="#0000FF">*       dynnr                       =</font>
+<font color ="#0000FF">*       no_autodef_progid_dynnr     =</font>
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5
+        OTHERS                      = 6.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    CREATE OBJECT go_alv6
+      EXPORTING
+<font color ="#0000FF">*       i_shellstyle      = 0</font>
+<font color ="#0000FF">*       i_lifetime        =</font>
+        i_parent          = go_cont6
+<font color ="#0000FF">*       i_appl_events     = SPACE</font>
+<font color ="#0000FF">*       i_parentdbg       =</font>
+<font color ="#0000FF">*       i_applogparent    =</font>
+<font color ="#0000FF">*       i_graphicsparent  =</font>
+<font color ="#0000FF">*       i_name            =</font>
+<font color ="#0000FF">*       i_fcat_complete   = SPACE</font>
+<font color ="#0000FF">*       o_previous_sral_handler =</font>
+      EXCEPTIONS
+        error_cntl_create = 1
+        error_cntl_init   = 2
+        error_cntl_link   = 3
+        error_dp_create   = 4
+        OTHERS            = 5.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+
+    gs_layout6-cwidth_opt = 'A'.
+    gs_layout6-zebra = 'X'.
+    gs_layout6-grid_title = '전표 HEADER'.
+
+    CALL METHOD go_alv6-&gt;set_table_for_first_display
+      EXPORTING
+<font color ="#0000FF">*       i_buffer_active               =</font>
+<font color ="#0000FF">*       i_bypassing_buffer            =</font>
+<font color ="#0000FF">*       i_consistency_check           =</font>
+        i_structure_name              = 'ZTBFI0030'
+<font color ="#0000FF">*       is_variant                    =</font>
+<font color ="#0000FF">*       i_save                        =</font>
+<font color ="#0000FF">*       i_default                     = 'X'</font>
+        is_layout                     = gs_layout6
+<font color ="#0000FF">*       is_print                      =</font>
+<font color ="#0000FF">*       it_special_groups             =</font>
+<font color ="#0000FF">*       it_toolbar_excluding          =</font>
+<font color ="#0000FF">*       it_hyperlink                  =</font>
+<font color ="#0000FF">*       it_alv_graphics               =</font>
+<font color ="#0000FF">*       it_except_qinfo               =</font>
+<font color ="#0000FF">*       ir_salv_adapter               =</font>
+      CHANGING
+        it_outtab                     = gt_alv6
+<font color ="#0000FF">*       it_fieldcatalog               =</font>
+<font color ="#0000FF">*       it_sort                       =</font>
+<font color ="#0000FF">*       it_filter                     =</font>
+      EXCEPTIONS
+        invalid_parameter_combination = 1
+        program_error                 = 2
+        too_many_lines                = 3
+        OTHERS                        = 4.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+
+
+  ENDIF.
+
+  IF go_cont7 IS INITIAL.
+
+    CREATE OBJECT go_cont7
+      EXPORTING
+<font color ="#0000FF">*       parent                      =</font>
+        container_name              = 'AREA7'
+<font color ="#0000FF">*       style                       =</font>
+<font color ="#0000FF">*       lifetime                    = lifetime_default</font>
+<font color ="#0000FF">*       repid                       =</font>
+<font color ="#0000FF">*       dynnr                       =</font>
+<font color ="#0000FF">*       no_autodef_progid_dynnr     =</font>
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5
+        OTHERS                      = 6.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    CREATE OBJECT go_alv7
+      EXPORTING
+<font color ="#0000FF">*       i_shellstyle      = 0</font>
+<font color ="#0000FF">*       i_lifetime        =</font>
+        i_parent          = go_cont7
+<font color ="#0000FF">*       i_appl_events     = SPACE</font>
+<font color ="#0000FF">*       i_parentdbg       =</font>
+<font color ="#0000FF">*       i_applogparent    =</font>
+<font color ="#0000FF">*       i_graphicsparent  =</font>
+<font color ="#0000FF">*       i_name            =</font>
+<font color ="#0000FF">*       i_fcat_complete   = SPACE</font>
+<font color ="#0000FF">*       o_previous_sral_handler =</font>
+      EXCEPTIONS
+        error_cntl_create = 1
+        error_cntl_init   = 2
+        error_cntl_link   = 3
+        error_dp_create   = 4
+        OTHERS            = 5.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    gs_layout7-cwidth_opt = 'A'.
+    gs_layout7-zebra = 'X'.
+    gs_layout7-grid_title = '전표 ITEM'.
+
+    CALL METHOD go_alv7-&gt;set_table_for_first_display
+      EXPORTING
+<font color ="#0000FF">*       i_buffer_active               =</font>
+<font color ="#0000FF">*       i_bypassing_buffer            =</font>
+<font color ="#0000FF">*       i_consistency_check           =</font>
+        i_structure_name              = 'ZTBFI0031'
+<font color ="#0000FF">*       is_variant                    =</font>
+<font color ="#0000FF">*       i_save                        =</font>
+<font color ="#0000FF">*       i_default                     = 'X'</font>
+        is_layout                     = gs_layout7
+<font color ="#0000FF">*       is_print                      =</font>
+<font color ="#0000FF">*       it_special_groups             =</font>
+<font color ="#0000FF">*       it_toolbar_excluding          =</font>
+<font color ="#0000FF">*       it_hyperlink                  =</font>
+<font color ="#0000FF">*       it_alv_graphics               =</font>
+<font color ="#0000FF">*       it_except_qinfo               =</font>
+<font color ="#0000FF">*       ir_salv_adapter               =</font>
+      CHANGING
+        it_outtab                     = gt_alv7
+<font color ="#0000FF">*       it_fieldcatalog               =</font>
+<font color ="#0000FF">*       it_sort                       =</font>
+<font color ="#0000FF">*       it_filter                     =</font>
+      EXCEPTIONS
+        invalid_parameter_combination = 1
+        program_error                 = 2
+        too_many_lines                = 3
+        OTHERS                        = 4.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+
+  ENDIF.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module GET_DATA_FOR_ALVS OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE get_data_for_alvs OUTPUT.
+
+  DATA: ls_alv5 TYPE ztbmm0041,
+        lt_alv5 LIKE TABLE OF ls_alv5,
+        ls_alv6 TYPE ztbfi0030,
+        lt_alv6 LIKE TABLE OF ls_alv6,
+        ls_alv7 TYPE ztbfi0031,
+        lt_alv7 LIKE TABLE OF ls_alv7.
+
+  SELECT *
+    FROM ztbpp0030
+    INTO CORRESPONDING FIELDS OF TABLE gt_alv1
+    WHERE pordnum = pa_por.
+<font color ="#0000FF">*    WHERE pordnum IN so_por.</font>
+
+  READ TABLE gt_alv1 INTO gs_alv1 INDEX 1.
+  IF sy-subrc = 0.
+
+    SELECT *
+      FROM ztbpp0031
+      INTO CORRESPONDING FIELDS OF TABLE gt_alv2
+<font color ="#0000FF">*      WHERE pordnum IN so_por.</font>
+      WHERE pordnum = pa_por.
+
+  ENDIF.
+
+  READ TABLE gt_alv2 INTO gs_alv2 INDEX 1.
+
+  IF sy-subrc = 0.
+
+    SELECT *
+      FROM ztbmm0030
+      INTO CORRESPONDING FIELDS OF TABLE gt_alv3.
+
+  ENDIF.
+
+  SORT gt_alv3 BY matcode ASCENDING.
+
+  SELECT *
+    FROM ztbmm0040
+    INTO CORRESPONDING FIELDS OF TABLE gt_alv4
+<font color ="#0000FF">*      WHERE pordnum IN so_por.</font>
+    WHERE pordnum = pa_por.
+
+  LOOP AT gt_alv4 INTO gs_alv4.
+
+    SELECT *
+      FROM ztbmm0041
+      INTO CORRESPONDING FIELDS OF TABLE lt_alv5
+      WHERE docnum = gs_alv4-docnum.
+
+    LOOP AT lt_alv5 INTO ls_alv5.
+
+      APPEND ls_alv5 TO gt_alv5.
+
+    ENDLOOP.
+
+    SELECT *
+      FROM ztbfi0030
+      INTO CORRESPONDING FIELDS OF TABLE lt_alv6
+      WHERE xblnr = gs_alv4-docnum.
+
+    LOOP AT lt_alv6 INTO ls_alv6 .
+
+      APPEND ls_alv6 TO gt_alv6.
+
+    ENDLOOP.
+  ENDLOOP.
+
+  LOOP AT gt_alv6 INTO gs_alv6.
+
+    SELECT *
+      FROM ztbfi0031
+      INTO CORRESPONDING FIELDS OF TABLE lt_alv7
+      WHERE belnr = gs_alv6-belnr.
+
+    LOOP AT lt_alv7 INTO ls_alv7.
+
+      APPEND ls_alv7 TO gt_alv7.
+
+    ENDLOOP.
+
+  ENDLOOP.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0200 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE status_0200 OUTPUT.
+  SET PF-STATUS 'S200'.
+  SET TITLEBAR 'T200' WITH pa_por.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module INIT_ALV2 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE init_alv2 OUTPUT.
+
+  IF go_docking IS INITIAL.
+
+    CREATE OBJECT go_docking
+      EXPORTING
+        repid                       = sy-repid
+        dynnr                       = sy-dynnr
+        side                        = cl_gui_docking_container=&gt;dock_at_left
+        extension                   = 1500
+      EXCEPTIONS
+        cntl_error                  = 1
+        cntl_system_error           = 2
+        create_error                = 3
+        lifetime_error              = 4
+        lifetime_dynpro_dynpro_link = 5
+        OTHERS                      = 6.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+
+    CREATE OBJECT go_split "go_docking 도킹 컨테이너를 한번 위아래로 분할
+      EXPORTING
+        parent            = go_docking
+        rows              = 1
+        columns           = 2
+      EXCEPTIONS
+        cntl_error        = 1
+        cntl_system_error = 2
+        OTHERS            = 3.
+    IF sy-subrc &lt;&gt; 0.
+    ENDIF.
+
+    CALL METHOD go_split-&gt;get_container "한번 분할
+      EXPORTING
+        row       = 1
+        column    = 1
+      RECEIVING
+        container = go_cont2001. " 분할 또 할 거여서 분할 용으로만
+    CALL METHOD go_split-&gt;get_container "4번 alv가 올곳
+      EXPORTING
+        row       = 1
+        column    = 2
+      RECEIVING
+        container = go_cont2002.
+
+    CREATE OBJECT go_alv2001
+      EXPORTING
+<font color ="#0000FF">*        i_shellstyle      = 0</font>
+<font color ="#0000FF">*        i_lifetime        =</font>
+        i_parent          = go_cont2001
+<font color ="#0000FF">*        i_appl_events     = SPACE</font>
+<font color ="#0000FF">*        i_parentdbg       =</font>
+<font color ="#0000FF">*        i_applogparent    =</font>
+<font color ="#0000FF">*        i_graphicsparent  =</font>
+<font color ="#0000FF">*        i_name            =</font>
+<font color ="#0000FF">*        i_fcat_complete   = SPACE</font>
+<font color ="#0000FF">*        o_previous_sral_handler =</font>
+      EXCEPTIONS
+        error_cntl_create = 1
+        error_cntl_init   = 2
+        error_cntl_link   = 3
+        error_dp_create   = 4
+        others            = 5
+        .
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    PERFORM set_layout2001.
+
+    CALL METHOD go_alv2001-&gt;set_table_for_first_display
+      EXPORTING
+<font color ="#0000FF">*       i_buffer_active  =</font>
+<font color ="#0000FF">*       i_bypassing_buffer            =</font>
+<font color ="#0000FF">*       i_consistency_check           =</font>
+        i_structure_name = 'ZTBPP0031'
+<font color ="#0000FF">*       is_variant       =</font>
+<font color ="#0000FF">*       i_save           =</font>
+<font color ="#0000FF">*       i_default        = 'X'</font>
+        is_layout        = gs_layout2001
+<font color ="#0000FF">*       is_print         =</font>
+<font color ="#0000FF">*       it_special_groups             =</font>
+<font color ="#0000FF">*       it_toolbar_excluding          =</font>
+<font color ="#0000FF">*       it_hyperlink     =</font>
+<font color ="#0000FF">*       it_alv_graphics  =</font>
+<font color ="#0000FF">*       it_except_qinfo  =</font>
+<font color ="#0000FF">*       ir_salv_adapter  =</font>
+      CHANGING
+        it_outtab        = gt_alv2001
+<font color ="#0000FF">*       it_fieldcatalog  =</font>
+<font color ="#0000FF">*       it_sort          =</font>
+<font color ="#0000FF">*       it_filter        =</font>
+      EXCEPTIONS
+       invalid_parameter_combination = 1
+       program_error    = 2
+       too_many_lines   = 3
+       others           = 4
+      .
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+
+        CREATE OBJECT go_alv2002
+      EXPORTING
+<font color ="#0000FF">*        i_shellstyle      = 0</font>
+<font color ="#0000FF">*        i_lifetime        =</font>
+        i_parent          = go_cont2002
+<font color ="#0000FF">*        i_appl_events     = SPACE</font>
+<font color ="#0000FF">*        i_parentdbg       =</font>
+<font color ="#0000FF">*        i_applogparent    =</font>
+<font color ="#0000FF">*        i_graphicsparent  =</font>
+<font color ="#0000FF">*        i_name            =</font>
+<font color ="#0000FF">*        i_fcat_complete   = SPACE</font>
+<font color ="#0000FF">*        o_previous_sral_handler =</font>
+      EXCEPTIONS
+        error_cntl_create = 1
+        error_cntl_init   = 2
+        error_cntl_link   = 3
+        error_dp_create   = 4
+        others            = 5
+        .
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    PERFORM set_layout2002.
+
+    CALL METHOD go_alv2002-&gt;set_table_for_first_display
+      EXPORTING
+<font color ="#0000FF">*       i_buffer_active  =</font>
+<font color ="#0000FF">*       i_bypassing_buffer            =</font>
+<font color ="#0000FF">*       i_consistency_check           =</font>
+        i_structure_name = 'ZTBPP0031'
+<font color ="#0000FF">*       is_variant       =</font>
+<font color ="#0000FF">*       i_save           =</font>
+<font color ="#0000FF">*       i_default        = 'X'</font>
+        is_layout        = gs_layout2002
+<font color ="#0000FF">*       is_print         =</font>
+<font color ="#0000FF">*       it_special_groups             =</font>
+<font color ="#0000FF">*       it_toolbar_excluding          =</font>
+<font color ="#0000FF">*       it_hyperlink     =</font>
+<font color ="#0000FF">*       it_alv_graphics  =</font>
+<font color ="#0000FF">*       it_except_qinfo  =</font>
+<font color ="#0000FF">*       ir_salv_adapter  =</font>
+      CHANGING
+        it_outtab        = gt_alv2002
+<font color ="#0000FF">*       it_fieldcatalog  =</font>
+<font color ="#0000FF">*       it_sort          =</font>
+<font color ="#0000FF">*       it_filter        =</font>
+      EXCEPTIONS
+       invalid_parameter_combination = 1
+       program_error    = 2
+       too_many_lines   = 3
+       others           = 4
+      .
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+
+
+
+  ENDIF.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module GET_DATA_FOR_DOCK_ALVS OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE get_data_for_dock_alvs OUTPUT.
+
+  SELECT *
+    FROM ZTBPP0030
+    INTO CORRESPONDING FIELDS OF TABLE gt_alv2001
+    WHERE pordnum = PA_POR.
+
+  SELECT *
+    FROM ZTBPP0031
+    into CORRESPONDING FIELDS OF TABLE gt_alv2002
+    WHERE pordnum = PA_POR.
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBMM0030_TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBMM0030_TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBMM0030_TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include MZBMM0030_TOP                            - Module Pool      SAPMZBMM0030</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+PROGRAM SAPMZBMM0030.
+
+TABLES: ZTBMM1030, ZTBSD1030, ZSBMM1030, ZTBSD1020.
+
+DATA: OK_CODE TYPE SY-UCOMM.
+
+DATA: GO_CONT TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV  TYPE REF TO CL_GUI_ALV_GRID.
+
+DATA: GT_ZTBMM1030 TYPE TABLE OF ZTBMM1030,
+      GS_ZTBMM1030 TYPE ZTBMM1030.
+
+TYPES: BEGIN OF TS_ZTBMM1030.
+         include structure <a href ="ztbmm1030/dictionary-ztbmm1030.html">ZTBMM1030</a>.
+TYPES: PLTNAME    TYPE ZTBMM1020-PLTNAME,
+         WHTYPE_TXT TYPE CHAR10.
+TYPES END OF TS_ZTBMM1030.
+
+DATA: GT_ZTBMM1030_PLUS TYPE TABLE OF TS_ZTBMM1030,
+      GS_ZTBMM1030_PLUS TYPE TS_ZTBMM1030.
+
+DATA: GT_ZTBSD1030 TYPE TABLE OF ZTBSD1030,
+      GS_ZTBSD1030 TYPE ZTBSD1030.
+
+DATA: RT_WHCODE TYPE RANGE OF ZTBMM1030-WHCODE,
+      RS_WHCODE LIKE LINE OF RT_WHCODE.
+
+DATA: ET_INDEX_ROW TYPE LVC_T_ROW,
+      ES_INDEX_ROW TYPE LVC_S_ROW.
+DATA: SEL_IDX TYPE I.
+
+DATA: LS_LAYO TYPE LVC_S_LAYO,
+      GT_SORT TYPE LVC_T_SORT,
+      GT_FCAT TYPE LVC_T_FCAT.
+
+DATA: LS_LEN TYPE I.
+
+DATA: LV_DEL TYPE CHAR1.
+DATA: LV_ANSWER TYPE C.
+
+DATA: GV_ZTEST TYPE CHAR20.
+
+DATA: GV_EMPID TYPE SY-UNAME.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

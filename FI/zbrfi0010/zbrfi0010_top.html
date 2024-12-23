@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0010_TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0010_TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRFI0010_TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRFI0010_TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+"지급조건 전표Header 전표Item BP Master BP Text
+TABLES: ZTBFI0040, ZTBFI0030, ZTBFI0031, ZTBSD1050, ZTBSD1051,
+        ZTBSD1040.
+
+DATA: OK_CODE TYPE SY-UCOMM.
+
+DATA: LV_SUM TYPE INT8.
+DATA: LV_ACCOUNT TYPE ZTBFI0031-WRBTR.
+DATA: GS_VARIANT TYPE DISVARIANT.
+DATA: GS_VARIANT3 TYPE DISVARIANT.
+
+TYPES: BEGIN OF TS_BP_DATA,
+         BPCODE TYPE ZTBSD1050-BPCODE,
+         WRBTR  TYPE ZTBFI0031-WRBTR,
+       END OF TS_BP_DATA.
+
+DATA: GS_BP_DATA TYPE TS_BP_DATA,
+      GT_BP_DATA TYPE TABLE OF TS_BP_DATA.
+
+" 전표 Header
+TYPES: BEGIN OF TS_30_DATA.
+         include structure <a href ="ztbfi0030/dictionary-ztbfi0030.html">ZTBFI0030</a>.
+TYPES:   AUGDT TYPE ZTBFI0031-AUGDT, "반제일
+         AUGBL TYPE ZTBFI0031-AUGBL, "반제사유
+       END OF TS_30_DATA.
+
+DATA: GS_30_DATA TYPE TS_30_DATA,
+      GT_30_DATA TYPE TABLE OF TS_30_DATA.
+
+" 국가 Master
+DATA: GT_ZTBSD1040 TYPE TABLE OF ZTBFI0031,
+      GS_ZTBSD1040 LIKE LINE OF GT_ZTBSD1040.
+
+TYPES: BEGIN OF TS_10_DATA.
+         include structure <a href ="ztbfi0031/dictionary-ztbfi0031.html">ZTBFI0031</a>.
+TYPES:   BPNAME TYPE ZTBSD1051-BPNAME, "거래처명
+         BUDAT  TYPE ZTBFI0030-BLDAT, "전기일
+         C_BUDAT  TYPE ZTBFI0030-BUDAT, "출금 예정일.
+         XBLNR TYPE ZTBFI0030-XBLNR,
+         EXCP TYPE CHAR1, "신호등
+       END OF TS_10_DATA.
+
+" 전표 Item
+DATA: GT_ZTBFI0031 TYPE TABLE OF TS_10_DATA,
+      GS_ZTBFI0031 LIKE LINE OF GT_ZTBFI0031.
+
+" 반제 전표 Item
+DATA: GT_ZTBFI0031_A TYPE TABLE OF TS_10_DATA,
+      GS_ZTBFI0031_A LIKE LINE OF GT_ZTBFI0031_A.
+
+" 지급조건
+DATA: GT_ZTBFI0040 TYPE TABLE OF ZTBFI0040,
+      GS_ZTBFI0040 LIKE LINE OF GT_ZTBFI0040.
+
+" BP 코드별 전표
+TYPES: BEGIN OF TS_40_DATA.
+         include structure <a href ="ztbsd1050/dictionary-ztbsd1050.html">ZTBSD1050</a>.
+TYPES:   CTRYNAME TYPE ZTBSD1040-CTRYNAME,
+         CURRENCY TYPE ZTBSD1040-CURRENCY,
+         WRBTR    TYPE ZTBFI0031-WRBTR,
+       END OF TS_40_DATA.
+
+DATA: GS_40_DATA TYPE TS_40_DATA,
+      GT_40_DATA TYPE TABLE OF TS_40_DATA.
+
+"BP 코드별 전표 상세
+DATA: GS_40_DETAIL_DATA TYPE TS_40_DATA,
+      GT_40_DETAIL_DATA TYPE TABLE OF TS_40_DATA.
+
+" BP Text
+DATA: GT_ZTBSD1051 TYPE TABLE OF ZTBSD1051,
+      GS_ZTBSD1051 LIKE LINE OF GT_ZTBSD1051.
+
+<font color ="#0000FF">*ALV용 변수</font>
+DATA: GO_CONT    TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV     TYPE REF TO CL_GUI_ALV_GRID,
+      GS_STABLE  TYPE LVC_S_STBL,
+      GT_FCAT    TYPE LVC_T_FCAT,
+      GS_FCAT    TYPE LVC_S_FCAT,
+      GS_SORT    TYPE LVC_S_SORT,
+      GT_TOOLBAR TYPE UI_FUNCTIONS,
+      GS_LAYOUT  TYPE LVC_S_LAYO,
+      GV_ANSWER  TYPE CHAR1,
+      GV_INDEX   TYPE SY-INDEX.
+
+DATA: GO_CONT2    TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV2     TYPE REF TO CL_GUI_ALV_GRID,
+      GS_STABLE2  TYPE LVC_S_STBL,
+      GT_FCAT2    TYPE LVC_T_FCAT,
+      GS_FCAT2    TYPE LVC_S_FCAT,
+      GT_SORT2    TYPE LVC_T_SORT,
+      GS_SORT2    TYPE LVC_S_SORT,
+      GT_TOOLBAR2 TYPE UI_FUNCTIONS,
+      GS_LAYOUT2  TYPE LVC_S_LAYO,
+      GV_ANSWER2  TYPE CHAR1,
+      GV_INDEX2   TYPE SY-INDEX.
+
+DATA: GO_CONT3    TYPE REF TO CL_GUI_CUSTOM_CONTAINER,
+      GO_ALV3     TYPE REF TO CL_GUI_ALV_GRID,
+      GS_STABLE3  TYPE LVC_S_STBL,
+      GT_FCAT3    TYPE LVC_T_FCAT,
+      GS_FCAT3    TYPE LVC_S_FCAT,
+      GT_SORT3    TYPE LVC_T_SORT,
+      GS_SORT3    TYPE LVC_S_SORT,
+      GT_TOOLBAR3 TYPE UI_FUNCTIONS,
+      GS_LAYOUT3  TYPE LVC_S_LAYO,
+      GV_ANSWER3  TYPE CHAR1,
+      GV_INDEX3   TYPE SY-INDEX.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

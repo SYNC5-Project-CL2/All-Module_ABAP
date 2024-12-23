@@ -1,0 +1,355 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBFI0010I01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBFI0010I01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0010I01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBFI0010I01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE exit INPUT.
+
+  CASE ok_code.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+    WHEN 'CANCEL'.
+      LEAVE TO SCREEN 0.
+
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0100  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0100 INPUT.
+
+  DATA: lv_answer2 TYPE char2.
+
+  CASE ok_code.
+    WHEN 'BACK'.
+      LEAVE TO SCREEN 0.
+    WHEN 'REFRESH'.
+      PERFORM refresh_srch_con.
+    WHEN 'CREATE'.
+      gv_create_refresh_once = 1. " 처음 생성할 때만 clear하려고
+      CALL SCREEN 110 STARTING AT 5 5.
+    WHEN 'MODIFY'.
+
+      DATA: lt_row2 TYPE lvc_t_row,
+            ls_row2 TYPE lvc_s_row.
+
+      go_alv-&gt;get_selected_rows(
+    IMPORTING
+      et_index_rows = lt_row2
+  ).
+
+      IF lt_row2 IS INITIAL.
+        MESSAGE s008(zcommon_msg) DISPLAY LIKE 'E'.
+      ELSE.
+
+        READ TABLE lt_row2 INTO ls_row2 INDEX 1.
+
+        IF sy-subrc = 0.
+
+        READ TABLE gt_alv INTO gs_alv INDEX ls_row2-index.
+
+          IF sy-subrc = 0.
+
+            IF gs_alv-delflg = 'X'.
+
+              MESSAGE s014(zcommon_msg) DISPLAY LIKE 'E'.
+
+            else.
+
+            CALL SCREEN 120 STARTING AT 5 5.
+
+            ENDIF.
+
+            else.
+
+          ENDIF.
+
+        else.
+
+        ENDIF.
+
+      ENDIF.
+
+    WHEN 'DELETE'.
+
+      PERFORM delete_data.
+
+    WHEN 'BTN1'.
+      PERFORM get_data_for_alv.
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form create_data</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_data .
+
+  DATA: ls_ztbfi0010 TYPE ztbfi0010,
+        ls_ztbfi0011 TYPE ztbfi0011,
+
+        ls_count_chk TYPE int4.
+
+
+<font color ="#0000FF">*  SELECT COUNT(*)</font>
+<font color ="#0000FF">*    FROM ztbfi0010_cacona</font>
+<font color ="#0000FF">*    INTO ls_count_chk</font>
+<font color ="#0000FF">*    WHERE catcode = zsbfi00102-catcode</font>
+<font color ="#0000FF">*      AND gcode = zsbfi00102-gcode.</font>
+
+<font color ="#0000FF">*  IF ls_count_chk = 0.</font>
+
+<font color ="#0000FF">*    MESSAGE s010(zcommon_msg) DISPLAY LIKE 'E'.</font>
+
+<font color ="#0000FF">*  ELSE.</font>
+
+    MOVE-CORRESPONDING zsbfi00102 TO gs_alv.
+    PERFORM get_nr_range.
+    PERFORM get_empid.
+    gs_alv-stamp_date_f = sy-datum.
+    gs_alv-stamp_time_f = sy-uzeit.
+    gs_alv-stamp_user_f = gv_empid.
+    gs_alv-stamp_date_l = sy-datum.
+    gs_alv-stamp_time_l = sy-uzeit.
+    gs_alv-stamp_user_l = gv_empid.
+    CLEAR gv_empid.
+
+    MOVE-CORRESPONDING gs_alv TO ls_ztbfi0010.
+    MOVE-CORRESPONDING gs_alv TO ls_ztbfi0011.
+    ls_ztbfi0011-spras = sy-langu.
+
+    INSERT ztbfi0010 FROM ls_ztbfi0010.
+    INSERT ztbfi0011 FROM ls_ztbfi0011.
+
+    IF sy-subrc = 0.
+
+
+      MESSAGE s001(zcommon_msg).
+      IF zsbfi0010-del = 'X'.
+
+      ELSE.
+
+        INSERT gs_alv INTO gt_alv INDEX 1.
+        go_alv-&gt;refresh_table_display(
+          EXCEPTIONS
+            finished       = 1                " Display was Ended (by Export)
+            OTHERS         = 2
+        ).
+        IF sy-subrc &lt;&gt; 0.
+
+        ENDIF.
+
+      ENDIF.
+
+    ELSE.
+
+      MESSAGE s010(zcommon_msg) DISPLAY LIKE 'E'.
+
+    ENDIF.
+
+
+<font color ="#0000FF">*  ENDIF.</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0110  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0110 INPUT.
+
+  DATA: lv_answer TYPE char1.
+
+  CASE ok_code.
+    WHEN 'OKAY'.
+
+      IF gv_chk_dup_anam = 1 or gv_chk_gco_catco = 1.
+        clear: gv_chk_dup_anam , gv_chk_gco_catco.
+      else.
+
+      CALL FUNCTION 'POPUP_TO_CONFIRM'
+        EXPORTING
+          titlebar              = '계정과목 MASTER 데이터 생성'
+          text_question         = '계정과목 MASTER 데이터을(를) 생성하시겠습니까?'
+          text_button_1         = 'YES'(001)
+          text_button_2         = 'NO'(002)
+          display_cancel_button = ''
+        IMPORTING
+          answer                = lv_answer
+<font color ="#0000FF">*       TABLES</font>
+<font color ="#0000FF">*         PARAMETER             =</font>
+        EXCEPTIONS
+          text_not_found        = 1
+          OTHERS                = 2.
+      IF lv_answer = 1.
+        PERFORM create_data.
+      ELSE.
+
+      ENDIF.
+      CLEAR lv_answer.
+
+      LEAVE TO SCREEN 0.
+
+
+      ENDIF.
+
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT1  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE exit1 INPUT.
+  CASE ok_code.
+    WHEN 'CAN'.
+      LEAVE TO SCREEN 0.
+
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT3  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE exit3 INPUT.
+
+  CASE ok_code.
+    WHEN 'CANCEL'.
+
+      LEAVE TO SCREEN 0.
+
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0120  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE user_command_0120 INPUT.
+
+<font color ="#0000FF">*  data: lv_answer2 TYPE char2.</font>
+
+  CASE ok_code.
+    WHEN 'OKAY'.
+
+      IF gv_chk_dup_anam = 1.
+        clear gv_chk_dup_anam.
+      else.
+
+      CALL FUNCTION 'POPUP_TO_CONFIRM'
+        EXPORTING
+          titlebar              = ' 계정과목 MASTER 데이터 수정 '
+          text_question         = '계정과목 MASTER 데이터을(를) 수정하시겠습니까?'
+          text_button_1         = 'YES'(001)
+          text_button_2         = 'NO'(002)
+          display_cancel_button = ''
+        IMPORTING
+          answer                = lv_answer
+        EXCEPTIONS
+          text_not_found        = 1
+          OTHERS                = 2.
+      IF lv_answer = 1 .
+        PERFORM update_edited_data.
+
+      ELSE.
+
+      ENDIF.
+      CLEAR lv_answer.
+
+      LEAVE TO SCREEN 0.
+
+      ENDIF.
+
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  CHECK_GCO_CATCO  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE check_gco_catco INPUT.
+
+  SELECT COUNT(*) "진짜 있는지만 확인 어따 값을 넘길 필요 X
+    FROM ztbfi0010_cacona
+<font color ="#0000FF">*    INTO ls_count_chk</font>
+    WHERE catcode = zsbfi00102-catcode
+      AND gcode = zsbfi00102-gcode.
+
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*    clear gv_chk_gco_catco.</font>
+    gv_chk_gco_catco = 1.
+    MESSAGE '계정분류 계정과목 불일치' TYPE 'I' DISPLAY LIKE 'E'.
+
+  ENDIF.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  CHECK_ANAM  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE check_anam INPUT.
+
+  SELECT count(*)
+    FROM ztbfi0011
+    WHERE aname = zsbfi00102-aname.
+
+  IF sy-subrc = 0.
+<font color ="#0000FF">*    clear gv_chk_dup_anam.</font>
+    gv_chk_dup_anam = 1.
+    MESSAGE I034(zcommon_msg) with  zsbfi00102-aname DISPLAY LIKE 'E'.
+
+  ENDIF.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  CHK_ANAM120  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE chk_anam120 INPUT.
+
+  SELECT SINGLE count( * )
+    from ztbfi0011
+    WHERE aname = zsbfi00103-aname.
+
+  IF sy-subrc = 0.
+<font color ="#0000FF">*    clear gv_chk_dup_anam.</font>
+    gv_chk_dup_anam = 1.
+    MESSAGE i404(zcommon_msg) WITH zsbfi00103-aname DISPLAY LIKE 'E'.
+
+  ENDIF.
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

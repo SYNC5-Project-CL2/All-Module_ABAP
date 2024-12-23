@@ -1,0 +1,852 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRPP0070F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRPP0070F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRPP0070F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRPP0070F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout2 .
+
+  gs_layout2-grid_title = '생산오더 HEADER 리스트'.
+  gs_layout2-cwidth_opt = 'A'.
+  gs_layout2-zebra = 'X'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat2 .
+
+  PERFORM fill_fcat2 USING:
+        '1' 'PORDNUM' 'ZTBPP0030' '' '',
+        '2' 'PREQNUM' 'ZTBPP0030' '' '',
+<font color ="#0000FF">*        '3' 'WHCODE' 'ZTBPP0030' '' '',</font>
+<font color ="#0000FF">*        '4' 'WHNAME' 'ZVBPP0071' '' '',</font>
+<font color ="#0000FF">*        '' 'PLTCODE' 'ZTBPP0030' '' '',</font>
+<font color ="#0000FF">*        '6' 'PLTNAME' 'ZVBPP0071' '' '',</font>
+<font color ="#0000FF">*        '7' 'MATTYPE' 'ZTBPP0030' '' '',</font>
+<font color ="#0000FF">*        '8' 'MATTTNAME' 'ZVBPP0071' '' '',</font>
+        '3' 'STATUS' 'ZTBPP0030' '' '',
+        '4' 'SALESDATE' 'ZTBPP0030' '' '',
+        '4' 'PRDCRDAT' 'ZTBPP0030' '' '',
+        '5' 'PRDSTDAT' 'ZTBPP0030' '' '',
+        '6' 'PRDENDAT' 'ZTBPP0030' '' '',
+        '7' 'DELFLG' 'ZTBPP0030' '' ''.
+
+
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat2  USING  pv_colpos TYPE lvc_s_fcat-col_pos
+                        pv_fieldname TYPE lvc_s_fcat-fieldname
+                        pv_reftable TYPE lvc_s_fcat-ref_table
+                        pv_reffield TYPE lvc_s_fcat-ref_field
+                        pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname = pv_fieldname.
+  ls_fcat-ref_table = pv_reftable.
+  ls_fcat-ref_field = pv_reffield.
+  ls_fcat-coltext = pv_coltext.
+
+  APPEND ls_fcat TO gt_fcat2.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout3 .
+
+  gs_layout3-grid_title = '생산오더 ITEM 리스트'.
+  gs_layout3-zebra = 'X'.
+  gs_layout3-cwidth_opt = 'A'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat3 .
+
+  PERFORM fill_fcat3 USING:
+        '1' 'PORDNUM' 'ZTBPP0031' '' '생산오더번호',
+        '2' 'MATCODE' 'ZTBPP0031' '' '',
+<font color ="#0000FF">*        '3' 'MATNAME' 'ZVBPP0072' '' '',</font>
+        '3' 'PLTCODE' 'ZTBPP0031' '' '',
+        '4' 'WHCODE' 'ZTBPP0031' '' '',
+        '5' 'MATTYPE' 'ZTBPP0031' '' '',
+<font color ="#0000FF">*        '5' 'MATTTNAME' 'ZVBPP0072' '' '',</font>
+        '6' 'PRDQUAN' 'ZTBPP0031' '' '생산수량',
+        '7' 'UNITCODE' 'ZTBPP0031' '' '',
+        '8' 'STATUS' 'ZTBPP0031' '' '상태',
+        '9' 'DELFLG' 'ZTBPP0031' '' ''.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat3  USING   pv_colpos TYPE lvc_s_fcat-col_pos
+                         pv_fieldname TYPE lvc_s_fcat-fieldname
+                         pv_reftable TYPE lvc_s_fcat-ref_table
+                         pv_reffield TYPE lvc_s_fcat-ref_field
+                         pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname = pv_fieldname.
+  ls_fcat-ref_table = pv_reftable.
+  ls_fcat-ref_field = pv_reffield.
+  ls_fcat-coltext = pv_coltext.
+
+  IF ls_fcat-fieldname = 'PRDQUAN'.
+
+    ls_fcat-qfieldname = 'UNITCODE'.
+
+  ENDIF.
+
+  APPEND ls_fcat TO gt_fcat3.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout4 .
+
+  gs_layout4-grid_title = '검수내역관리 상세 정보 리스트'.
+  gs_layout4-cwidth_opt = 'A'.
+  gs_layout4-zebra = 'X'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat4 .
+
+  PERFORM fill_fcat4 USING:
+        '1' 'MATCODE' 'ZTBPP0040' '' '',
+        '2' 'MATNAME' 'ZVBPP0073' '' '',
+        '3' 'PORDNUM' 'ZTBPP0040' '' '',
+        '4' 'WHCODE' 'ZTBPP0040' '' '',
+        '5' 'WHNAME' 'ZVBPP0073' '' '',
+        '6' 'PRDSTDAT' 'ZTBPP0040' '' '',
+        '7' 'PRDENDAT' 'ZTBPP0040' '' '',
+        '8' 'EXDATE' 'ZTBPP0040' '' '',
+        '9' 'PRDQUAND' 'ZTBPP0040' '' '',
+        '10' 'UNITCODE1' 'ZTBPP0040' '' '',
+        '11' 'PRDQUAN' 'ZTBPP0040' '' '',
+        '12' 'UNITCODE2' 'ZTBPP0040' '' '',
+        '13' 'PLTEMP' 'ZTBPP0040' '' '',
+        '14' 'UNITCODE3' 'ZTBPP0040' '' '',
+        '15' 'PLHUM' 'ZTBPP0040' '' '',
+        '16' 'UNITCODE4' 'ZTBPP0040' '' '',
+        '17' 'SALESYR' 'ZTBPP0040' '' '',
+        '18' 'DELFLG' 'ZTBPP0040' '' ''.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat4  USING  pv_colpos TYPE lvc_s_fcat-col_pos
+                        pv_fieldname TYPE lvc_s_fcat-fieldname
+                        pv_reftable TYPE lvc_s_fcat-ref_table
+                        pv_reffield TYPE lvc_s_fcat-ref_field
+                        pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname = pv_fieldname.
+  ls_fcat-ref_table = pv_reftable.
+  ls_fcat-ref_field = pv_reffield.
+  ls_fcat-coltext = pv_coltext.
+
+<font color ="#0000FF">*  PRDQUAND' 'ZTBPP0040' '' '',</font>
+<font color ="#0000FF">*        '7' 'UNITCODE1' 'ZTBPP0040' '' '',</font>
+<font color ="#0000FF">*        '8' 'PRDQUAN' 'ZTBPP0040' '' '',</font>
+<font color ="#0000FF">*        '9' 'UNITCODE2' 'ZTBPP0040' '' '',</font>
+<font color ="#0000FF">*        '10' 'PLTEMP' 'ZTBPP0040' '' '',</font>
+<font color ="#0000FF">*        '11' 'UNITCODE3' 'ZTBPP0040' '' '',</font>
+<font color ="#0000FF">*        '12' 'PLHUM' 'ZTBPP0040' '' '',</font>
+<font color ="#0000FF">*        '13' 'UNITCODE4' 'ZTBPP0040' '' '',</font>
+
+  IF ls_fcat-fieldname = 'PRDQUAND'.
+
+    ls_fcat-qfieldname = 'UNITCODE1'.
+
+  ENDIF.
+
+  IF ls_fcat-fieldname = 'PRDQUAN'.
+
+    ls_fcat-qfieldname = 'UNITCODE2'.
+
+  ENDIF.
+
+  IF ls_fcat-fieldname = 'PLTEMP'.
+
+    ls_fcat-qfieldname = 'UNITCODE3'.
+
+  ENDIF.
+
+  IF ls_fcat-fieldname = 'PLHUM'.
+
+    ls_fcat-qfieldname = 'UNITCODE4'.
+
+  ENDIF.
+
+
+
+  APPEND ls_fcat TO gt_fcat4.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_data_for_alv2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_data_for_alv2 .
+
+  PERFORM sort_dat.
+
+  SELECT *
+    FROM ztbpp0030
+    INTO CORRESPONDING FIELDS OF TABLE gt_alv2
+    WHERE pordnum IN so_pord
+      AND prdstdat IN rt_stdat
+      AND prdendat IN rt_endat.
+<font color ="#0000FF">*      AND whcode IN so_whc</font>
+<font color ="#0000FF">*      and MATTYPE &lt;&gt; 'S'.</font>
+
+
+  SORT gt_alv2 BY pordnum DESCENDING.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form so_pordnum_f4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM so_pordnum_f4  USING   pv_low_high TYPE help_info-dynprofld.
+
+  DATA: lt_return TYPE TABLE OF ddshretval.
+
+  DATA: BEGIN OF ls_pordnum.
+  DATA: pordnum TYPE ztbpp0030-pordnum,
+        END OF ls_pordnum.
+
+  DATA: lt_pordnum LIKE TABLE OF ls_pordnum.
+
+  SELECT *
+    FROM ztbpp0030
+    INTO CORRESPONDING FIELDS OF TABLE lt_pordnum
+    WHERE status = '검수완료'
+       OR status = '생산완료'
+<font color ="#0000FF">*      and MATTYPE &lt;&gt; 'S'</font>
+    ORDER BY pordnum DESCENDING.
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      retfield        = 'PORDNUM'
+      dynpprog        = sy-cprog
+      dynpnr          = sy-dynnr
+      dynprofield     = pv_low_high
+      window_title    = '생산오더번호 선택'
+      value_org       = 'S'
+    TABLES
+      value_tab       = lt_pordnum
+      return_tab      = lt_return
+    EXCEPTIONS
+      parameter_error = 1
+      no_values_found = 2
+      OTHERS          = 3.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+
+
+
+
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form pa_stdat_f4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM pa_stdat_f4 .
+
+  DATA: lt_dynfield1 TYPE TABLE OF dynpread,
+        ls_dynfield1 LIKE LINE OF lt_dynfield1,
+        lt_dynfield2 TYPE TABLE OF dynpread,
+        ls_dynfield2 LIKE LINE OF lt_dynfield2.
+
+  DATA: lt_return TYPE TABLE OF ddshretval.
+
+  DATA: rt_pron TYPE RANGE OF ztbpp0030-pordnum,
+        rs_pron LIKE LINE OF rt_pron.
+
+  DATA: BEGIN OF ls_prdstdat.
+  DATA: pordnum  TYPE ztbpp0030-pordnum,
+        prdstdat TYPE ztbpp0030-prdstdat,
+        END OF ls_prdstdat.
+
+  DATA: lt_prdstdat LIKE TABLE OF ls_prdstdat.
+
+  CALL FUNCTION 'DYNP_VALUES_READ'
+    EXPORTING
+      dyname               = sy-cprog
+      dynumb               = sy-dynnr
+      translate_to_upper   = 'X'
+      request              = 'A'
+<font color ="#0000FF">*     PERFORM_CONVERSION_EXITS             = ' '</font>
+<font color ="#0000FF">*     PERFORM_INPUT_CONVERSION             = ' '</font>
+<font color ="#0000FF">*     DETERMINE_LOOP_INDEX = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_CURRENT_SCREEN       = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_MAIN_SCREEN          = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_STACKED_SCREEN       = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_ON_SCR_STACKPOS         = ' '</font>
+<font color ="#0000FF">*     SEARCH_OWN_SUBSCREENS_FIRST          = ' '</font>
+<font color ="#0000FF">*     SEARCHPATH_OF_SUBSCREEN_AREAS        = ' '</font>
+    TABLES
+      dynpfields           = lt_dynfield1
+    EXCEPTIONS
+      invalid_abapworkarea = 1
+      invalid_dynprofield  = 2
+      invalid_dynproname   = 3
+      invalid_dynpronummer = 4
+      invalid_request      = 5
+      no_fielddescription  = 6
+      invalid_parameter    = 7
+      undefind_error       = 8
+      double_conversion    = 9
+      stepl_not_found      = 10
+      OTHERS               = 11.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  SORT lt_dynfield1 BY fieldname.
+
+  READ TABLE lt_dynfield1 INTO ls_dynfield1 WITH KEY fieldname = 'SO_PORD-LOW'.
+
+  IF sy-subrc = 0.
+
+    IF ls_dynfield1 IS NOT INITIAL.
+
+      rs_pron-low = ls_dynfield1-fieldvalue.
+
+    ELSE.
+    ENDIF.
+
+  ENDIF.
+
+  READ TABLE lt_dynfield1 INTO ls_dynfield2 WITH KEY fieldname = 'SO_PORD-HIGH'.
+
+  IF sy-subrc = 0.
+
+    IF ls_dynfield2 IS NOT INITIAL.
+
+      rs_pron-high =  ls_dynfield2-fieldvalue.
+
+    ENDIF.
+
+  ENDIF.
+
+  IF rs_pron-low IS INITIAL AND rs_pron-high IS INITIAL.
+
+
+  ELSEIF rs_pron-low IS NOT INITIAL AND rs_pron-high IS NOT INITIAL.
+
+    rs_pron-sign = 'I'.
+    rs_pron-option = 'BT'.
+    APPEND rs_pron TO rt_pron.
+
+  ELSEIF rs_pron-low IS NOT INITIAL AND rs_pron-high IS INITIAL.
+
+    rs_pron-high = rs_pron-low.
+    rs_pron-sign = 'I'.
+    rs_pron-option = 'EQ'.
+
+    APPEND rs_pron TO rt_pron.
+
+  ELSEIF rs_pron-low IS INITIAL AND rs_pron-high IS NOT INITIAL.
+
+    rs_pron-sign = 'I'.
+    rs_pron-option = 'BT'.
+    APPEND rs_pron TO rt_pron.
+
+  ENDIF.
+
+  SELECT *
+    FROM ztbpp0030
+    INTO CORRESPONDING FIELDS OF TABLE lt_prdstdat
+    WHERE pordnum IN rt_pron
+<font color ="#0000FF">*      and MATTYPE &lt;&gt; 'S'</font>
+    ORDER BY prdstdat ASCENDING.
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+<font color ="#0000FF">*     DDIC_STRUCTURE  = ' '</font>
+      retfield        = 'PRDSTDAT'
+<font color ="#0000FF">*     PVALKEY         = ' '</font>
+      dynpprog        = sy-cprog
+      dynpnr          = sy-dynnr
+      dynprofield     = 'PA_STDAT'
+<font color ="#0000FF">*     STEPL           = 0</font>
+      window_title    = '생산시작일 선택'
+<font color ="#0000FF">*     VALUE           = ' '</font>
+      value_org       = 'S'
+<font color ="#0000FF">*     MULTIPLE_CHOICE = ' '</font>
+<font color ="#0000FF">*     DISPLAY         = ' '</font>
+<font color ="#0000FF">*     CALLBACK_PROGRAM       = ' '</font>
+<font color ="#0000FF">*     CALLBACK_FORM   = ' '</font>
+<font color ="#0000FF">*     CALLBACK_METHOD =</font>
+<font color ="#0000FF">*     MARK_TAB        =</font>
+<font color ="#0000FF">*    IMPORTING</font>
+<font color ="#0000FF">*     USER_RESET      =</font>
+    TABLES
+      value_tab       = lt_prdstdat
+<font color ="#0000FF">*     FIELD_TAB       =</font>
+      return_tab      = lt_return
+<font color ="#0000FF">*     DYNPFLD_MAPPING =</font>
+    EXCEPTIONS
+      parameter_error = 1
+      no_values_found = 2
+      OTHERS          = 3.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form pa_endat_f4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM pa_endat_f4 .
+
+  DATA: lt_dynfield  TYPE TABLE OF dynpread,
+        ls_dynfield1 LIKE LINE OF lt_dynfield,
+        ls_dynfield2 LIKE LINE OF lt_dynfield.
+
+  DATA: lt_return TYPE TABLE OF ddshretval.
+
+  DATA: rt_pron TYPE RANGE OF ztbpp0030-pordnum,
+        rs_pron LIKE LINE OF rt_pron.
+
+  DATA: BEGIN OF ls_prdendat.
+  DATA: pordnum  TYPE ztbpp0030-pordnum,
+        prdendat TYPE ztbpp0030-prdendat,
+        END OF ls_prdendat.
+
+  DATA: lt_prdendat LIKE TABLE OF ls_prdendat.
+
+  CALL FUNCTION 'DYNP_VALUES_READ'
+    EXPORTING
+      dyname               = sy-cprog
+      dynumb               = sy-dynnr
+      translate_to_upper   = 'X'
+      request              = 'A'
+<font color ="#0000FF">*     PERFORM_CONVERSION_EXITS             = ' '</font>
+<font color ="#0000FF">*     PERFORM_INPUT_CONVERSION             = ' '</font>
+<font color ="#0000FF">*     DETERMINE_LOOP_INDEX = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_CURRENT_SCREEN       = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_MAIN_SCREEN          = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_STACKED_SCREEN       = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_ON_SCR_STACKPOS         = ' '</font>
+<font color ="#0000FF">*     SEARCH_OWN_SUBSCREENS_FIRST          = ' '</font>
+<font color ="#0000FF">*     SEARCHPATH_OF_SUBSCREEN_AREAS        = ' '</font>
+    TABLES
+      dynpfields           = lt_dynfield
+    EXCEPTIONS
+      invalid_abapworkarea = 1
+      invalid_dynprofield  = 2
+      invalid_dynproname   = 3
+      invalid_dynpronummer = 4
+      invalid_request      = 5
+      no_fielddescription  = 6
+      invalid_parameter    = 7
+      undefind_error       = 8
+      double_conversion    = 9
+      stepl_not_found      = 10
+      OTHERS               = 11.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  READ TABLE lt_dynfield INTO ls_dynfield1 WITH KEY fieldname = 'SO_PORD-LOW'.
+
+  IF sy-subrc = 0.
+
+    IF ls_dynfield1 IS NOT INITIAL.
+
+      rs_pron-low = ls_dynfield1-fieldvalue.
+
+    ENDIF.
+
+  ENDIF.
+
+  READ TABLE lt_dynfield INTO ls_dynfield2 WITH KEY fieldname = 'SO_PORD-HIGH'.
+
+  IF  sy-subrc = 0.
+
+    IF  ls_dynfield2 IS NOT INITIAL.
+
+      rs_pron-high = ls_dynfield2-fieldvalue.
+
+    ENDIF.
+
+  ENDIF.
+
+  IF rs_pron-low IS INITIAL AND rs_pron-high IS INITIAL.
+
+  ELSEIF rs_pron-low IS NOT INITIAL AND rs_pron-high IS NOT INITIAL.
+
+    rs_pron-sign = 'I'.
+    rs_pron-option = 'BT'.
+    APPEND rs_pron TO rt_pron.
+
+  ELSEIF rs_pron-low IS INITIAL AND rs_pron-high IS NOT INITIAL.
+
+    rs_pron-sign = 'I'.
+    rs_pron-option = 'BT'.
+    APPEND rs_pron TO rt_pron.
+
+  ELSEIF rs_pron-low IS NOT INITIAL AND rs_pron-high IS INITIAL.
+
+    rs_pron-sign = 'I'.
+    rs_pron-option = 'EQ'.
+    APPEND rs_pron TO rt_pron.
+
+  ENDIF.
+
+  SELECT *
+    FROM ztbpp0030
+    INTO CORRESPONDING FIELDS OF TABLE lt_prdendat
+    WHERE pordnum IN rt_pron
+<font color ="#0000FF">*      and MATTYPE &lt;&gt; 'S'</font>
+    ORDER BY prdendat DESCENDING.
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+<font color ="#0000FF">*     DDIC_STRUCTURE         = ' '</font>
+      retfield     = 'PRDENDAT'
+<font color ="#0000FF">*     PVALKEY      = ' '</font>
+      dynpprog     = sy-cprog
+      dynpnr       = sy-dynnr
+      dynprofield  = 'PA_ENDAT'
+<font color ="#0000FF">*     STEPL        = 0</font>
+      window_title = '생산완료일 선택'
+<font color ="#0000FF">*     VALUE        = ' '</font>
+      value_org    = 'S'
+<font color ="#0000FF">*     MULTIPLE_CHOICE        = ' '</font>
+<font color ="#0000FF">*     DISPLAY      = ' '</font>
+<font color ="#0000FF">*     CALLBACK_PROGRAM       = ' '</font>
+<font color ="#0000FF">*     CALLBACK_FORM          = ' '</font>
+<font color ="#0000FF">*     CALLBACK_METHOD        =</font>
+<font color ="#0000FF">*     MARK_TAB     =</font>
+<font color ="#0000FF">* IMPORTING</font>
+<font color ="#0000FF">*     USER_RESET   =</font>
+    TABLES
+      value_tab    = lt_prdendat
+<font color ="#0000FF">*     FIELD_TAB    =</font>
+      return_tab   = lt_return
+<font color ="#0000FF">*     DYNPFLD_MAPPING        =</font>
+<font color ="#0000FF">* EXCEPTIONS</font>
+<font color ="#0000FF">*     PARAMETER_ERROR        = 1</font>
+<font color ="#0000FF">*     NO_VALUES_FOUND        = 2</font>
+<font color ="#0000FF">*     OTHERS       = 3</font>
+    .
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form sort_dat</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM sort_dat .
+
+  IF  pa_stdat IS INITIAL AND pa_endat IS INITIAL.
+
+  ELSEIF pa_stdat IS NOT INITIAL AND pa_endat IS NOT INITIAL.
+
+    rs_stdat-sign = 'I'.
+    rs_stdat-option = 'BT'.
+    rs_stdat-low = pa_stdat.
+    rs_stdat-high = pa_endat.
+    APPEND rs_stdat TO rt_stdat.
+
+    rs_endat-sign = 'I'.
+    rs_endat-option = 'BT'.
+    rs_endat-low = pa_stdat.
+    rs_endat-high = pa_endat.
+    APPEND rs_endat TO rt_endat.
+
+  ELSEIF pa_stdat IS NOT INITIAL AND pa_endat IS INITIAL.
+
+    rs_stdat-sign = 'I'.
+    rs_stdat-option = 'EQ'.
+    rs_stdat-low = pa_stdat.
+    APPEND rs_stdat TO rt_stdat.
+
+  ELSEIF pa_stdat IS INITIAL AND pa_endat IS NOT INITIAL.
+
+    rs_endat-sign = 'I'.
+    rs_endat-option = 'EQ'.
+    rs_endat-low = pa_endat.
+    APPEND rs_endat TO rt_endat.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form so_whc_f4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM so_whc_f4  USING pv_low_high TYPE help_info-dynprofld.
+
+<font color ="#0000FF">*  DATA: lt_dynfield  TYPE TABLE OF dynpread,</font>
+<font color ="#0000FF">*        ls_dynfield1 LIKE LINE OF lt_dynfield,</font>
+<font color ="#0000FF">*        ls_dynfield2 LIKE LINE OF lt_dynfield.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  DATA: rt_pordnum TYPE RANGE OF ztbpp0030-pordnum,</font>
+<font color ="#0000FF">*        rs_pordnum LIKE LINE OF rt_pordnum.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**  DATA: BEGIN OF ls_whc.</font>
+<font color ="#0000FF">**  DATA:</font>
+<font color ="#0000FF">**        whcode  TYPE ztbpp0030-whcode,</font>
+<font color ="#0000FF">**        END OF ls_whc.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**  DATA: lt_whc LIKE TABLE OF ls_whc.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  data: lt_return TYPE TABLE of ddshretval.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  CALL FUNCTION 'DYNP_VALUES_READ'</font>
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      dyname               = sy-cprog</font>
+<font color ="#0000FF">*      dynumb               = sy-dynnr</font>
+<font color ="#0000FF">*      translate_to_upper   = 'X'</font>
+<font color ="#0000FF">*      request              = 'A'</font>
+<font color ="#0000FF">**     PERFORM_CONVERSION_EXITS             = ' '</font>
+<font color ="#0000FF">**     PERFORM_INPUT_CONVERSION             = ' '</font>
+<font color ="#0000FF">**     DETERMINE_LOOP_INDEX = ' '</font>
+<font color ="#0000FF">**     START_SEARCH_IN_CURRENT_SCREEN       = ' '</font>
+<font color ="#0000FF">**     START_SEARCH_IN_MAIN_SCREEN          = ' '</font>
+<font color ="#0000FF">**     START_SEARCH_IN_STACKED_SCREEN       = ' '</font>
+<font color ="#0000FF">**     START_SEARCH_ON_SCR_STACKPOS         = ' '</font>
+<font color ="#0000FF">**     SEARCH_OWN_SUBSCREENS_FIRST          = ' '</font>
+<font color ="#0000FF">**     SEARCHPATH_OF_SUBSCREEN_AREAS        = ' '</font>
+<font color ="#0000FF">*    TABLES</font>
+<font color ="#0000FF">*      dynpfields           = lt_dynfield</font>
+<font color ="#0000FF">*    EXCEPTIONS</font>
+<font color ="#0000FF">*      invalid_abapworkarea = 1</font>
+<font color ="#0000FF">*      invalid_dynprofield  = 2</font>
+<font color ="#0000FF">*      invalid_dynproname   = 3</font>
+<font color ="#0000FF">*      invalid_dynpronummer = 4</font>
+<font color ="#0000FF">*      invalid_request      = 5</font>
+<font color ="#0000FF">*      no_fielddescription  = 6</font>
+<font color ="#0000FF">*      invalid_parameter    = 7</font>
+<font color ="#0000FF">*      undefind_error       = 8</font>
+<font color ="#0000FF">*      double_conversion    = 9</font>
+<font color ="#0000FF">*      stepl_not_found      = 10</font>
+<font color ="#0000FF">*      OTHERS               = 11.</font>
+<font color ="#0000FF">*  IF sy-subrc &lt;&gt; 0.</font>
+<font color ="#0000FF">** Implement suitable error handling here</font>
+<font color ="#0000FF">*  ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  READ TABLE lt_dynfield into ls_dynfield1 WITH key fieldname = 'SO_PORD-LOW'.</font>
+<font color ="#0000FF">*  IF sy-subrc = 0.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    IF  ls_dynfield1 is not INITIAL.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      rs_pordnum-low = ls_dynfield1-fieldvalue.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  READ TABLE lt_dynfield INTO ls_dynfield2 with key fieldname = 'SO_PORD-HIGH'.</font>
+<font color ="#0000FF">*  IF sy-subrc = 0.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    IF ls_dynfield2 is NOT INITIAL.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      rs_pordnum-high = ls_dynfield2-fieldvalue.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  IF rs_pordnum-low is INITIAL and rs_pordnum-high is INITIAL.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  ELSEIF rs_pordnum-low is NOT INITIAL and rs_pordnum-high is NOT INITIAL.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    rs_pordnum-sign = 'I'.</font>
+<font color ="#0000FF">*    rs_pordnum-option = 'BT'.</font>
+<font color ="#0000FF">*    APPEND rs_pordnum to rt_pordnum.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  ELSEIF rs_pordnum-low is INITIAL and rs_pordnum-high is not INITIAL.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    rs_pordnum-sign = 'I'.</font>
+<font color ="#0000FF">*    rs_pordnum-option = 'BT'.</font>
+<font color ="#0000FF">*    APPEND rs_pordnum to rt_pordnum.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  ELSEIF rs_pordnum-low is not INITIAL and rs_pordnum-high is INITIAL.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    rs_pordnum-sign = 'I'.</font>
+<font color ="#0000FF">*    rs_pordnum-option = 'EQ'.</font>
+<font color ="#0000FF">*    APPEND rs_pordnum to rt_pordnum.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  SELECT *</font>
+<font color ="#0000FF">*    from ztbpp0030</font>
+<font color ="#0000FF">*    INTO CORRESPONDING FIELDS OF TABLE lt_whc</font>
+<font color ="#0000FF">*    WHERE pordnum in rt_pordnum</font>
+<font color ="#0000FF">*      and MATTYPE &lt;&gt; 'S'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**    whcode 중복 제거</font>
+<font color ="#0000FF">*    SORT lt_whc by whcode DESCENDING.</font>
+<font color ="#0000FF">*    DELETE ADJACENT DUPLICATES FROM lt_whc.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'</font>
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">**     DDIC_STRUCTURE         = ' '</font>
+<font color ="#0000FF">*      retfield               = 'WHCODE'</font>
+<font color ="#0000FF">**     PVALKEY                = ' '</font>
+<font color ="#0000FF">*     DYNPPROG               = sy-cprog</font>
+<font color ="#0000FF">*     DYNPNR                 = sy-dynnr</font>
+<font color ="#0000FF">*     DYNPROFIELD            = pv_low_high</font>
+<font color ="#0000FF">**     STEPL                  = 0</font>
+<font color ="#0000FF">*     WINDOW_TITLE           = '창고코드 선택'</font>
+<font color ="#0000FF">**     VALUE                  = ' '</font>
+<font color ="#0000FF">*     VALUE_ORG              = 'S'</font>
+<font color ="#0000FF">**     MULTIPLE_CHOICE        = ' '</font>
+<font color ="#0000FF">**     DISPLAY                = ' '</font>
+<font color ="#0000FF">**     CALLBACK_PROGRAM       = ' '</font>
+<font color ="#0000FF">**     CALLBACK_FORM          = ' '</font>
+<font color ="#0000FF">**     CALLBACK_METHOD        =</font>
+<font color ="#0000FF">**     MARK_TAB               =</font>
+<font color ="#0000FF">**   IMPORTING</font>
+<font color ="#0000FF">**     USER_RESET             =</font>
+<font color ="#0000FF">*    tables</font>
+<font color ="#0000FF">*      value_tab              = lt_whc</font>
+<font color ="#0000FF">**     FIELD_TAB              =</font>
+<font color ="#0000FF">*     RETURN_TAB             = lt_return</font>
+<font color ="#0000FF">**     DYNPFLD_MAPPING        =</font>
+<font color ="#0000FF">*   EXCEPTIONS</font>
+<font color ="#0000FF">*     PARAMETER_ERROR        = 1</font>
+<font color ="#0000FF">*     NO_VALUES_FOUND        = 2</font>
+<font color ="#0000FF">*     OTHERS                 = 3</font>
+<font color ="#0000FF">*            .</font>
+<font color ="#0000FF">*  IF sy-subrc &lt;&gt; 0.</font>
+<font color ="#0000FF">** Implement suitable error handling here</font>
+<font color ="#0000FF">*  ENDIF.</font>
+
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

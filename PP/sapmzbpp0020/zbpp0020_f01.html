@@ -1,0 +1,897 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBPP0020_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBPP0020_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBPP0020_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBPP0020_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM GET_DATA .
+  CLEAR: RS_BOMID, RT_BOMID, ZTBMM1010, ZTBMM1011. " 변수 초기화
+
+<font color ="#0000FF">* 선택한 라디오버튼에 대한 값 세팅</font>
+  IF ZSBPP0070-ALL = 'X'.
+    GV_DEL = '%'.
+  ELSEIF ZSBPP0070-VALID = 'X'.
+    GV_DEL = ''.
+  ELSE.
+    GV_DEL = 'X'.
+  ENDIF.
+
+
+<font color ="#0000FF">* 검색 조건 데이터 반영 SELECT-OPTIONS 설정</font>
+  IF ZSBPP0070-BOMID IS NOT INITIAL.
+    RS_BOMID-SIGN = 'I'.
+    RS_BOMID-LOW = ZSBPP0070-BOMID.
+    IF BOMID2 IS NOT INITIAL.
+      RS_BOMID-OPTION = 'BT'.
+      RS_BOMID-HIGH = BOMID2.
+    ELSE.
+      RS_BOMID-OPTION = 'EQ'.
+    ENDIF.
+    APPEND RS_BOMID TO RT_BOMID.
+  ENDIF.
+
+<font color ="#0000FF">* 조건에 맞는 데이터 불러오기</font>
+  SELECT *
+    FROM ZTBPP0070 AS A JOIN ZTBMM1011 AS B
+    ON A~MATCODE = B~MATCODE
+    WHERE A~BOMID IN @RT_BOMID
+      AND A~DELFLG LIKE @GV_DEL
+    INTO CORRESPONDING FIELDS OF TABLE @GT_ZTBPP0070_PLUS.
+
+<font color ="#0000FF">* ITEM 테이블 CLEAR</font>
+  CLEAR: GT_INFO_ZTBPP0071.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CLEAR_ALL</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CLEAR_ALL .
+<font color ="#0000FF">*   사용 변수 초기화</font>
+  CLEAR: ZSBPP0070, GT_ZTBPP0070,GT_INFO_ZTBPP0071, BOMID2, ZTBMM1010, ZTBMM1011, GT_ZTBPP0070_PLUS.
+  ZSBPP0070-VALID = 'X'.
+
+<font color ="#0000FF">*   ALV REFRESH</font>
+  CALL METHOD GO_ALV1-&gt;REFRESH_TABLE_DISPLAY
+    EXCEPTIONS
+      FINISHED = 1
+      OTHERS   = 2.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT1 .
+
+<font color ="#0000FF">* HEADER 보여줄 ALV 레이아웃 설정</font>
+  GS_LAYO1-ZEBRA = 'X'.
+  GS_LAYO1-CWIDTH_OPT = 'A'.
+  GS_LAYO1-GRID_TITLE = 'BOM 리스트'.
+  GS_LAYO1-SEL_MODE = 'B'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT1 .
+
+<font color ="#0000FF">* HEADER 보여줄 ALV FIELD CATALOG 설정</font>
+
+<font color ="#0000FF">* FIELD CATALOG WORK AREA 변수 선언</font>
+  DATA : LS_FCAT TYPE LVC_S_FCAT.
+
+<font color ="#0000FF">* 텍스트로 대체하여 보여줄것 -&gt; 기존 BOMTYPE 필드 NO-OUT 처리</font>
+  LS_FCAT-FIELDNAME = 'BOMTYPE'.
+  LS_FCAT-NO_OUT = 'X'.
+  APPEND LS_FCAT TO GT_FCAT1.
+  CLEAR: LS_FCAT.
+
+  LS_FCAT-FIELDNAME = 'BOMTYPE_TXT'.
+  LS_FCAT-COLTEXT = 'BOM 타입'.
+  LS_FCAT-COL_POS = 6.
+  APPEND LS_FCAT TO GT_FCAT1.
+  CLEAR: LS_FCAT.
+
+  LS_FCAT-FIELDNAME = 'MATNAME'.
+  LS_FCAT-COLTEXT = '자재 이름'.
+  LS_FCAT-COL_POS = 3.
+  APPEND LS_FCAT TO GT_FCAT1.
+  CLEAR: LS_FCAT.
+
+<font color ="#0000FF">* 사원 정보 보여줄 필드 HOTSPOT 이벤트 처리되도록 설정</font>
+  LS_FCAT-FIELDNAME = 'STAMP_USER_L'.
+  LS_FCAT-HOTSPOT = 'X'.
+  APPEND LS_FCAT TO GT_FCAT1.
+  CLEAR:LS_FCAT.
+
+<font color ="#0000FF">* 사원 정보 보여줄 필드 HOTSPOT 이벤트 처리되도록 설정</font>
+  LS_FCAT-FIELDNAME = 'STAMP_USER_F'.
+  LS_FCAT-HOTSPOT = 'X'.
+  APPEND LS_FCAT TO GT_FCAT1.
+  CLEAR:LS_FCAT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_SORT1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_SORT1 .
+<font color ="#0000FF">* HEADER 보여줄 ALV SORT 설정</font>
+
+<font color ="#0000FF">* SORT WORK AREA 변수 선언</font>
+  DATA: LS_SORT TYPE LVC_S_SORT.
+
+<font color ="#0000FF">* BOMID 기준 내림차순 정렬</font>
+  LS_SORT-FIELDNAME = 'BOMID'.
+  LS_SORT-DOWN = 'X'.
+
+  APPEND LS_SORT TO GT_SORT1.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT2 .
+
+<font color ="#0000FF">* ITEM 보여줄 ALV 레이아웃 설정</font>
+  GS_LAYO2-ZEBRA = 'X'.
+  GS_LAYO2-CWIDTH_OPT = 'A'.
+  GS_LAYO2-GRID_TITLE = 'BOM 상세 리스트'.
+  GS_LAYO2-SEL_MODE = 'B'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT2 .
+<font color ="#0000FF">* ITEM 보여줄 ALV FIELD CATALOG 설정</font>
+
+<font color ="#0000FF">* FIELD CATALOG WORK AREA 변수 선언</font>
+  DATA: LS_FCAT TYPE LVC_S_FCAT.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'MATCODE'.
+  LS_FCAT-COLTEXT = '자재 번호'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'MATNAME'.
+  LS_FCAT-COLTEXT = '자재 이름'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BOMID'.
+  LS_FCAT-COLTEXT = 'BOM ID'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'MATQUAN'.
+  LS_FCAT-COLTEXT = '자재 수량'.
+  LS_FCAT-QFIELDNAME = 'UNITCODE'. " 수량 필드와 단위 필드 연결
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'UNITCODE'.
+  LS_FCAT-COLTEXT = '단위'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'DELFLG'.
+  LS_FCAT-COLTEXT = '삭제플래그'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'INFPRICE'.
+  LS_FCAT-COLTEXT = '단가'.
+  LS_FCAT-CFIELDNAME = 'CURRENCY'. " 단가 필드와 통화필드 연결
+  APPEND LS_FCAT TO GT_FCAT2.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'CURRENCY'.
+  LS_FCAT-COLTEXT = '화폐단위'.
+  APPEND LS_FCAT TO GT_FCAT2.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_SORT2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_SORT2 .
+<font color ="#0000FF">*  DATA: LS_SORT TYPE LVC_S_SORT.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  LS_SORT-FIELDNAME = 'BOMID'.</font>
+<font color ="#0000FF">*  LS_SORT-DOWN = 'X'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  APPEND LS_SORT TO GT_SORT2.</font>
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT3 .
+<font color ="#0000FF">* 생성 ALV 레이아웃 설정</font>
+
+  GS_LAYO3-ZEBRA = 'X'.
+  GS_LAYO3-CWIDTH_OPT = 'A'.
+  GS_LAYO3-GRID_TITLE = 'BOM 자재 데이터 입력'.
+  GS_LAYO3-SEL_MODE = 'B'.
+
+  GS_LAYO3-STYLEFNAME = 'IT_CELL'.
+<font color ="#0000FF">*  GS_LAYO3-EDIT = 'X'.</font>
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT3 .
+<font color ="#0000FF">* 생성 ALV FIELD CATALOG 설정</font>
+
+<font color ="#0000FF">* FIELD CATALOG WORK AREA 변수 선언</font>
+  DATA: LS_FCAT TYPE LVC_S_FCAT.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BOMID'.
+  LS_FCAT-NO_OUT = 'X'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'DELFLG'.
+  LS_FCAT-NO_OUT = 'X'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'MATNAME'.
+  LS_FCAT-COLTEXT = '자재 이름'.
+  LS_FCAT-COL_POS = '2'.
+  APPEND LS_FCAT TO GT_FCAT3.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_TOOLBAR_EXCLUDING3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_TOOLBAR_EXCLUDING3 .
+<font color ="#0000FF">* 불필요한 툴바 버튼 제거</font>
+  APPEND CL_GUI_ALV_GRID=&gt;MC_FC_EXCL_ALL TO GT_TOOLBAR3.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SAVE_BOM</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SAVE_BOM .
+<font color ="#0000FF">*  CONFIRM 팝업 결과 저장 변수</font>
+  DATA: LV_ANSWER TYPE C.
+
+<font color ="#0000FF">**********************************************************************</font>
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      TITLEBAR              = 'BOM MASTER 데이터 생성'
+      TEXT_QUESTION         = '데이터를 생성하시겠습니까?'
+      TEXT_BUTTON_1         = 'YES'
+      ICON_BUTTON_1         = 'ICON_OKAY'
+      TEXT_BUTTON_2         = 'NO'
+      ICON_BUTTON_2         = 'ICON_CANCEL'
+      DISPLAY_CANCEL_BUTTON = ''
+    IMPORTING
+      ANSWER                = LV_ANSWER
+    EXCEPTIONS
+      TEXT_NOT_FOUND        = 1
+      OTHERS                = 2.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+<font color ="#0000FF">*--------생성팝업 YES 누른 경우--------------------------------------*</font>
+  IF LV_ANSWER = 1.
+
+<font color ="#0000FF">* 현재 입력된 헤더 데이터와 같은 데이터가 있는지 확인</font>
+    SELECT COUNT( * )
+      FROM ZTBPP0070
+      WHERE MATCODE = @ZTBPP0070-MATCODE
+        AND BOMTYPE = @ZTBPP0070-BOMTYPE
+        AND DELFLG &lt;&gt; 'X'
+      INTO @DATA(LV_CNT).
+
+    SELECT *
+      FROM ZTBMM0070
+      INTO TABLE @GT_ZTBMM0070.
+
+    SELECT SINGLE MATTYPE
+      FROM ZTBMM1010 AS A
+      WHERE MATCODE = @ZTBPP0070-MATCODE
+      INTO @DATA(LV_TYPE).
+
+
+<font color ="#0000FF">*--------기존 데이터에 중복값이 없는 경우 = 생성가능 --------------------------------------*</font>
+    IF LV_CNT IS INITIAL.
+<font color ="#0000FF">*----해당 MATCODE에 해당하는 자재마스터와 BOMTYPE이 같아야 생성가능 --------------------------------------*</font>
+      IF LV_TYPE = ZTBPP0070-BOMTYPE.
+
+        DATA: LV_NR TYPE NUM7. "NUMBER RANGE 받을 변수
+        CLEAR: GT_INFO_ZTBPP0071.
+
+        CALL FUNCTION 'NUMBER_GET_NEXT'
+          EXPORTING
+            NR_RANGE_NR             = '01'
+            OBJECT                  = 'ZBBPP0070'
+<font color ="#0000FF">*           QUANTITY                = '1'</font>
+<font color ="#0000FF">*           SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*           TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*           IGNORE_BUFFER           = ' '</font>
+          IMPORTING
+            NUMBER                  = LV_NR
+<font color ="#0000FF">*           QUANTITY                =</font>
+<font color ="#0000FF">*           RETURNCODE              =</font>
+          EXCEPTIONS
+            INTERVAL_NOT_FOUND      = 1
+            NUMBER_RANGE_NOT_INTERN = 2
+            OBJECT_NOT_FOUND        = 3
+            QUANTITY_IS_0           = 4
+            QUANTITY_IS_NOT_1       = 5
+            INTERVAL_OVERFLOW       = 6
+            BUFFER_OVERFLOW         = 7
+            OTHERS                  = 8.
+        IF SY-SUBRC &lt;&gt; 0.
+        ENDIF.
+
+        ZTBPP0070-BOMID = 'BOM' && LV_NR. " NUMBER RANGE와 BOM 코드 고정 문자 합치기
+
+        SELECT SINGLE EMPID
+          FROM ZTBSD1030
+          INTO GV_EMPID
+          WHERE LOGID = SY-UNAME.
+
+<font color ="#0000FF">*        타임스탬프 필드들에 값 넣어주기</font>
+        ZTBPP0070-STAMP_DATE_F = SY-DATUM.
+        ZTBPP0070-STAMP_TIME_F = SY-UZEIT.
+        ZTBPP0070-STAMP_USER_F = GV_EMPID.
+        ZTBPP0070-STAMP_DATE_L = SY-DATUM.
+        ZTBPP0070-STAMP_TIME_L = SY-UZEIT.
+        ZTBPP0070-STAMP_USER_L = GV_EMPID.
+
+<font color ="#0000FF">*       AVL에 보여줄 ITAB에 APPEND를 위한 WORK AREA에 MOVE-CORRESPONDING</font>
+        MOVE-CORRESPONDING ZTBPP0070 TO GS_ZTBPP0070_PLUS.
+
+        SELECT SINGLE MATNAME
+          FROM ZTBMM1011 AS A
+          WHERE A~MATCODE = @ZTBPP0070-MATCODE
+          INTO @GS_ZTBPP0070_PLUS-MATNAME.
+
+<font color ="#0000FF">*       DB 테이블에 새로운 데이터 저장</font>
+        INSERT ZTBPP0070 FROM ZTBPP0070.
+
+        IF SY-SUBRC = 0.
+          IF ZSBPP0070-DELETED &lt;&gt; 'X'. "현재 보여주고 있는 화면이 삭제된 데이터를 보여주는 화면이 아니라면
+            APPEND GS_ZTBPP0070_PLUS TO GT_ZTBPP0070_PLUS. "ITAB에 새로운 정보 APPEND
+          ENDIF.
+
+
+<font color ="#0000FF">*------------아이템 테이블 데이터 넣기--------------------------------------------------*</font>
+
+<font color ="#0000FF">*        미입력 데이터가 있는 경우 저장하지 않고 사용자가 수정할 수 있도록.</font>
+          SELECT A~MATCODE, A~MATQUAN, A~UNITCODE
+            FROM @GT_EDIT_ZTBPP0071 AS A
+          WHERE A~MATCODE IS INITIAL OR
+                A~MATQUAN IS INITIAL OR
+                A~UNITCODE IS INITIAL
+            INTO TABLE @DATA(LT_TABLE).
+
+          IF SY-SUBRC = 0.  " 비어있는 필드가 있음 -&gt; 사용자가 수정할 수 있도록 팝업만 끔
+            MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '304'. " 비어있는 데이터가 있다는 메세지
+
+          ELSE. " 비어있는 필드가 없으므로 저장 진행
+            LOOP AT GT_EDIT_ZTBPP0071 INTO GS_EDIT_ZTBPP0071. "입력받은 ITAB 데이터 읽어오기
+              CLEAR: GS_ZTBPP0071.
+
+              IF GS_EDIT_ZTBPP0071-MATCODE IS NOT INITIAL. "자재코드 필드가 비어있지 않은 경우
+
+                GS_EDIT_ZTBPP0071-BOMID = ZTBPP0070-BOMID.
+                MOVE-CORRESPONDING GS_EDIT_ZTBPP0071 TO GS_ZTBPP0071.
+
+                INSERT ZTBPP0071 FROM GS_ZTBPP0071.
+
+                IF ZSBPP0070-DELETED &lt;&gt; 'X'.
+                  MOVE-CORRESPONDING GS_EDIT_ZTBPP0071 TO GS_INFO_ZTBPP0071.
+
+                  READ TABLE GT_ZTBMM0070 INTO GS_ZTBMM0070 WITH KEY MATCODE = GS_EDIT_ZTBPP0071-MATCODE.
+                  GS_INFO_ZTBPP0071-INFPRICE = GS_ZTBMM0070-INFPRICE / GS_ZTBMM0070-INFQUANT.
+                  GS_INFO_ZTBPP0071-CURRENCY = GS_ZTBMM0070-CURRENCY.
+                  APPEND GS_INFO_ZTBPP0071 TO GT_INFO_ZTBPP0071.
+                ENDIF.
+
+
+              ENDIF.
+
+            ENDLOOP.
+
+<font color ="#0000FF">*--------------------------------------------------------------------*</font>
+            " 성공
+            MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '095' WITH '생성'. " 데이터 저장 성공 메세지
+            LEAVE TO SCREEN 0.
+          ENDIF.
+
+
+
+<font color ="#0000FF">*</font>
+        ELSE. " 헤더 DB테이블에 저장 실패한 경우
+          MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '094' WITH '생성'. " 데이터 저장 실패 메세지
+          LEAVE TO SCREEN 0.
+        ENDIF.
+
+
+      ELSE. " MATCODE의 MATTYPE과 입력한 BOM TYPE이 같지 않은 경우
+
+        MESSAGE ID 'ZCOMMON_MSG' TYPE 'I' NUMBER '308' DISPLAY LIKE 'E' WITH 'BOM' 'BOM'.
+      ENDIF.
+
+<font color ="#0000FF">*--------기존 데이터에 중복값이 있는 경우 = 생성 불가능 --------------------------------------*</font>
+    ELSE.
+      MESSAGE ID 'ZCOMMON_MSG' TYPE 'I' NUMBER '017' DISPLAY LIKE 'E'.
+      LEAVE TO SCREEN 0.
+
+
+    ENDIF.
+
+
+
+
+  ENDIF.
+
+
+
+  CLEAR: GT_EDIT_ZTBPP0071. " 변수 초기화
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DEL_BOM</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM DEL_BOM .
+
+<font color ="#0000FF">*------선택한 ROW 정보 가져오기-----------------------------------------------------*</font>
+
+<font color ="#0000FF">*  선택한 ROW 정보 가져오기 -&gt; 선택한 ROW가 몇 번째 ROW인지 인터널 테이블에 저장해줌</font>
+  CALL METHOD GO_ALV1-&gt;GET_SELECTED_ROWS
+    IMPORTING
+      ET_INDEX_ROWS = ET_INDEX_ROW.            " Indexes of Selected Rows
+
+<font color ="#0000FF">*   값을 받아온 인터널 테이블이 초기 값을 가지고 있다면</font>
+<font color ="#0000FF">*   (= ROW를 선택하지 않았다는 것) -&gt; 메세지 출력</font>
+  IF ET_INDEX_ROW IS INITIAL.
+    MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '008' DISPLAY LIKE 'E'.
+
+<font color ="#0000FF">*   값을 받아온 인터널 테이블이 초기 값이 아니라면</font>
+<font color ="#0000FF">*   (= ROW를 선택했으면)</font>
+
+  ELSE.
+<font color ="#0000FF">*    값을 받아온 인터널 테이블에서 숫자만 가져옴!!</font>
+    READ TABLE ET_INDEX_ROW INTO ES_INDEX_ROW INDEX 1.
+<font color ="#0000FF">*   (ES_INDEX_ROW의 INDEX 필드에 몇 번째 ROW인지에 대한 숫자가 적혀있음)</font>
+    SEL_IDX = ES_INDEX_ROW-INDEX.
+
+<font color ="#0000FF">*    ALV로 보여주는 인터널 테이블에서 해당 ROW의 정보를 스트럭쳐로 가져옴</font>
+    READ TABLE GT_ZTBPP0070_PLUS INTO GS_ZTBPP0070_PLUS INDEX SEL_IDX.
+    MOVE-CORRESPONDING GS_ZTBPP0070_PLUS TO GS_ZTBPP0070.
+
+<font color ="#0000FF">*    선택한 ROW가 이미 삭제된 데이터인 경우 -&gt; 이미 삭제된 데이터라고 메세지 출력</font>
+    IF GS_ZTBPP0070-DELFLG = 'X'.
+      MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '014' DISPLAY LIKE 'E'.
+
+<font color ="#0000FF">*-------삭제 처리 진행-----------------------------------------------------*</font>
+
+<font color ="#0000FF">*    선택한 ROW가 이미 VALID 데이터인 경우</font>
+    ELSE.
+<font color ="#0000FF">*  삭제 컨펌 팝업 띄우기 -&gt; LV_ANSWER에 YES를 선택했는지 NO를 선택했는지에 대한 값이 저장됨</font>
+      CALL FUNCTION 'POPUP_TO_CONFIRM'
+        EXPORTING
+          TITLEBAR              = 'BOM MASTER 데이터 삭제'
+          TEXT_QUESTION         = '데이터를 삭제하시겠습니까?'
+          TEXT_BUTTON_1         = 'YES'
+          ICON_BUTTON_1         = 'ICON_OKAY'
+          TEXT_BUTTON_2         = 'NO'
+          ICON_BUTTON_2         = 'ICON_CANCEL'
+          DISPLAY_CANCEL_BUTTON = ''
+        IMPORTING
+          ANSWER                = GV_ANSWER
+        EXCEPTIONS
+          TEXT_NOT_FOUND        = 1
+          OTHERS                = 2.
+      IF SY-SUBRC &lt;&gt; 0.
+      ENDIF.
+
+<font color ="#0000FF">*  YES 선택한 경우</font>
+      IF GV_ANSWER = 1.
+
+<font color ="#0000FF">*        타임스탬프 최종수정필드 업데이트</font>
+        SELECT SINGLE EMPID
+          FROM ZTBSD1030
+          INTO GV_EMPID
+          WHERE LOGID = SY-UNAME.
+
+        GS_ZTBPP0070-DELFLG = 'X'.                  " DELFLG 값을 X로 바꿔줌
+        GS_ZTBPP0070-STAMP_DATE_L = SY-DATUM.
+        GS_ZTBPP0070-STAMP_TIME_L = SY-UZEIT.
+        GS_ZTBPP0070-STAMP_USER_L = GV_EMPID.
+
+<font color ="#0000FF">*         BOM HEADER DB 테이블 MODIFY</font>
+        UPDATE ZTBPP0070 FROM GS_ZTBPP0070.
+        IF SY-SUBRC = 0.
+<font color ="#0000FF">*         BOM HEADER 인터널 테이블 MODIFY</font>
+          MOVE-CORRESPONDING GS_ZTBPP0070 TO GS_ZTBPP0070_PLUS.
+
+          SELECT SINGLE MATNAME
+            FROM ZTBMM1011 AS A
+            WHERE A~MATCODE = @GS_ZTBPP0070-MATCODE
+            INTO @GS_ZTBPP0070_PLUS-MATNAME.
+
+          MODIFY GT_ZTBPP0070_PLUS FROM GS_ZTBPP0070_PLUS INDEX SEL_IDX.
+
+<font color ="#0000FF">*          BOM ITEM DB 테이블 UPDATE</font>
+          UPDATE ZTBPP0071 SET DELFLG = 'X' WHERE BOMID = GS_ZTBPP0070-BOMID.
+          IF SY-SUBRC = 0.
+<font color ="#0000FF">*          BOM ITEM 인터널 테이블 UPDATE</font>
+            LOOP AT GT_INFO_ZTBPP0071 INTO GS_INFO_ZTBPP0071 WHERE BOMID = GS_ZTBPP0070-BOMID.
+              GS_INFO_ZTBPP0071-DELFLG = 'X'.
+              MODIFY GT_INFO_ZTBPP0071 FROM GS_INFO_ZTBPP0071.
+            ENDLOOP.
+          ENDIF.
+<font color ="#0000FF">*          데이터 삭제 성공 메세지</font>
+          MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '095' WITH '삭제'.
+        ELSE.
+<font color ="#0000FF">*          데이터 삭제 실패 메세지</font>
+          MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '094' WITH '삭제'.
+        ENDIF.
+
+      ELSE." 삭제 취소
+
+        MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '043' DISPLAY LIKE 'W' WITH '삭제'.
+
+      ENDIF.
+
+
+    ENDIF.
+
+  ENDIF.
+
+  CLEAR: GS_ZTBPP0070.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form MODIF_BOM</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM MODIF_BOM .
+
+<font color ="#0000FF">*------선택한 ROW 정보 가져오기-----------------------------------------------------*</font>
+
+<font color ="#0000FF">*  선택한 ROW 정보 가져오기 -&gt; 선택한 ROW가 몇 번째 ROW인지 인터널 테이블에 저장해줌</font>
+  CALL METHOD GO_ALV1-&gt;GET_SELECTED_ROWS
+    IMPORTING
+      ET_INDEX_ROWS = ET_INDEX_ROW.            " Indexes of Selected Rows
+
+<font color ="#0000FF">*   값을 받아온 인터널 테이블이 초기 값을 가지고 있다면</font>
+<font color ="#0000FF">*   (= ROW를 선택하지 않았다는 것) -&gt; 메세지 출력</font>
+  IF ET_INDEX_ROW IS INITIAL.
+    MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '008' DISPLAY LIKE 'E'.
+
+<font color ="#0000FF">*   값을 받아온 인터널 테이블이 초기 값이 아니라면</font>
+<font color ="#0000FF">*   (= ROW를 선택했으면)</font>
+
+  ELSE.
+<font color ="#0000FF">*    값을 받아온 인터널 테이블에서 숫자만 가져옴!!</font>
+    READ TABLE ET_INDEX_ROW INTO ES_INDEX_ROW INDEX 1.
+<font color ="#0000FF">*   (ES_INDEX_ROW의 INDEX 필드에 몇 번째 ROW인지에 대한 숫자가 적혀있음)</font>
+    SEL_IDX = ES_INDEX_ROW-INDEX.
+
+<font color ="#0000FF">*    ALV로 보여주는 인터널 테이블에서 해당 ROW의 정보를 스트럭쳐로 가져옴</font>
+    READ TABLE GT_ZTBPP0070_PLUS INTO GS_ZTBPP0070_PLUS INDEX SEL_IDX.
+    MOVE-CORRESPONDING GS_ZTBPP0070_PLUS TO GS_ZTBPP0070.
+
+<font color ="#0000FF">*    선택한 ROW가 이미 삭제된 데이터인 경우 -&gt; 이미 삭제된 데이터라고 메세지 출력</font>
+    IF GS_ZTBPP0070-DELFLG = 'X'.
+      MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '014' DISPLAY LIKE 'E'.
+
+<font color ="#0000FF">*-------수정 처리 진행-----------------------------------------------------*</font>
+
+<font color ="#0000FF">*    선택한 ROW가 이미 VALID 데이터인 경우</font>
+    ELSE.
+
+      CALL SCREEN 300. " 수정 화면으로 이동
+
+    ENDIF.
+  ENDIF.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT4 .
+
+  GS_LAYO4-ZEBRA = 'X'.
+  GS_LAYO4-CWIDTH_OPT = 'A'.
+  GS_LAYO4-GRID_TITLE = 'BOM 자재 데이터 수정'.
+  GS_LAYO4-SEL_MODE = 'B'.
+
+  GS_LAYO4-STYLEFNAME = 'IT_CELL'.
+<font color ="#0000FF">*  GS_LAYO4-EDIT = 'X'.</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT4 .
+
+  DATA: LS_FCAT TYPE LVC_S_FCAT.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'BOMID'.
+  LS_FCAT-NO_OUT = 'X'.
+  APPEND LS_FCAT TO GT_FCAT4.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'DELFLG'.
+  LS_FCAT-NO_OUT = 'X'.
+  APPEND LS_FCAT TO GT_FCAT4.
+
+  CLEAR LS_FCAT.
+  LS_FCAT-FIELDNAME = 'MATNAME'.
+  LS_FCAT-COLTEXT = '자재 이름'.
+  LS_FCAT-COL_POS = '2'.
+  APPEND LS_FCAT TO GT_FCAT4.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_TOOLBAR_EXCLUDING4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_TOOLBAR_EXCLUDING4 .
+  APPEND CL_GUI_ALV_GRID=&gt;MC_FC_EXCL_ALL TO GT_TOOLBAR4.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SAVE_MODBOM</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SAVE_MODBOM .
+
+  DATA: LT_TABLE TYPE TABLE OF ZTBPP0071.
+
+<font color ="#0000FF">* 수정 CONFIRM 팝업</font>
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      TITLEBAR              = 'BOM MASTER 데이터 수정'
+      TEXT_QUESTION         = '데이터를 수정하시겠습니까?'
+      TEXT_BUTTON_1         = 'YES'
+      ICON_BUTTON_1         = 'ICON_OKAY'
+      TEXT_BUTTON_2         = 'NO'
+      ICON_BUTTON_2         = 'ICON_CANCEL'
+      DISPLAY_CANCEL_BUTTON = ''
+    IMPORTING
+      ANSWER                = GV_ANSWER
+    EXCEPTIONS
+      TEXT_NOT_FOUND        = 1
+      OTHERS                = 2.
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+<font color ="#0000FF">* CONFIRM 팝업 YES 선택</font>
+  IF GV_ANSWER = 1.
+
+<font color ="#0000FF">*        미입력 데이터가 있는 경우 저장하지 않고 사용자가 수정할 수 있도록.</font>
+    SELECT *
+      FROM @GT_EDIT_ZTBPP0071 AS A
+    WHERE A~MATCODE IS INITIAL OR
+          A~MATQUAN IS INITIAL OR
+          A~UNITCODE IS INITIAL
+      INTO CORRESPONDING FIELDS OF TABLE @LT_TABLE.
+
+    IF SY-SUBRC = 0.  " 비어있는 필드가 있음 -&gt; 사용자가 수정할 수 있도록 팝업만 끔
+      MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '304'. " 비어있는 데이터가 있다는 메세지
+
+    ELSE. " 비어있는 필드가 없으므로 저장 진행
+      LOOP AT GT_EDIT_ZTBPP0071 INTO GS_EDIT_ZTBPP0071.
+        IF GS_EDIT_ZTBPP0071-MATCODE IS NOT INITIAL.
+          MOVE-CORRESPONDING GS_EDIT_ZTBPP0071 TO GS_ZTBPP0071.
+          GS_ZTBPP0071-BOMID = GS_ZTBPP0070-BOMID.
+
+          INSERT ZTBPP0071 FROM GS_ZTBPP0071.
+          IF SY-SUBRC &lt;&gt; 0.
+            UPDATE ZTBPP0071 FROM GS_ZTBPP0071.
+
+          ENDIF.
+        ENDIF.
+
+
+
+      ENDLOOP.
+
+<font color ="#0000FF">*------------ALV에 반영-------------------------------------------------*</font>
+      SELECT A~MATCODE,
+            A~BOMID,
+            A~MATQUAN,
+            A~UNITCODE,
+            A~DELFLG,
+            DIVISION( B~INFPRICE,B~INFQUANT,2 ) AS INFPRICE,
+            B~CURRENCY
+      FROM ZTBPP0071 AS A JOIN ZTBMM0070 AS B
+        ON A~MATCODE = B~MATCODE
+      WHERE A~BOMID = @GS_ZTBPP0070-BOMID
+      INTO CORRESPONDING FIELDS OF TABLE @GT_INFO_ZTBPP0071.
+
+<font color ="#0000FF">* ITEM 보여주는 ALV REFRESH</font>
+      GO_ALV2-&gt;REFRESH_TABLE_DISPLAY(
+        EXCEPTIONS
+          FINISHED       = 1                " Display was Ended (by Export)
+          OTHERS         = 2
+      ).
+      IF SY-SUBRC &lt;&gt; 0.
+      ENDIF.
+
+
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+
+
+<font color ="#0000FF">*    헤더아이템 업데이트</font>
+      SELECT SINGLE EMPID
+        FROM ZTBSD1030
+        INTO ZTBPP0070-STAMP_USER_L
+        WHERE LOGID = SY-UNAME.
+
+      ZTBPP0070-STAMP_DATE_L = SY-DATUM. "수정 타임스탬프 시간 업데이트
+      ZTBPP0070-STAMP_TIME_L = SY-UZEIT. "수정 타임스탬프 사용자 업데이트
+
+      MOVE-CORRESPONDING ZTBPP0070 TO GS_ZTBPP0070.
+
+      UPDATE ZTBPP0070 FROM GS_ZTBPP0070. " HEADER DB TABLE 업데이트
+      IF  SY-SUBRC = 0.
+        MOVE-CORRESPONDING GS_ZTBPP0070 TO GS_ZTBPP0070_PLUS.
+
+        SELECT SINGLE MATNAME
+          FROM ZTBMM1011 AS A
+          WHERE A~MATCODE = @GS_ZTBPP0070-MATCODE
+          INTO @GS_ZTBPP0070_PLUS-MATNAME.
+
+        MODIFY GT_ZTBPP0070_PLUS FROM GS_ZTBPP0070_PLUS INDEX SEL_IDX. "ALV에 보여줄 ITAB 업데이트
+
+        MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '095' WITH '수정'.
+
+      ENDIF.
+
+
+
+      LEAVE TO SCREEN 0.
+    ENDIF.
+
+
+  ENDIF.
+
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form MESSAGE_CANCEL_M</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; OK_CODE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM MESSAGE_CANCEL_M .
+  CLEAR: GT_EDIT_ZTBPP0071.
+  MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '043' DISPLAY LIKE 'W' WITH '수정'. " CANCEL 메세지처리
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form MESSAGE_CANCEL_C</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM MESSAGE_CANCEL_C .
+
+  CLEAR: GT_EDIT_ZTBPP0071.
+  MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '043' DISPLAY LIKE 'W' WITH '생성'.
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

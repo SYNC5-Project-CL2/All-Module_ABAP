@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBBPP0050</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBBPP0050</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  [PP] 공정 관리 프로그램(배치)</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report ZBBPP0050</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT zbbpp0050.
+
+include <a href ="zbbpp0050top.html">zbbpp0050top</a>. "데이터 선언부
+include <a href ="zbbpp0050co1.html">zbbpp0050co1</a>. "클래스 "선언만 했음 쓰이지 않음
+include <a href ="zbbpp0050o01.html">zbbpp0050o01</a>. "PBO "선언만 했음 쓰이지 않음
+include <a href ="zbbpp0050i01.html">zbbpp0050i01</a>. "PAI "선언만 했음 쓰이지 않음
+include <a href ="zbbpp0050f01.html">zbbpp0050f01</a>. "SUB-ROUTINE
+
+
+
+START-OF-SELECTION.
+
+  DATA: lt_time TYPE TABLE OF ztbpp0100, "배치 설정을 DAILY로 할려고 만든 변수 , 시간으로 7, 6, 5, 4, 3이있음
+        ls_time LIKE LINE OF lt_time. " 7일 떄는 생산전, 6일 떄는 공정1 중, 5일 때는 공정2중, 4일 때는 생산완료, 3일 떄는 다시 7로 설정
+
+  SELECT *
+    FROM ztbpp0100 INTO CORRESPONDING FIELDS OF TABLE lt_time. " 시간을 불러오고 시간 테이블에서
+
+  READ TABLE lt_time INTO ls_time INDEX 1.
+
+  IF ls_time-time = 7.
+
+    PERFORM get_ztbpp0030. " 일주일에 한개의 생산오더가 있고 생산오더HEADER와 ITEM을 읽는데 생산전인 것을 읽는 섭루틴.
+
+  ELSEIF ls_time-time &lt; 7 AND ls_time-time &gt; 3. "7일 떄 생산 전인걸 읽어서 생산오더의 상태를 생산중으로 바꾸기에 6~4일 때는 생산중인 것을 일거야함 그거하는 섭루틴
+
+    PERFORM get_ztbpp0030pro1. "생산 중 일때는 생산 중인걸 불러와서
+
+  ELSEIF ls_time-time = 3. "3일 떄는 생산오더가 생산완료가 되기에 생산완료인거 읽어 오는 섭루틴
+
+    PERFORM get_ztbpp0030pro2. "생산완료 되었을 땐 생산완료인거 불러오기
+
+  ENDIF.
+
+  IF gt_ztbpp0030 IS INITIAL. "생산오더 테이블을 위에 있는 섭루틴들로 읽었기에 있는지 없는지 확인 가능
+
+    "진행할 생산오더가 없음 그러면 돌리지 않는다
+
+  ELSE. "진행할 생산 오더가 있을 때만 아래 로직으로
+
+    SELECT *
+      FROM ztbpp0100
+      INTO TABLE gt_time.
+
+    READ TABLE gt_time INTO gs_time INDEX 1. "생산할 생산오더가 있으면 TIME 테이블을 읽어서 값이 7~3 중 뭐인지 확인
+    IF sy-subrc = 0.
+
+      IF gs_time-time = 7. "생산전 이제 공정 1시작
+
+        PERFORM process1. "공정 1 중  "생산오더 테이블값을 업데이트 하고 자재 현황에서 차감하고 자재문서를 생성하고 전표도 생성
+
+        gs_time-time = gs_time-time - 1. " TIME 테이블에 값을 하나 빼고 UPDATE 이때는 (7 - 1) 이여서 6으로 저장 될 것 입니다
+        UPDATE ztbpp0100 SET time = gs_time-time.
+
+      ELSEIF gs_time-time = 6. "공정 1 완료
+
+        PERFORM get_ztbpp0030pro1. " 같은 생산오더 번호인데 생타가 생산전에서 생산중으로 바뀌었기에 같은 생산오더 번호를 계속 가져올려고
+
+        PERFORM process2. "공정 1완료시 반제품 완성  "생산오더 테이블값을 업데이트 하고 자재 현황에서 차감하고 자재문서를 생성하고 전표도 생성
+
+        gs_time-time = gs_time-time - 1.  " TIME 테이블에 값을 하나 빼고 UPDATE 이때는 (6 - 1) 이여서 5으로 저장 될 것 입니다
+        UPDATE ztbpp0100 SET time = gs_time-time.
+
+      ELSEIF gs_time-time = 5. "공정 2 시작
+
+        PERFORM get_ztbpp0030pro1.
+
+        PERFORM process3. "공정 2 중  "생산오더 테이블값을 업데이트 하고 자재 현황에서 차감하고 자재문서를 생성하고 전표도 생성
+
+        gs_time-time = gs_time-time - 1. " TIME 테이블에 값을 하나 빼고 UPDATE 이때는 (5 - 1) 이여서 5으로 저장 될 것 입니다
+        UPDATE ztbpp0100 SET time = gs_time-time.
+
+      ELSEIF gs_time-time = 4. "생산완료
+
+        PERFORM get_ztbpp0030pro1.
+
+        PERFORM process4. "생산완료  "생산오더 테이블값을 업데이트 하고 자재 현황에서 차감하고 자재문서를 생성하고 전표도 생성
+
+        gs_time-time = gs_time-time - 1. " TIME 테이블에 값을 하나 빼고 UPDATE 이때는 (4 - 1) 이여서 5으로 저장 될 것 입니다
+        UPDATE ztbpp0100 SET time = gs_time-time.
+
+      ELSEIF gs_time-time = 3.
+
+
+        gs_time-time = 7. "reset. 다음 생산오더를 위해 타임 테이블 값을 7로 설정.
+        UPDATE ztbpp0100 SET time = gs_time-time.
+
+
+      ENDIF.
+
+
+    ENDIF.
+
+
+  ENDIF.
+
+
+<font color ="#0000FF">*Selection texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* PA_BAT         배치 실행</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

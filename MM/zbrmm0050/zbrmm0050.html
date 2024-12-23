@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRMM0050</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRMM0050</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  [MM] 자재문서 조회 프로그램</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report ZBRMM0050</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&   [MM]</font>
+<font color ="#0000FF">*&   개발자        : CL2 kdt-b-25 하정훈</font>
+<font color ="#0000FF">*&   프로그램 개요   : 자재 문서 조회 프로그램</font>
+<font color ="#0000FF">*&   개발 시작일    :'2024.11.01'</font>
+<font color ="#0000FF">*&   개발 완료일    :'2024.11.20'</font>
+<font color ="#0000FF">*&   개발상태      : 개발 완료.</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT ZBRMM0050 MESSAGE-ID ZCOMMON_MSG. " 공통 message class 호출
+
+include <a href ="zbrmm0050_top.html">ZBRMM0050_TOP</a>. " 데이터 선언부
+include <a href ="zbrmm0050_c01.html">ZBRMM0050_C01</a>. " 클래스 선언부
+include <a href ="zbrmm0050_o01.html">ZBRMM0050_O01</a>. " PBO 선언부
+include <a href ="zbrmm0050_i01.html">ZBRMM0050_I01</a>. " PAI 선언부
+include <a href ="zbrmm0050_f01.html">ZBRMM0050_F01</a>. " Subroutine 선언부
+
+START-OF-SELECTION.
+  PERFORM SELECT_DATA. " 트리 노드 ITAB 세팅 서브루틴 실행
+  CALL SCREEN 100. " 100번 스크린 호출
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* T100 --&gt; 자재문서 조회 프로그램</font>
+<font color ="#0000FF">* T110 --&gt; 플랜트 상세정보</font>
+<font color ="#0000FF">* T120 --&gt; 구매오더 상세정보</font>
+<font color ="#0000FF">* T130 --&gt; 생산오더 상세정보</font>
+<font color ="#0000FF">* T140 --&gt; 판매오더 상세정보</font>
+<font color ="#0000FF">* T150 --&gt; 자재 상세정보</font>
+<font color ="#0000FF">* T200 --&gt; 자재문서 상세정보</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: ZCOMMON_MSG</font>
+<font color ="#0000FF">*201   Tree 객체 생성 중 오류가 발생했습니다.</font>
+<font color ="#0000FF">*202   ALV 객체 생성 중 오류가 발생했습니다.</font>
+<font color ="#0000FF">*203   Tree Node 생성 중 오류가 발생했습니다.</font>
+<font color ="#0000FF">*204   EXPAND 과정 중 오류가 발생했습니다.</font>
+<font color ="#0000FF">*205   ALV 생성에 실패했습니다.</font>
+<font color ="#0000FF">*224   자재문서 데이터를 선택해주세요.</font>
+<font color ="#0000FF">*225   플랜트 데이터를 선택해주세요.</font>
+<font color ="#0000FF">*226   구매오더 데이터를 선택해주세요.</font>
+<font color ="#0000FF">*227   생산오더 데이터를 선택해주세요.</font>
+<font color ="#0000FF">*228   판매오더 데이터를 선택해주세요.</font>
+<font color ="#0000FF">*229   자재번호를 선택해주세요.</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

@@ -1,0 +1,445 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRPP0080F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRPP0080F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRPP0080F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRPP0080F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout1 .
+
+  gs_layout1-grid_title = '생산라인 리스트'.
+  gs_layout1-cwidth_opt = 'A'.
+  gs_layout1-zebra = 'X'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat1 .
+
+  PERFORM fill_fcat1 USING:
+        '1' 'PLCODE' 'ZTBPP0050' '' '생산라인코드',
+        '2' 'PLNAME' 'ZTBPP0050' '' '생산라인명',
+        '3' 'MATCODE' 'ZTBPP0050' '' '자재코드',
+        '4' 'MATNAME' 'ZTBMM1011' '' '자재명',
+        '5' 'PLTEMP' 'ZTBPP0050' '' '온도',
+        '6' 'UNITCODE1' 'ZTBPP0050' '' '단위',
+        '7' 'PLHUM' 'ZTBPP0050' '' '습도',
+        '8' 'UNITCODE2' 'ZTBPP0050' '' '단위'.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat1  USING    pv_colpos TYPE lvc_s_fcat-col_pos
+                          pv_fieldname TYPE lvc_s_fcat-fieldname
+                          pv_reftable TYPE lvc_s_fcat-ref_table
+                          pv_reffield TYPE lvc_s_fcat-ref_field
+                          pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname = pv_fieldname.
+  ls_fcat-ref_table = pv_reftable.
+  ls_fcat-ref_field = pv_reffield.
+  ls_fcat-coltext = pv_coltext.
+
+  IF ls_fcat-fieldname = 'PLTEMP'.
+
+    ls_fcat-qfieldname = 'UNITCODE1'.
+
+  ENDIF.
+
+  IF ls_fcat-fieldname = 'PLHUM'.
+
+    ls_fcat-qfieldname = 'UNITCODE2'.
+
+  ENDIF.
+
+  APPEND ls_fcat TO gt_fcat1.
+
+ENDFORM.
+
+
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_image2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_image2 .
+
+  DATA: lt_query_string   TYPE TABLE OF w3query WITH HEADER LINE,
+        lt_html           TYPE TABLE OF w3html,
+        lt_mime           TYPE TABLE OF w3mime,
+        lv_return_code    TYPE w3param-ret_code,
+        lv_content_type   TYPE w3param-cont_type,
+        lv_content_length TYPE w3param-cont_len.
+
+  DATA: lv_size TYPE i,
+        lv_url  TYPE cndp_url.
+
+<font color ="#0000FF">*  IF gv_con is INITIAL.</font>
+  IF gv_pic IS NOT INITIAL.
+    gv_pic-&gt;clear_picture(
+         EXCEPTIONS
+           error  = 1                " Errors
+           OTHERS = 2
+       ).
+
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*       WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+  ENDIF.
+
+  CREATE OBJECT gv_con
+    EXPORTING
+      container_name              = 'AREA2'
+    EXCEPTIONS
+      cntl_error                  = 1
+      cntl_system_error           = 2
+      create_error                = 3
+      lifetime_error              = 4
+      lifetime_dynpro_dynpro_link = 5
+      OTHERS                      = 6.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*              WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+  ENDIF.
+
+  CREATE OBJECT gv_pic
+    EXPORTING
+      parent = gv_con
+    EXCEPTIONS
+      error  = 1
+      OTHERS = 2.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*              WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+  ENDIF.
+
+  CLEAR lt_query_string.
+  lt_query_string-name = '_OBJECT_ID'.
+  lt_query_string-value = 'ZTEST02'.
+  APPEND lt_query_string.
+
+  CALL FUNCTION 'WWW_GET_MIME_OBJECT'
+    TABLES
+      query_string        = lt_query_string
+      html                = lt_html
+      mime                = lt_mime
+    CHANGING
+      return_code         = lv_return_code
+      content_type        = lv_content_type
+      content_length      = lv_content_length
+    EXCEPTIONS
+      object_not_found    = 1
+      parameter_not_found = 2
+      OTHERS              = 3.
+  IF sy-subrc = 0.
+
+    lv_size = lv_content_length.
+
+    CALL FUNCTION 'DP_CREATE_URL'
+      EXPORTING
+        type     = 'IMAGE'
+        subtype  = cndp_sap_tab_unknown
+        size     = lv_size
+<font color ="#0000FF">*       DATE     =</font>
+<font color ="#0000FF">*       TIME     =</font>
+<font color ="#0000FF">*       DESCRIPTION                =</font>
+        lifetime = cndp_lifetime_transaction
+<font color ="#0000FF">*       CACHEABLE                  =</font>
+<font color ="#0000FF">*       SEND_DATA_AS_STRING        =</font>
+<font color ="#0000FF">*       FIELDS_FROM_APP            =</font>
+      TABLES
+        data     = lt_mime
+<font color ="#0000FF">*       FIELDS   =</font>
+<font color ="#0000FF">*       PROPERTIES                 =</font>
+<font color ="#0000FF">*       COLUMNS_TO_STRETCH         =</font>
+      CHANGING
+        url      = lv_url
+      EXCEPTIONS
+<font color ="#0000FF">*       DP_INVALID_PARAMETER       = 1</font>
+<font color ="#0000FF">*       DP_ERROR_PUT_TABLE         = 2</font>
+<font color ="#0000FF">*       DP_ERROR_GENERAL           = 3</font>
+        OTHERS   = 4.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+    ENDIF.
+
+<font color ="#0000FF">*    gv_pic-&gt;clear_picture(</font>
+<font color ="#0000FF">*      EXCEPTIONS</font>
+<font color ="#0000FF">*        error  = 1                " Errors</font>
+<font color ="#0000FF">*        others = 2</font>
+<font color ="#0000FF">*    ).</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    IF SY-SUBRC &lt;&gt; 0.</font>
+<font color ="#0000FF">**     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">**       WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+<font color ="#0000FF">*    ENDIF.</font>
+
+    CALL METHOD gv_pic-&gt;load_picture_from_url
+      EXPORTING
+        url    = lv_url
+<font color ="#0000FF">*      IMPORTING</font>
+<font color ="#0000FF">*       result =</font>
+      EXCEPTIONS
+        error  = 1
+        OTHERS = 2.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+    CALL METHOD gv_pic-&gt;set_display_mode
+      EXPORTING
+        display_mode = cl_gui_picture=&gt;display_mode_fit_center.
+
+    cl_gui_cfw=&gt;update_view( ).
+
+  ELSE.
+
+  ENDIF.
+
+<font color ="#0000FF">*  ENDIF.</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_OBJECT_IMG_0100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_object_img_0100 .
+  CREATE OBJECT go_pcontainer
+    EXPORTING
+      container_name = 'AREA2'.                " Name of the Screen CustCtrl Name to Link Container To
+
+  CREATE OBJECT go_pic
+    EXPORTING
+      parent = go_pcontainer.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_IMG_DISPLAY_0100</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_img_display_0100 .
+  query_string-name = '_OBJECT_ID'.
+  query_string-value = 'ZFIRST01'.
+  APPEND query_string.
+
+  CALL FUNCTION 'WWW_GET_MIME_OBJECT'
+    TABLES
+      query_string   = query_string                " Parameter table
+      html           = html                " HTML Page
+      mime           = mime
+    CHANGING
+      return_code    = return_code                " Return code for ITS
+      content_type   = content_type                " Type of contents
+      content_length = content_length.                " Length of contents (required for binary objects)
+  CHECK sy-subrc EQ 0.
+
+  size = content_length.
+
+  CALL FUNCTION 'DP_CREATE_URL'
+    EXPORTING
+      type     = 'IMAGE'                " MIME Type
+      subtype  = cndp_sap_tab_unknown               " MIME Subtype
+      size     = size
+      lifetime = cndp_lifetime_transaction
+    TABLES
+      data     = mime
+    CHANGING
+      url      = url.
+
+  CALL METHOD go_pic-&gt;load_picture_from_url
+    EXPORTING
+      url = url.              " URL
+
+  CALL METHOD go_pic-&gt;set_display_mode
+    EXPORTING
+      display_mode = cl_gui_picture=&gt;display_mode_fit_center.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form GET_PLANT_IMG</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_plant_img .
+
+  REFRESH query_string.
+
+  IF gv_ztest IS NOT INITIAL.
+    query_string-name = '_OBJECT_ID'.
+    query_string-value = gv_ztest.
+    APPEND query_string.
+
+    CALL FUNCTION 'WWW_GET_MIME_OBJECT'
+      TABLES
+        query_string   = query_string               " Parameter table
+        html           = html               " HTML Page
+        mime           = mime
+      CHANGING
+        return_code    = return_code               " Return code for ITS
+        content_type   = content_type                " Type of contents
+        content_length = content_length.               " Length of contents (required for binary objects)
+
+    CHECK sy-subrc = 0.
+
+    size = content_length.
+
+    CALL FUNCTION 'DP_CREATE_URL'
+      EXPORTING
+        type     = 'IMAGE'                 " MIME Type
+        subtype  = cndp_sap_tab_unknown              " MIME Subtype
+        size     = size
+        lifetime = cndp_lifetime_transaction
+      TABLES
+        data     = mime
+      CHANGING
+        url      = url.
+
+    CALL METHOD go_pic-&gt;load_picture_from_url
+      EXPORTING
+        url = url.                " URL
+<font color ="#0000FF">*</font>
+    CALL METHOD go_pic-&gt;set_display_mode
+      EXPORTING
+        display_mode = cl_gui_picture=&gt;display_mode_fit_center.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form save_data</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM save_data .
+
+  DATA: lv_answer TYPE char1.
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      titlebar              = '제조 환경 관리'
+<font color ="#0000FF">*     DIAGNOSE_OBJECT       = ' '</font>
+      text_question         = '변경한 내용을 저장하시겠습니까?'
+      text_button_1         = 'YES'(001)
+<font color ="#0000FF">*     ICON_BUTTON_1         = ' '</font>
+      text_button_2         = 'NO'(002)
+<font color ="#0000FF">*     ICON_BUTTON_2         = ' '</font>
+<font color ="#0000FF">*     DEFAULT_BUTTON        = '1'</font>
+      display_cancel_button = ''
+<font color ="#0000FF">*     USERDEFINED_F1_HELP   = ' '</font>
+<font color ="#0000FF">*     START_COLUMN          = 25</font>
+<font color ="#0000FF">*     START_ROW             = 6</font>
+<font color ="#0000FF">*     POPUP_TYPE            =</font>
+<font color ="#0000FF">*     IV_QUICKINFO_BUTTON_1 = ' '</font>
+<font color ="#0000FF">*     IV_QUICKINFO_BUTTON_2 = ' '</font>
+    IMPORTING
+      answer                = lv_answer
+<font color ="#0000FF">*   TABLES</font>
+<font color ="#0000FF">*     PARAMETER             =</font>
+    EXCEPTIONS
+      text_not_found        = 1
+      OTHERS                = 2.
+  IF lv_answer = 1.
+
+    UPDATE ztbpp0050 FROM ztbpp0050.
+
+    MOVE-CORRESPONDING ztbpp0050 to gs_alv1.
+
+    MODIFY gt_alv1 FROM gs_alv1 INDEX gs_row-index.
+
+    IF sy-subrc = 0.
+
+      go_alv1-&gt;refresh_table_display(
+<font color ="#0000FF">*            EXPORTING</font>
+<font color ="#0000FF">*              is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*              i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+        EXCEPTIONS
+          finished       = 1                " Display was Ended (by Export)
+          OTHERS         = 2
+      ).
+      IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*           MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*             WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+      ENDIF.
+
+      MESSAGE s095(zcommon_msg) with '수정'.
+
+    ENDIF.
+
+  ELSE.
+
+    MESSAGE s043(zcommon_msg) with '수정' DISPLAY LIKE 'W'.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module GET_SEL_ROW_DATA OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE get_sel_row_data OUTPUT.
+
+on CHANGE OF ZTBPP0050-PLTEMP or ZTBPP0050-plhum.
+
+else.
+
+  MOVE-CORRESPONDING gs_alv1 to ZTBPP0050.
+
+endon.
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

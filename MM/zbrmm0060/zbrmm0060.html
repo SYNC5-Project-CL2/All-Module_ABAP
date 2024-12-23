@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRMM0060</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRMM0060</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  [MM] 자재 입고 등록 프로그램</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report ZBRMM0060</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&  [MM]</font>
+<font color ="#0000FF">*&   개발자        : CL2 kdt-b-21 주현수</font>
+<font color ="#0000FF">*&   프로그램 개요   : 자재 입고 등록 프로그램</font>
+<font color ="#0000FF">*&   개발 시작일    : 2024.11.18</font>
+<font color ="#0000FF">*&   개발 완료일    : 2024.11.</font>
+<font color ="#0000FF">*&   개발상태      : 개발 완료 (수정사항 반영 전)</font>
+<font color ="#0000FF">*&   단위테스트 여부 : X</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT ZBRMM0060 MESSAGE-ID ZCOMMON_MSG.
+
+include <a href ="zbrmm0060_top.html">ZBRMM0060_TOP</a>.
+include <a href ="zbrmm0060_c01.html">ZBRMM0060_C01</a>.
+include <a href ="zbrmm0060_s01.html">ZBRMM0060_S01</a>.
+include <a href ="zbrmm0060_o01.html">ZBRMM0060_O01</a>.
+include <a href ="zbrmm0060_i01.html">ZBRMM0060_I01</a>.
+include <a href ="zbrmm0060_f01.html">ZBRMM0060_F01</a>.
+
+
+INITIALIZATION.
+  PERFORM SET_INIT.
+
+
+AT SELECTION-SCREEN ON VALUE-REQUEST FOR PA_BPCD.
+  PERFORM GET_BPCD.
+
+
+AT SELECTION-SCREEN OUTPUT.
+<font color ="#0000FF">*  PERFORM SET_OUTPUT.</font>
+
+
+AT SELECTION-SCREEN.
+
+
+START-OF-SELECTION.
+  PERFORM GET_BPDATA.
+  PERFORM GET_DATA.
+
+  CALL SCREEN 100.
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* T100 --&gt; [MM] 자재 입고 등록 프로그램</font>
+<font color ="#0000FF">* T150 --&gt; 구매자재 입고 등록</font>
+
+<font color ="#0000FF">*Text elements</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* T01 필수 조회 조건</font>
+<font color ="#0000FF">* T02 선택 조회 조건</font>
+
+
+<font color ="#0000FF">*Selection texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* PA_BPCD         거래처 코드</font>
+<font color ="#0000FF">* SO_DAT         입고 예정일</font>
+<font color ="#0000FF">* SO_EMID         구매오더 담당자</font>
+<font color ="#0000FF">* SO_PNUM         구매오더 번호</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: Hard coded</font>
+<font color ="#0000FF">*   구매오더 데이터 업데이트를 실패했습니다.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: ZCOMMON_MSG</font>
+<font color ="#0000FF">*205   ALV 생성에 실패했습니다.</font>
+<font color ="#0000FF">*210   조회 조건에 해당하는 데이터가 없습니다.</font>
+<font color ="#0000FF">*253   입고 등록할 데이터를 선택해주세요.</font>
+<font color ="#0000FF">*254   구매자재 입고 등록을 취소하였습니다.</font>
+<font color ="#0000FF">*255   이미 입고 완료된 내역입니다.</font>
+<font color ="#0000FF">*256   입고수량이 입력되지 않았습니다.</font>
+<font color ="#0000FF">*257   구매오더의 입고수량과 일치하지 않습니다.</font>
+<font color ="#0000FF">*258   구매자재 입고 정보 저장이 취소되었습니다.</font>
+<font color ="#0000FF">*259   구매자재 입고 정보 저장 및 입고전표 & 생성이 완료되었습니다.</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

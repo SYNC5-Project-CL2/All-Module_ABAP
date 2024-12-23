@@ -1,0 +1,352 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0010_O01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0010_O01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRFI0010_O01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRFI0010_O01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0100 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0100 OUTPUT.
+  SET PF-STATUS 'S100'.
+  SET TITLEBAR 'T100'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module CLEAR_OK_CODE OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE CLEAR_OK_CODE OUTPUT.
+  CLEAR: OK_CODE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module INIT_ALV OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE
+  INIT_ALV OUTPUT.
+  IF GO_CONT IS INITIAL.
+
+    CREATE OBJECT GO_CONT
+      EXPORTING
+        CONTAINER_NAME              = 'AREA1'
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        OTHERS                      = 6.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    CREATE OBJECT GO_ALV
+      EXPORTING
+        I_PARENT          = GO_CONT
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+<font color ="#0000FF">*    PERFORM EXCLUDE_TOOLBAR.</font>
+    PERFORM SET_LAYOUT.
+    PERFORM SET_FCAT.
+
+    DATA: EVENT_HANDLER TYPE REF TO LCL_EVENT_HANDLER.
+    CREATE OBJECT EVENT_HANDLER.
+    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_DOUBLE_CLICK FOR GO_ALV.
+
+    CALL METHOD GO_ALV-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+<font color ="#0000FF">*       I_BUFFER_ACTIVE               =</font>
+        I_BYPASSING_BUFFER            = 'X'
+<font color ="#0000FF">*       I_CONSISTENCY_CHECK           =</font>
+        I_STRUCTURE_NAME              = 'GS_40_DATA'
+<font color ="#0000FF">*       IS_VARIANT                    =</font>
+<font color ="#0000FF">*       I_SAVE                        =</font>
+<font color ="#0000FF">*       I_DEFAULT                     = 'X'</font>
+        IS_LAYOUT                     = GS_LAYOUT
+<font color ="#0000FF">*       IS_PRINT                      =</font>
+<font color ="#0000FF">*       IT_SPECIAL_GROUPS             =</font>
+        IT_TOOLBAR_EXCLUDING          = GT_TOOLBAR
+<font color ="#0000FF">*       IT_HYPERLINK                  =</font>
+<font color ="#0000FF">*       IT_ALV_GRAPHICS               =</font>
+<font color ="#0000FF">*       IT_EXCEPT_QINFO               =</font>
+<font color ="#0000FF">*       IR_SALV_ADAPTER               =</font>
+      CHANGING
+        IT_OUTTAB                     = GT_40_DATA
+        IT_FIELDCATALOG               = GT_FCAT
+<font color ="#0000FF">*       IT_SORT                       =</font>
+<font color ="#0000FF">*       IT_FILTER                     =</font>
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+  ELSE.
+    CALL METHOD GO_ALV-&gt;REFRESH_TABLE_DISPLAY
+      EXCEPTIONS
+        FINISHED = 1
+        OTHERS   = 2.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+  ENDIF.
+
+  IF GO_CONT3 IS INITIAL.
+
+    CREATE OBJECT GO_CONT3
+      EXPORTING
+        CONTAINER_NAME              = 'AREA3'
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        OTHERS                      = 6.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    CREATE OBJECT GO_ALV3
+      EXPORTING
+        I_PARENT          = GO_CONT3
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    PERFORM SET_LAYOUT3.
+    PERFORM SET_FCAT3.
+
+    GS_VARIANT3-REPORT = SY-CPROG.
+    GS_VARIANT3-VARIANT = '/LAYOUT_2'.
+
+<font color ="#0000FF">*    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_HOTSPOT_CLICK FOR GO_ALV3.</font>
+
+    CALL METHOD GO_ALV3-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+<font color ="#0000FF">*       I_BUFFER_ACTIVE               =</font>
+        I_BYPASSING_BUFFER            = 'X'
+<font color ="#0000FF">*       I_CONSISTENCY_CHECK           =</font>
+        I_STRUCTURE_NAME              = 'GS_ZTBFI0031'
+<font color ="#0000FF">*       IS_VARIANT                    =</font>
+<font color ="#0000FF">*       I_SAVE                        =</font>
+<font color ="#0000FF">*       I_DEFAULT                     = 'X'</font>
+        IS_LAYOUT                     = GS_LAYOUT3
+<font color ="#0000FF">*       IS_PRINT                      =</font>
+<font color ="#0000FF">*       IT_SPECIAL_GROUPS             =</font>
+        IT_TOOLBAR_EXCLUDING          = GT_TOOLBAR3
+<font color ="#0000FF">*       IT_HYPERLINK                  =</font>
+<font color ="#0000FF">*       IT_ALV_GRAPHICS               =</font>
+<font color ="#0000FF">*       IT_EXCEPT_QINFO               =</font>
+<font color ="#0000FF">*       IR_SALV_ADAPTER               =</font>
+      CHANGING
+        IT_OUTTAB                     = GT_ZTBFI0031
+        IT_FIELDCATALOG               = GT_FCAT3
+<font color ="#0000FF">*       IT_SORT                       =</font>
+<font color ="#0000FF">*       IT_FILTER                     =</font>
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+  ELSE.
+    CALL METHOD GO_ALV3-&gt;REFRESH_TABLE_DISPLAY
+      EXCEPTIONS
+        FINISHED = 1
+        OTHERS   = 2.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+  ENDIF.
+
+  IF GO_CONT2 IS INITIAL.
+
+    CREATE OBJECT GO_CONT2
+      EXPORTING
+        CONTAINER_NAME              = 'AREA2'
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        OTHERS                      = 6.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    CREATE OBJECT GO_ALV2
+      EXPORTING
+        I_PARENT          = GO_CONT2
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*                WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+<font color ="#0000FF">*    PERFORM EXCLUDE_TOOLBAR.</font>
+    PERFORM SET_LAYOUT2.
+    PERFORM SET_FCAT2.
+
+<font color ="#0000FF">*    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_HOTSPOT_CLICK FOR GO_ALV2.</font>
+
+    GS_VARIANT-REPORT = SY-CPROG.
+    GS_VARIANT-VARIANT = '/LAYOUT_1'.
+
+    CALL METHOD GO_ALV2-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+<font color ="#0000FF">*       I_BUFFER_ACTIVE               =</font>
+        I_BYPASSING_BUFFER            = 'X'
+<font color ="#0000FF">*       I_CONSISTENCY_CHECK           =</font>
+        I_STRUCTURE_NAME              = 'GS_ZTBFI0031'
+        IS_VARIANT                    = GS_VARIANT
+        I_SAVE                        = 'A'
+<font color ="#0000FF">*       I_DEFAULT                     = 'X'</font>
+        IS_LAYOUT                     = GS_LAYOUT2
+<font color ="#0000FF">*       IS_PRINT                      =</font>
+<font color ="#0000FF">*       IT_SPECIAL_GROUPS             =</font>
+        IT_TOOLBAR_EXCLUDING          = GT_TOOLBAR2
+<font color ="#0000FF">*       IT_HYPERLINK                  =</font>
+<font color ="#0000FF">*       IT_ALV_GRAPHICS               =</font>
+<font color ="#0000FF">*       IT_EXCEPT_QINFO               =</font>
+<font color ="#0000FF">*       IR_SALV_ADAPTER               =</font>
+      CHANGING
+        IT_OUTTAB                     = GT_ZTBFI0031
+        IT_FIELDCATALOG               = GT_FCAT2
+<font color ="#0000FF">*       IT_SORT                       =</font>
+<font color ="#0000FF">*       IT_FILTER                     =</font>
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+
+  ELSE.
+    CALL METHOD GO_ALV2-&gt;REFRESH_TABLE_DISPLAY
+      EXCEPTIONS
+        FINISHED = 1
+        OTHERS   = 2.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*     Implement suitable error handling here</font>
+    ENDIF.
+  ENDIF.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module GET_PB_DATA OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE GET_PB_DATA OUTPUT.
+
+<font color ="#0000FF">*  DATA: LV_WRBTR TYPE ZTBFI0031-WRBTR.</font>
+  DATA: LT_BP TYPE RANGE OF ZTBSD1050-BPCODE,
+        LS_BP LIKE LINE OF LT_BP.
+
+  DATA: LT_BUDT TYPE RANGE OF ZTBFI0030-BLDAT,
+        LS_BUDT LIKE LINE OF LT_BUDT.
+
+  " 검색 조건 추가
+  IF SO_BPCO IS NOT INITIAL.
+    LS_BP-SIGN = 'I'.
+    LS_BP-OPTION = 'EQ'.
+    LS_BP-LOW = SO_BUDT.
+    APPEND LS_BP TO LT_BP.
+  ENDIF.
+
+  IF SO_BUDT IS NOT INITIAL.
+    LS_BUDT-SIGN = 'I'.
+    LS_BUDT-OPTION = 'EQ'.
+    LS_BUDT-LOW = SO_BUDT.
+    APPEND LS_BUDT TO LT_BUDT.
+  ENDIF.
+
+  "거래처별 정보
+  SELECT * INTO CORRESPONDING FIELDS OF TABLE @GT_40_DATA
+  FROM ZTBSD1050
+   AS A INNER JOIN ZTBSD1051 AS B
+  ON A~BPCODE = B~BPCODE AND A~BPTCODE = 'V'
+  INNER JOIN ZTBSD1040 AS C ON C~CTRYCODE = A~CTRYCODE
+  WHERE A~BPCODE IN @LT_BP.
+<font color ="#0000FF">*    INNER JOIN ZTBFI0031 AS D ON D~BPCODE = A~BPCODE.</font>
+
+  "반제 전표
+  LOOP AT GT_40_DATA INTO GS_40_DATA.
+    SELECT SINGLE D~BPCODE, SUM( D~WRBTR ) AS WRBTR
+      FROM ZTBFI0031 AS D INNER JOIN ZTBFI0030 AS E
+      ON D~BELNR = E~BELNR
+      WHERE D~BPCODE = @GS_40_DATA-BPCODE
+        AND E~BUDAT IN @LT_BUDT
+        AND D~ACODE = '20002' "외상매입금(20002)
+        AND D~AUGBL IS INITIAL "반제전표
+        AND D~AUGDT IS INITIAL "반제일
+      GROUP BY D~BPCODE
+      INTO CORRESPONDING FIELDS OF @GS_40_DATA.
+    MODIFY GT_40_DATA FROM GS_40_DATA.
+  ENDLOOP.
+
+<font color ="#0000FF">*  clear: GS_40_DATA. """"""""""""""""""""""""""</font>
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0120 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0120 OUTPUT.
+  SET PF-STATUS 'S120'.
+  SET TITLEBAR 'T120'.
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

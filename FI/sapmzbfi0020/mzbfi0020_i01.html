@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBFI0020_I01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBFI0020_I01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0020_I01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBFI0020_I01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0100  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0100 INPUT.
+  CASE OK_CODE.
+    WHEN 'BACK'.
+      LEAVE TO SCREEN 0.
+    WHEN 'EXIT'.
+      LEAVE PROGRAM.
+
+    WHEN 'SRC'. "조회 버튼.
+      PERFORM GET_DATA.
+
+    WHEN 'REFRESH'.
+      CLEAR: ZSBFI0020-BLART, ZSBFI0020-BLTXT, "조회 조건 초기화.
+             GT_ZTBFI0020. "ALV 초기화.
+      "라디오 버튼 초기화.
+      ZSBFI0020-ALL = ''.
+      ZSBFI0020-VALID = 'X'.  "기본값 : VALID.
+      ZSBFI0020-DELETED = ''.
+
+    WHEN 'CREATE'.
+      CALL SCREEN 110
+      STARTING AT 80 5.
+
+    WHEN 'UPDATE' OR 'DELETE'.
+      PERFORM GET_ROW.
+
+
+  ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0110  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0110 INPUT.
+  CASE OK_CODE.
+    WHEN 'CONTINUE'. "확인 버튼
+      PERFORM MATCH_TYPE. "전표유형 검증.
+      PERFORM SAVE_TYPE. "전표유형 생성.
+      LEAVE TO SCREEN 0.
+
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0120  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0120 INPUT.
+  CASE OK_CODE.
+    WHEN 'CONTINUE'.
+      PERFORM CHECK_TYPE. "입력값과 기존 전표유형명 중복 확인.
+      PERFORM UPDATE_TYPE.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  ALV_REFRESH  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE ALV_REFRESH INPUT.
+
+  GO_ALV-&gt;REFRESH_TABLE_DISPLAY(
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      IS_STABLE      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*      I_SOFT_REFRESH =                  " Without Sort, Filter, etc.</font>
+    EXCEPTIONS
+      FINISHED       = 1                " Display was Ended (by Export)
+      OTHERS         = 2
+  ).
+  IF SY-SUBRC &lt;&gt; 0.
+  ENDIF.
+
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE EXIT INPUT.
+  CASE OK_CODE.
+    WHEN 'CANCEL'.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0130  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0130 INPUT.
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

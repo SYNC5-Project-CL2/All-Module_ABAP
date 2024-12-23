@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>SAPMZBFI0030</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: SAPMZBFI0030</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  [FI] 전표 생성 프로그램</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module Pool      SAPMZBFI0030</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&  [FI]</font>
+<font color ="#0000FF">*&  개발자         : CL2 KDT-B-21 주현수</font>
+<font color ="#0000FF">*&  프로그램 개요    : 전표 생성 프로그램</font>
+<font color ="#0000FF">*&  개발 시작일     : 2024.10.31</font>
+<font color ="#0000FF">*&  개발 완료일     : 2024.11.07</font>
+<font color ="#0000FF">*&  개발상태       : 개발완료</font>
+<font color ="#0000FF">*&  단위테스트 여부  :</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+<font color ="#0000FF">*--선언</font>
+include <a href ="mzbfi0030_top.html">MZBFI0030_TOP</a>.  " Global Data
+include <a href ="mzbfi0030_c01.html">MZBFI0030_C01</a>.
+<font color ="#0000FF">*--구현</font>
+include <a href ="mzbfi0030_o01.html">MZBFI0030_O01</a>.  " PBO-Modules
+include <a href ="mzbfi0030_i01.html">MZBFI0030_I01</a>.  " PAI-Modules
+include <a href ="mzbfi0030_f01.html">MZBFI0030_F01</a>.  " FORM-Routines
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* T100 --&gt; [FI] 전표 생성 프로그램</font>
+<font color ="#0000FF">* T100 --&gt; [FI] 전표 생성 프로그램</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: Hard coded</font>
+<font color ="#0000FF">*   전표유형을 읽을 수 없습니다.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: ZCOMMON_MSG</font>
+<font color ="#0000FF">*008   행을 먼저 선택해주세요!</font>
+<font color ="#0000FF">*305   & 삭제를 취소하였습니다.</font>
+<font color ="#0000FF">*400   전기일자, 증빙일자의 연도는 회계연도와 일치해야 합니다.</font>
+<font color ="#0000FF">*401   전기일자, 증빙일자의 월은 현재 월과 일치해야 합니다.</font>
+<font color ="#0000FF">*402   증빙일자는 전기일자와 같거나 이전이어야 합니다.</font>
+<font color ="#0000FF">*403   증빙일자는 현재날짜 보다 미래일 수 없습니다.</font>
+<font color ="#0000FF">*405   전표유형 '&'는 BP코드 필수 입력입니다.</font>
+<font color ="#0000FF">*406   전표유형 '&'에 입력할 수 없는 BP코드입니다.</font>
+<font color ="#0000FF">*407   차변과 대변의 합계가 일치하지 않습니다.</font>
+<font color ="#0000FF">*408   전표 & 생성이 완료되었습니다.</font>
+<font color ="#0000FF">*409   전표 상세내역을 추가해주세요.</font>
+<font color ="#0000FF">*410   전표유형 '&'에 사용할 수 없는 계정과목입니다.</font>
+<font color ="#0000FF">*411   & : 사용할 수 없는 통화단위입니다.</font>
+<font color ="#0000FF">*412   전표 내역의 통화단위가 일치하지 않습니다.</font>
+<font color ="#0000FF">*413   전표유형 '&'는 BP코드를 입력할 수 없습니다.</font>
+<font color ="#0000FF">*414   평일 오전과 주말에는 당일 환율 계산이 불가합니다.</font>
+<font color ="#0000FF">*415   & : 존재하지 않는 BP입니다.</font>
+<font color ="#0000FF">*416   & : 존재하지 않는 전표유형입니다.</font>
+<font color ="#0000FF">*417   금액을 다시 입력해주세요.</font>
+<font color ="#0000FF">*418   항목 적요 미입력 시 전표 기본정보의 적요가 입력됩니다.</font>
+<font color ="#0000FF">*419   계정과목은 필수 입력입니다.</font>
+<font color ="#0000FF">*420   전표유형은 필수 입력입니다.</font>
+<font color ="#0000FF">*421   & : 존재하지 않는 계정과목입니다</font>
+<font color ="#0000FF">*422   차변/대변 키는 필수 입력입니다.</font>
+<font color ="#0000FF">*423   금액은 필수 입력입니다.</font>
+<font color ="#0000FF">*424   전표 HEADER 생성 실패</font>
+<font color ="#0000FF">*425   전표 ITEM 생성 실패</font>
+<font color ="#0000FF">*426   전표 생성 실패</font>
+<font color ="#0000FF">*427   전표 생성이 취소되었습니다.</font>
+<font color ="#0000FF">*428   전표 상세내역이 삭제되었습니다.</font>
+<font color ="#0000FF">*429   전표 생성이 초기화되었습니다.</font>
+<font color ="#0000FF">*430   전표 초기화가 취소되었습니다.</font>
+<font color ="#0000FF">*441   & : BP코드를 입력할 수 없는 전표유형입니다.</font>
+<font color ="#0000FF">*442   전표 생성 권한이 없는 사용자입니다.</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

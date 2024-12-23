@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRPP0051F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRPP0051F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRPP0051F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_alv</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_alv .
+
+  DATA: LS_ALV5 TYPE ztbmm0041,
+        LT_ALV5 LIKE TABLE OF LS_ALV5,
+        LS_ALV6 TYPE ZTBFI0030,
+        LT_ALV6 LIKE TABLE OF LS_ALV6,
+        LS_ALV7 TYPE ZTBFI0031,
+        LT_ALV7 LIKE TABLE OF LS_ALV7.
+
+  SELECT *
+    FROM ztbpp0030
+    INTO CORRESPONDING FIELDS OF TABLE gt_alv1
+    WHERE pordnum = PA_por.
+<font color ="#0000FF">*    WHERE pordnum IN so_por.</font>
+
+  READ TABLE gt_alv1 INTO gs_alv1 INDEX 1.
+  IF sy-subrc = 0.
+
+    SELECT *
+      FROM ztbpp0031
+      INTO CORRESPONDING FIELDS OF TABLE gt_alv2
+<font color ="#0000FF">*      WHERE pordnum IN so_por.</font>
+      WHERE pordnum = PA_por.
+
+  ENDIF.
+
+  READ TABLE gt_alv2 INTO gs_alv2 INDEX 1.
+
+  IF sy-subrc = 0.
+
+    SELECT *
+      FROM ztbmm0030
+      INTO CORRESPONDING FIELDS OF TABLE gt_alv3.
+
+    ENDIF.
+
+    SORT gt_alv3 by matcode ASCENDING.
+
+
+    SELECT *
+      FROM ztbmm0040
+      INTO CORRESPONDING FIELDS OF TABLE gt_alv4
+<font color ="#0000FF">*      WHERE pordnum IN so_por.</font>
+      WHERE pordnum = PA_por.
+
+      LOOP AT gt_alv4 INTO gs_alv4.
+
+        SELECT *
+          FROM ztbmm0041
+          INTO CORRESPONDING FIELDS OF TABLE LT_alv5
+          WHERE docnum = gs_alv4-docnum.
+
+          LOOP AT LT_ALV5 INTO LS_ALV5.
+
+            APPEND LS_ALV5 TO GT_ALV5.
+
+          ENDLOOP.
+
+        SELECT *
+          FROM ZTBFI0030
+          INTO CORRESPONDING FIELDS OF TABLE LT_ALV6
+          WHERE xblnr = GS_ALV4-docnum.
+
+        LOOP AT LT_ALV6 INTO LS_ALV6 .
+
+        APPEND LS_ALV6 TO GT_ALV6.
+
+        ENDLOOP.
+      ENDLOOP.
+
+      LOOP AT GT_ALV6 INTO GS_ALV6.
+
+        SELECT *
+          FROM ZTBFI0031
+          INTO CORRESPONDING FIELDS OF TABLE LT_alv7
+          WHERE belnr = GS_ALV6-belnr.
+
+        LOOP AT LT_ALV7 INTO LS_ALV7.
+
+        APPEND LS_ALV7 TO GT_ALV7.
+
+        ENDLOOP.
+
+      ENDLOOP.
+
+      go_alv1-&gt;refresh_table_display(
+        EXCEPTIONS
+          finished       = 1                " Display was Ended (by Export)
+          others         = 2
+      ).
+      IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*       MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+      ENDIF.
+      go_alv2-&gt;refresh_table_display(
+        EXCEPTIONS
+          finished       = 1                " Display was Ended (by Export)
+          others         = 2
+      ).
+      IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*       MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+      ENDIF.
+      go_alv3-&gt;refresh_table_display(
+        EXCEPTIONS
+          finished       = 1                " Display was Ended (by Export)
+          others         = 2
+      ).
+      IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*       MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+      ENDIF.
+      go_alv4-&gt;refresh_table_display(
+        EXCEPTIONS
+          finished       = 1                " Display was Ended (by Export)
+          others         = 2
+      ).
+      IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*       MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+      ENDIF.
+      go_alv5-&gt;refresh_table_display(
+        EXCEPTIONS
+          finished       = 1                " Display was Ended (by Export)
+          others         = 2
+      ).
+      IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*       MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+      ENDIF.
+      go_alv6-&gt;refresh_table_display(
+        EXCEPTIONS
+          finished       = 1                " Display was Ended (by Export)
+          others         = 2
+      ).
+      IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*       MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+      ENDIF.
+      go_alv7-&gt;refresh_table_display(
+        EXCEPTIONS
+          finished       = 1                " Display was Ended (by Export)
+          others         = 2
+      ).
+      IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*       MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+      ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout2001</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout2001 .
+
+  gs_layout2001-zebra = 'X'.
+  gs_layout2001-cwidth_opt = 'A'.
+  gs_layout2001-grid_title = '생산오더 진행 정보'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout2002</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout2002 .
+
+  gs_layout2002-zebra = 'X'.
+  gs_layout2002-cwidth_opt = 'A'.
+  gs_layout2002-grid_title = '생산오더 상세 정보'.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

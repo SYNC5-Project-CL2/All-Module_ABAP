@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRPP0060</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRPP0060</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  [PP] 검수 처리 프로그램</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report ZBRPP0060</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT ZBRPP0060.
+
+include <a href ="zbrpp0060top.html">ZBRPP0060top</a>.
+include <a href ="zbrpp0060c01.html">ZBRPP0060c01</a>.
+include <a href ="zbrpp0060o01.html">ZBRPP0060o01</a>.
+include <a href ="zbrpp0060i01.html">ZBRPP0060i01</a>.
+include <a href ="zbrpp0060f01.html">ZBRPP0060f01</a>.
+
+INITIALIZATION.
+
+at SELECTION-SCREEN on VALUE-REQUEST FOR so_pron-low.
+  PERFORM prodnum_f4 USING 'SO_PRON-LOW'.
+at SELECTION-SCREEN on VALUE-REQUEST FOR so_pron-high.
+  PERFORM prodnum_f4 USING 'SO_PRON-HIGH'.
+
+at SELECTION-SCREEN ON VALUE-REQUEST FOR pa_stdat.
+  PERFORM prstdat_f4.
+
+at SELECTION-SCREEN on VALUE-REQUEST FOR pa_endat.
+  PERFORM prendat_f4.
+
+
+<font color ="#0000FF">*at SELECTION-SCREEN on VALUE-REQUEST FOR so_whc-low.</font>
+<font color ="#0000FF">*  PERFORM WHCODE_f4 USING 'SO_WHC-LOW'.  "rs_pronsrch-low 드감</font>
+<font color ="#0000FF">*at SELECTION-SCREEN on VALUE-REQUEST FOR so_whc-high.</font>
+<font color ="#0000FF">*  PERFORM WHCODE_f4 USING 'SO_WHC-HIHG'.</font>
+
+at SELECTION-SCREEN on VALUE-REQUEST FOR so_matc-low.
+  PERFORM matcode_f4 USING 'SO_MATC-LOW'.
+at SELECTION-SCREEN on VALUE-REQUEST FOR so_matc-high.
+  PERFORM matcode_f4 USING 'SO_MATC-HIGH'.
+
+at SELECTION-SCREEN.
+
+IF pa_stdat is NOT INITIAL and pa_endat is NOT INITIAL. "시작일 만 있으면 이상
+
+  IF  pa_endat &lt; pa_stdat. " 날짜 앞서는지 체크
+
+    MESSAGE E300(zcommon_msg)." DISPLAY LIKE 'E'.
+
+  else.
+
+  ENDIF.
+
+else.
+
+ENDIF.
+
+  PERFORM get_data_for_alv1.
+
+  IF gt_alv1 is INITIAL. " 해당 검색 조건에 데이타 있는지 체크
+
+    MESSAGE E015(zcommon_msg).
+
+  else.
+
+  ENDIF.
+
+START-OF-SELECTION.
+
+call SCREEN 100.
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* T100 --&gt; [PP] 검수 처리 화면</font>
+
+<font color ="#0000FF">*Text elements</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* C01 생산시작일</font>
+<font color ="#0000FF">* C02 생산종료일</font>
+<font color ="#0000FF">* T01 필수 조회 조건</font>
+<font color ="#0000FF">* T02 선택 조회 조건</font>
+
+
+<font color ="#0000FF">*Selection texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* PA_ENDAT         생산종료일</font>
+<font color ="#0000FF">* PA_STDAT         생산시작일</font>
+<font color ="#0000FF">* SO_MATC         자재코드</font>
+<font color ="#0000FF">* SO_PRON         생산오더번호</font>
+<font color ="#0000FF">* SO_WHC         창고코드</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: ZCOMMON_MSG</font>
+<font color ="#0000FF">*008   행을 먼저 선택해주세요!</font>
+<font color ="#0000FF">*009   필수값을 모두 입력해주세요.</font>
+<font color ="#0000FF">*015   조회 조건에 일치하는 데이터가 없습니다.</font>
+<font color ="#0000FF">*017   기존 데이터와 중복되어 생성이 불가합니다.</font>
+<font color ="#0000FF">*096   &1(이)가 성공적으로 &2되었습니다.</font>
+<font color ="#0000FF">*300   생산종료일이 생산시작일보다 앞설 수 없습니다.</font>
+<font color ="#0000FF">*302   검수가 완료된 데이터입니다.</font>
+<font color ="#0000FF">*303   적정 범위 내의 &1를 입력해주세요.</font>
+<font color ="#0000FF">*322   검수 데이터 없음</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

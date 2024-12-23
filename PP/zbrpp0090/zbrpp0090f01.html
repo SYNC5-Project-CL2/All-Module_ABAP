@@ -1,0 +1,988 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRPP0090F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRPP0090F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRPP0090F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRPP0090F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout1 .
+
+  gs_layout1-zebra = 'X'.
+  gs_layout1-cwidth_opt = 'A'.
+  gs_layout1-grid_title = '판매 계획'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat1 .
+
+  PERFORM fill_fcat1 USING:
+        '1' 'SOPNUM' 'ZTBSD0010' '' '',
+        '2' 'CTRYCODE' 'ZTBSD0010' '' '',
+        '3' 'EMPID' 'ZTBSD0010' '' '',
+        '4' 'APPR' 'ZTBSD0010' '' '승인',
+        '5' 'STATUS' 'ZTBSD0010' '' '상태',
+        '6' 'SALESYEAR' 'ZTBSD0010' '' '',
+        '7' 'REJREASON' 'ZTBSD0010' '' '',
+        '8' 'SOPDATE' 'ZTBSD0010' '' '판매운영계획 생성일'.
+<font color ="#0000FF">*        '10' 'PLCRDAT' 'ZTBSD0010' '' ''.</font>
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat1  USING    pv_colpos TYPE lvc_s_fcat-col_pos
+                          pv_fieldname TYPE lvc_s_fcat-fieldname
+                          pv_reftable TYPE lvc_s_fcat-ref_table
+                          pv_reffield TYPE lvc_s_fcat-ref_field
+                          pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname =  pv_fieldname.
+  ls_fcat-ref_table =  pv_reftable.
+  ls_fcat-ref_field =  pv_reffield.
+  ls_fcat-coltext =  pv_coltext.
+
+  APPEND ls_fcat TO gt_fcat1.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout2 .
+
+  gs_layout2-zebra = 'X'.
+  gs_layout2-cwidth_opt = 'A'.
+  gs_layout2-grid_title = '판매 계획 상세 정보'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat2 .
+
+  PERFORM fill_fcat2 USING:
+        '1' 'SOPNUM' 'ZTBSD0011' '' '',
+        '2' 'CTRYCODE' 'ZTBSD0011' '' '',
+        '3' 'MATCODE' 'ZTBSD0011' '' '',
+        '4' 'SALESYR' 'ZTBSD0011' '' '',
+        '5' 'AMOUNTPRD' 'ZTBSD0011' '' '',
+        '6' 'UNITCODE' 'ZTBSD0011' '' '단위'.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat2  USING    pv_colpos TYPE lvc_s_fcat-col_pos
+                          pv_fieldname TYPE lvc_s_fcat-fieldname
+                          pv_reftable TYPE lvc_s_fcat-ref_table
+                          pv_reffield TYPE lvc_s_fcat-ref_field
+                          pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname =  pv_fieldname.
+  ls_fcat-ref_table =  pv_reftable.
+  ls_fcat-ref_field =  pv_reffield.
+  ls_fcat-coltext =  pv_coltext.
+
+  APPEND ls_fcat TO gt_fcat2.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout3 .
+
+  gs_layout3-zebra = 'X'.
+  gs_layout3-cwidth_opt = 'A'.
+  gs_layout3-grid_title = '생산 계획'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat3 .
+
+  PERFORM fill_fcat3 USING:
+        '1' 'SOPWNUM' 'ZTBPP0010' '' '생산계획번호',
+        '2' 'SALESDATE' 'ZTBPP0010' '' '예정생산일',
+        '3' 'WHCODE' 'ZTBPP0010' '' '',
+        '4' 'STATUS' 'ZTBPP0010' '' '',
+        '5' 'SALESYR' 'ZTBPP0010' '' ''.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat3  USING    pv_colpos TYPE lvc_s_fcat-col_pos
+                          pv_fieldname TYPE lvc_s_fcat-fieldname
+                          pv_reftable TYPE lvc_s_fcat-ref_table
+                          pv_reffield TYPE lvc_s_fcat-ref_field
+                          pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname =  pv_fieldname.
+  ls_fcat-ref_table =  pv_reftable.
+  ls_fcat-ref_field =  pv_reffield.
+  ls_fcat-coltext =  pv_coltext.
+
+  APPEND ls_fcat TO gt_fcat3.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout4 .
+
+  gs_layout4-zebra = 'X'.
+  gs_layout4-cwidth_opt = 'A'.
+  gs_layout4-grid_title = '생산 계획 상세 정보'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat4 .
+
+  PERFORM fill_fcat4 USING:
+       '1' 'SOPWNUM' 'ZTBPP0011' '' '생산계획번호',
+       '2' 'SALESDATE' 'ZTBPP0011' '' '예정생산일',
+       '3' 'MATCODE' 'ZTBPP0011' '' '',
+       '4' 'WEEK' 'ZTBPP0011' '' '',
+       '5' 'AMOUNTPRD' 'ZTBPP0011' '' '',
+       '6' 'UNITCODE' 'ZTBPP0011' '' '단위'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat4  USING   pv_colpos TYPE lvc_s_fcat-col_pos
+                          pv_fieldname TYPE lvc_s_fcat-fieldname
+                          pv_reftable TYPE lvc_s_fcat-ref_table
+                          pv_reffield TYPE lvc_s_fcat-ref_field
+                          pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname =  pv_fieldname.
+  ls_fcat-ref_table =  pv_reftable.
+  ls_fcat-ref_field =  pv_reffield.
+  ls_fcat-coltext =  pv_coltext.
+
+  APPEND ls_fcat TO gt_fcat4.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_data_for_alv1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_data_for_alv1 .
+
+  SELECT *
+    FROM ztbsd0010
+    INTO CORRESPONDING FIELDS OF TABLE gt_alv1
+    WHERE salesyear IN so_yr """""""""""""""""""""
+      AND appr = 2    """""""""""""""""""""""
+      AND status = 0. """""""""""""""""""
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form create_pro_plan</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM create_pro_plan .
+
+  DATA: lt_ztbsd0011 TYPE TABLE OF ztbsd0011,
+        ls_ztbsd0011 LIKE LINE OF lt_ztbsd0011,
+
+        lt_ztbpp0010 TYPE TABLE OF ztbpp0010,
+        ls_ztbpp0010 LIKE LINE OF lt_ztbpp0010,
+
+        lt_ztbpp0011 TYPE TABLE OF ztbpp0011,
+        ls_ztbpp0011 LIKE LINE OF lt_ztbpp0011.
+
+
+  DATA: lv_for_week_item TYPE kweek.
+
+  DATA: BEGIN OF ls_whc.
+  DATA: whcode TYPE char10,
+        END OF ls_whc.
+
+  DATA: lt_whc LIKE TABLE OF ls_whc.
+
+  DATA: lv_number TYPE char7.
+
+  DATA: lv_count_for_whc TYPE int1.
+
+  DATA: lv_answer TYPE C.
+
+<font color ="#0000FF">*  DATA: lv_year TYPE char4.</font>
+<font color ="#0000FF">*  lv_year = sy-datum+0(4) + 1.</font>
+
+  DATA: BEGIN OF ls_sum_mat.
+  DATA: mat19 TYPE dec16_3,
+        mat20 TYPE dec16_3,
+        mat21 TYPE dec16_3,
+        mat22 TYPE dec16_3,
+        mat23 TYPE dec16_3,
+        mat24 TYPE dec16_3,
+        mat25 TYPE dec16_3,
+        mat26 TYPE dec16_3,
+        mat27 TYPE dec16_3,
+        END OF ls_sum_mat.
+
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      titlebar              = '생성 확인 팝업'
+<font color ="#0000FF">*     DIAGNOSE_OBJECT       = ' '</font>
+      text_question         = '생산계획을 생성하시겠습니까?'
+      text_button_1         = 'YES'(001)
+<font color ="#0000FF">*     ICON_BUTTON_1         = ' '</font>
+      text_button_2         = 'NO'(002)
+<font color ="#0000FF">*     ICON_BUTTON_2         = ' '</font>
+<font color ="#0000FF">*     DEFAULT_BUTTON        = '1'</font>
+      display_cancel_button = ''
+<font color ="#0000FF">*     USERDEFINED_F1_HELP   = ' '</font>
+<font color ="#0000FF">*     START_COLUMN          = 25</font>
+<font color ="#0000FF">*     START_ROW             = 6</font>
+<font color ="#0000FF">*     POPUP_TYPE            =</font>
+<font color ="#0000FF">*     IV_QUICKINFO_BUTTON_1 = ' '</font>
+<font color ="#0000FF">*     IV_QUICKINFO_BUTTON_2 = ' '</font>
+    IMPORTING
+      answer                = lv_answer
+<font color ="#0000FF">* TABLES</font>
+<font color ="#0000FF">*     PARAMETER             =</font>
+    EXCEPTIONS
+      text_not_found        = 1
+      OTHERS                = 2.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+
+  IF lv_answer = 1.
+
+
+    READ TABLE gt_alv1 INTO gs_alv1 INDEX 1.
+
+<font color ="#0000FF">*******  IF gt_alv1 is INITIAL or gs_alv1 is INITIAL.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******      MESSAGE '생성할 생산계획 없음' TYPE 'I' DISPLAY LIKE 'E'.</font>
+<font color ="#0000FF">*******</font>
+<font color ="#0000FF">*******  elseIF gs_alv1-status = 0.</font>
+
+    SELECT whcode " 창고 코드 가져오기
+      FROM ztbmm1030
+      INTO CORRESPONDING FIELDS OF TABLE lt_whc
+      WHERE whtype = 'C'.
+
+    SORT lt_whc BY whcode ASCENDING.
+    DELETE ADJACENT DUPLICATES FROM lt_whc.
+
+    READ TABLE gt_alv1 INTO gs_alv1 INDEX 1. "올해 년도 대신에 alv에 띄운거 읽어 와서
+
+    SELECT *   "각 품목 별 합 구할려고
+      FROM ztbsd0011 AS a
+      INNER JOIN ztbsd0010 AS b
+      ON a~sopnum = b~sopnum
+      INTO CORRESPONDING FIELDS OF TABLE lt_ztbsd0011
+      WHERE salesyr = gs_alv1-salesyear.
+    " status가 4이고 올해 + 1 년거 가지고 생산꼐획 " 지금 데이터에 25년 상태가 불가
+
+
+    LOOP AT lt_ztbsd0011 INTO ls_ztbsd0011.
+
+      IF ls_ztbsd0011-matcode = 'MAT0000019'.
+
+        ls_sum_mat-mat19 += ls_ztbsd0011-amountprd * ( 105 / 100 ).
+
+      ELSEIF ls_ztbsd0011-matcode = 'MAT0000020'.
+
+        ls_sum_mat-mat20 += ls_ztbsd0011-amountprd * ( 105 / 100 ).
+
+      ELSEIF ls_ztbsd0011-matcode = 'MAT0000021'.
+
+        ls_sum_mat-mat21 += ls_ztbsd0011-amountprd * (  105 / 100  ).
+
+      ELSEIF ls_ztbsd0011-matcode = 'MAT0000022'.
+
+        ls_sum_mat-mat22 += ls_ztbsd0011-amountprd * ( 105 / 100  ).
+
+      ELSEIF ls_ztbsd0011-matcode = 'MAT0000023'.
+
+        ls_sum_mat-mat23 += ls_ztbsd0011-amountprd * ( 105 / 100  ).
+
+      ELSEIF ls_ztbsd0011-matcode = 'MAT0000024'.
+
+        ls_sum_mat-mat24 += ls_ztbsd0011-amountprd * (  105 / 100  ).
+
+      ELSEIF ls_ztbsd0011-matcode = 'MAT0000025'.
+
+        ls_sum_mat-mat25 += ls_ztbsd0011-amountprd * ( 105 / 100 ).
+
+      ELSEIF ls_ztbsd0011-matcode = 'MAT0000026'.
+
+        ls_sum_mat-mat26 += ls_ztbsd0011-amountprd * (  105 / 100  ).
+
+      ELSEIF ls_ztbsd0011-matcode = 'MAT0000027'.
+
+        ls_sum_mat-mat27 += ls_ztbsd0011-amountprd * (  105 / 100  ).
+
+      ENDIF.
+
+    ENDLOOP.
+
+
+    PERFORM get_date_week.
+
+
+    LOOP AT gt_date INTO gs_date.
+
+      CALL FUNCTION 'NUMBER_GET_NEXT'
+        EXPORTING
+          nr_range_nr             = '01'
+          object                  = 'ZBBPP0100'
+<font color ="#0000FF">*         QUANTITY                = '1'</font>
+<font color ="#0000FF">*         SUBOBJECT               = ' '</font>
+<font color ="#0000FF">*         TOYEAR                  = '0000'</font>
+<font color ="#0000FF">*         IGNORE_BUFFER           = ' '</font>
+        IMPORTING
+          number                  = lv_number
+<font color ="#0000FF">*         QUANTITY                =</font>
+<font color ="#0000FF">*         RETURNCODE              =</font>
+        EXCEPTIONS
+          interval_not_found      = 1
+          number_range_not_intern = 2
+          object_not_found        = 3
+          quantity_is_0           = 4
+          quantity_is_not_1       = 5
+          interval_overflow       = 6
+          buffer_overflow         = 7
+          OTHERS                  = 8.
+      IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+      ENDIF.
+
+      ls_ztbpp0010-sopwnum = 'PPL' && lv_number.
+      ls_ztbpp0010-salesyr = gs_alv1-salesyear ." sy-datum+0(4) + 1. "올해 에서 내년 꺼 salesyear
+      ls_ztbpp0010-status = 'X'.
+      ls_ztbpp0010-plcrdat = sy-datum. """"""""""""
+      lv_count_for_whc = sy-tabix MOD 3 .
+      IF lv_count_for_whc = 0. """""""""""
+        lv_count_for_whc = 3.
+      ENDIF.
+
+      READ TABLE lt_whc INTO ls_whc INDEX lv_count_for_whc. " 창고 코드 할당 랜덤 완제품 창고
+
+      IF sy-subrc = 0.
+
+        MOVE-CORRESPONDING ls_whc TO ls_ztbpp0010.
+
+      ENDIF.
+
+      MOVE-CORRESPONDING gs_date TO ls_ztbpp0010.
+
+      APPEND ls_ztbpp0010 TO lt_ztbpp0010.
+
+    ENDLOOP.
+
+    MOVE-CORRESPONDING lt_ztbpp0010 TO gt_alv3.
+
+    go_alv3-&gt;refresh_table_display(
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*      i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+      EXCEPTIONS
+        finished       = 1                " Display was Ended (by Export)
+        OTHERS         = 2
+    ).
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*     WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+<font color ="#0000FF">********************************************************************** 이제 부터 ITEM</font>
+<font color ="#0000FF">*lt_ztbsd0011에 36개의 data 지금 ls_sum_mat에는 각 품목별로 합산한 값 , lt_ztbpp0010에 52개 data</font>
+
+
+
+    LOOP AT lt_ztbpp0010 INTO ls_ztbpp0010 FROM 1 TO 17. " 푸비오 3, 5, 15
+
+<font color ="#0000FF">*    lv_count += 1. " loop count 셀려고</font>
+
+      CALL FUNCTION 'DATE_GET_WEEK'  " 1~17
+        EXPORTING
+          date         = ls_ztbpp0010-salesdate
+        IMPORTING
+          week         = lv_for_week_item
+        EXCEPTIONS
+          date_invalid = 1
+          OTHERS       = 2.
+      IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+      ENDIF.
+
+      ls_ztbpp0011-week = lv_for_week_item+4(2).
+
+      MOVE-CORRESPONDING ls_ztbpp0010 TO ls_ztbpp0011. "날짜, 주차, 번호
+      """"""""""""""""""""""""""""""""""""""""""""""""""""""" 아래 부터는 자재코드 별로
+
+      ls_sum_mat-mat19 -= 100000.
+
+      IF ls_sum_mat-mat19 &gt; 100000.
+
+        ls_ztbpp0011-amountprd = 100000.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000019'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSEIF ls_sum_mat-mat19 &gt; 0 AND ls_sum_mat-mat19 &lt; 100000.
+
+        ls_ztbpp0011-amountprd = ls_sum_mat-mat19.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000019'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSE.
+
+        ls_ztbpp0011-amountprd = 0.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000019'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ENDIF.
+
+      ls_sum_mat-mat20 -= 60000.
+
+      IF ls_sum_mat-mat20 &gt; 60000.
+
+        ls_ztbpp0011-amountprd = 60000.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000020'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSEIF ls_sum_mat-mat20 &gt; 0 AND ls_sum_mat-mat20 &lt; 60000.
+
+        ls_ztbpp0011-amountprd = ls_sum_mat-mat20.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000020'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSE.
+
+        ls_ztbpp0011-amountprd = 0.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000020'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ENDIF.
+
+      ls_sum_mat-mat21 -= 20000.
+
+      IF ls_sum_mat-mat21 &gt; 20000.
+
+        ls_ztbpp0011-amountprd = 20000.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000021'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSEIF ls_sum_mat-mat21 &gt; 0 AND ls_sum_mat-mat21 &lt; 20000.
+
+        ls_ztbpp0011-amountprd = ls_sum_mat-mat21.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000021'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSE.
+
+        ls_ztbpp0011-amountprd = 0.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000021'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ENDIF.
+
+<font color ="#0000FF">*    APPEND ls_ztbpp0011 TO lt_ztbpp0011.</font>
+
+    ENDLOOP.
+
+    LOOP AT lt_ztbpp0010 INTO ls_ztbpp0010 FROM 18 TO 34. " 푸비오 3, 5, 15
+
+<font color ="#0000FF">*    lv_count += 1. " loop count 셀려고</font>
+
+      CALL FUNCTION 'DATE_GET_WEEK'  " 1~17
+        EXPORTING
+          date         = ls_ztbpp0010-salesdate
+        IMPORTING
+          week         = lv_for_week_item
+        EXCEPTIONS
+          date_invalid = 1
+          OTHERS       = 2.
+      IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+      ENDIF.
+
+      ls_ztbpp0011-week = lv_for_week_item+4(2).
+
+      MOVE-CORRESPONDING ls_ztbpp0010 TO ls_ztbpp0011. "날짜, 주차, 번호
+      """"""""""""""""""""""""""""""""""""""""""""""""""""""" 아래 부터는 자재코드 별로
+
+      ls_sum_mat-mat22 -= 100000.
+
+      IF ls_sum_mat-mat22 &gt; 100000.
+
+        ls_ztbpp0011-amountprd = 100000.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000022'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSEIF ls_sum_mat-mat22 &gt; 0 AND ls_sum_mat-mat22 &lt; 100000.
+
+        ls_ztbpp0011-amountprd = ls_sum_mat-mat22.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000022'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSE.
+
+        ls_ztbpp0011-amountprd = 0.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000022'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ENDIF.
+
+      ls_sum_mat-mat23 -= 60000.
+
+      IF ls_sum_mat-mat23 &gt; 60000.
+
+        ls_ztbpp0011-amountprd = 60000.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000023'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSEIF ls_sum_mat-mat23 &gt; 0 AND ls_sum_mat-mat23 &lt; 60000.
+
+        ls_ztbpp0011-amountprd = ls_sum_mat-mat23.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000023'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSE.
+
+        ls_ztbpp0011-amountprd = 0.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000023'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ENDIF.
+
+      ls_sum_mat-mat24 -= 20000.
+
+      IF ls_sum_mat-mat24 &gt; 20000.
+
+        ls_ztbpp0011-amountprd = 20000.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000024'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSEIF ls_sum_mat-mat24 &gt; 0 AND ls_sum_mat-mat24 &lt; 20000.
+
+        ls_ztbpp0011-amountprd = ls_sum_mat-mat24.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000024'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSE.
+
+        ls_ztbpp0011-amountprd = 0.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000024'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ENDIF.
+
+<font color ="#0000FF">*    APPEND ls_ztbpp0011 TO lt_ztbpp0011.</font>
+
+    ENDLOOP.
+
+    LOOP AT lt_ztbpp0010 INTO ls_ztbpp0010 FROM 35 TO 52. " 푸비오 3, 5, 15
+
+<font color ="#0000FF">*    lv_count += 1. " loop count 셀려고</font>
+
+      CALL FUNCTION 'DATE_GET_WEEK'  " 1~17
+        EXPORTING
+          date         = ls_ztbpp0010-salesdate
+        IMPORTING
+          week         = lv_for_week_item
+        EXCEPTIONS
+          date_invalid = 1
+          OTHERS       = 2.
+      IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+      ENDIF.
+
+      ls_ztbpp0011-week = lv_for_week_item+4(2).
+
+      MOVE-CORRESPONDING ls_ztbpp0010 TO ls_ztbpp0011. "날짜, 주차, 번호
+      """"""""""""""""""""""""""""""""""""""""""""""""""""""" 아래 부터는 자재코드 별로
+
+      ls_sum_mat-mat25 -= 100000.
+
+      IF ls_sum_mat-mat25 &gt; 100000.
+
+        ls_ztbpp0011-amountprd = 100000.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000025'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSEIF ls_sum_mat-mat25 &gt; 0 AND ls_sum_mat-mat25 &lt; 100000.
+
+        ls_ztbpp0011-amountprd = ls_sum_mat-mat25.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000025'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSE.
+
+        ls_ztbpp0011-amountprd = 0.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000025'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ENDIF.
+
+      ls_sum_mat-mat26 -= 60000.
+
+      IF ls_sum_mat-mat26 &gt; 60000.
+
+        ls_ztbpp0011-amountprd = 60000.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000026'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSEIF ls_sum_mat-mat26 &gt; 0 AND ls_sum_mat-mat26 &lt; 60000.
+
+        ls_ztbpp0011-amountprd = ls_sum_mat-mat26.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000026'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSE.
+
+        ls_ztbpp0011-amountprd = 0.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000026'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ENDIF.
+
+      ls_sum_mat-mat27 -= 20000.
+
+      IF ls_sum_mat-mat27 &gt; 20000.
+
+        ls_ztbpp0011-amountprd = 20000.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000027'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSEIF ls_sum_mat-mat27 &gt; 0 AND ls_sum_mat-mat27 &lt; 20000.
+
+        ls_ztbpp0011-amountprd = ls_sum_mat-mat27.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000027'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ELSE.
+
+        ls_ztbpp0011-amountprd = 0.
+        ls_ztbpp0011-unitcode = 'EA'.
+        ls_ztbpp0011-matcode = 'MAT0000027'.
+        APPEND ls_ztbpp0011 TO lt_ztbpp0011.
+        CLEAR: ls_ztbpp0011-amountprd, ls_ztbpp0011-unitcode, ls_ztbpp0011-matcode.
+
+      ENDIF.
+
+<font color ="#0000FF">*    APPEND ls_ztbpp0011 TO lt_ztbpp0011.</font>
+
+    ENDLOOP.
+
+    MOVE-CORRESPONDING lt_ztbpp0011 TO gt_alv4.
+
+    go_alv4-&gt;refresh_table_display(
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*      i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+      EXCEPTIONS
+        finished       = 1                " Display was Ended (by Export)
+        OTHERS         = 2
+    ).
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*     WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+    INSERT ztbpp0010 FROM TABLE lt_ztbpp0010.
+    INSERT ztbpp0011 FROM TABLE lt_ztbpp0011.
+
+    IF sy-subrc = 0.
+
+      UPDATE ztbsd0010 SET status = 1 """""""""""""""""""""""""""''
+        WHERE salesyear = gs_alv1-salesyear.
+
+      LOOP AT gt_alv1 INTO gs_alv1.
+
+        gs_alv1-status = 1.
+
+        MODIFY gt_alv1 FROM gs_alv1.
+
+      ENDLOOP.
+
+      go_alv1-&gt;refresh_table_display(
+<font color ="#0000FF">*      EXPORTING</font>
+<font color ="#0000FF">*        is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*        i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+        EXCEPTIONS
+          finished       = 1                " Display was Ended (by Export)
+          OTHERS         = 2
+      ).
+      IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*       WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+      ENDIF.
+
+    ENDIF.
+
+    MESSAGE s320(zcommon_msg).
+
+
+<font color ="#0000FF">**********  elseif gs_alv1-status = 1 or gs_alv1-status = 2 or gs_alv1-status = 3 or gs_alv1-status = 4.</font>
+<font color ="#0000FF">**********</font>
+<font color ="#0000FF">**********    MESSAGE '이미 생성한 생산계획' TYPE 'I' DISPLAY LIKE 'E'.</font>
+<font color ="#0000FF">**********</font>
+<font color ="#0000FF">**********    SELECT *</font>
+<font color ="#0000FF">**********      from ZTBPP0010</font>
+<font color ="#0000FF">**********      INTO CORRESPONDING FIELDS OF TABLE gt_alv3.</font>
+<font color ="#0000FF">**********</font>
+<font color ="#0000FF">**********      go_alv3-&gt;refresh_table_display(</font>
+<font color ="#0000FF">***********        EXPORTING</font>
+<font color ="#0000FF">***********          is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">***********          i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+<font color ="#0000FF">**********        EXCEPTIONS</font>
+<font color ="#0000FF">**********          finished       = 1                " Display was Ended (by Export)</font>
+<font color ="#0000FF">**********          others         = 2</font>
+<font color ="#0000FF">**********      ).</font>
+<font color ="#0000FF">**********      IF SY-SUBRC &lt;&gt; 0.</font>
+<font color ="#0000FF">***********       MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">***********         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+<font color ="#0000FF">**********      ENDIF.</font>
+<font color ="#0000FF">**********</font>
+<font color ="#0000FF">**********    SELECT *</font>
+<font color ="#0000FF">**********      from ZTBpp0011</font>
+<font color ="#0000FF">**********      INTO CORRESPONDING FIELDS OF TABLE gt_alv4.</font>
+<font color ="#0000FF">**********</font>
+<font color ="#0000FF">**********      go_alv4-&gt;refresh_table_display(</font>
+<font color ="#0000FF">***********        EXPORTING</font>
+<font color ="#0000FF">***********          is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">***********          i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+<font color ="#0000FF">**********        EXCEPTIONS</font>
+<font color ="#0000FF">**********          finished       = 1                " Display was Ended (by Export)</font>
+<font color ="#0000FF">**********          others         = 2</font>
+<font color ="#0000FF">**********      ).</font>
+<font color ="#0000FF">**********      IF SY-SUBRC &lt;&gt; 0.</font>
+<font color ="#0000FF">***********       MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">***********         WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+<font color ="#0000FF">**********      ENDIF.</font>
+<font color ="#0000FF">**********</font>
+<font color ="#0000FF">***********    ELSEIF gt_alv1 is INITIAL.</font>
+<font color ="#0000FF">***********</font>
+<font color ="#0000FF">***********      MESSAGE '생성할 생산계획 없음' TYPE 'I' DISPLAY LIKE 'E'.</font>
+<font color ="#0000FF">**********</font>
+<font color ="#0000FF">**********  ENDIF.</font>
+  ELSE.
+
+    MESSAGE s321(zcommon_msg) DISPLAY LIKE 'E'.
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_date&week</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_date_week .
+
+  DATA: lv_for_week TYPE kweek.
+  DATA: lv_datum TYPE char4.
+
+  lv_datum = gs_alv1-salesyear - 1.
+
+  DO 52 TIMES.
+
+    IF sy-index &lt; 10.
+
+      lv_for_week = lv_datum && 0 && sy-index.
+
+    ELSE.
+
+      lv_for_week = lv_datum && sy-index.
+
+    ENDIF.
+
+    CALL FUNCTION 'WEEK_GET_FIRST_DAY'
+      EXPORTING
+        week         = lv_for_week
+      IMPORTING
+        date         = gs_date-salesdate
+      EXCEPTIONS
+        week_invalid = 1
+        OTHERS       = 2.
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+    ENDIF.
+
+    gs_date-week = sy-index.
+
+    APPEND gs_date TO gt_date.
+
+  ENDDO.
+
+<font color ="#0000FF">*  READ TABLE gt_date INTO gs_date INDEX 1.</font>
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

@@ -1,0 +1,599 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0030F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0030F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRFI0030F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRFI0030F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form dat_f4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM dat_f4  USING pv_dynfield TYPE help_info-dynprofld.
+
+  DATA: lt_dynfield TYPE TABLE OF dynpread,
+        ls_dynfield LIKE LINE OF lt_dynfield.
+
+  DATA: BEGIN OF ls_dat.
+  DATA: budat TYPE ztbfi0030-budat,
+        END OF ls_dat.
+
+  DATA: lt_budat LIKE TABLE OF ls_dat.
+
+  DATA: lv_gjahr TYPE char4.
+
+  DATA: lt_return TYPE TABLE OF ddshretval.
+
+  CALL FUNCTION 'DYNP_VALUES_READ'
+    EXPORTING
+      dyname               = sy-cprog
+      dynumb               = sy-dynnr
+      translate_to_upper   = 'X'
+      request              = 'A'
+<font color ="#0000FF">*     PERFORM_CONVERSION_EXITS             = ' '</font>
+<font color ="#0000FF">*     PERFORM_INPUT_CONVERSION             = ' '</font>
+<font color ="#0000FF">*     DETERMINE_LOOP_INDEX = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_CURRENT_SCREEN       = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_MAIN_SCREEN          = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_STACKED_SCREEN       = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_ON_SCR_STACKPOS         = ' '</font>
+<font color ="#0000FF">*     SEARCH_OWN_SUBSCREENS_FIRST          = ' '</font>
+<font color ="#0000FF">*     SEARCHPATH_OF_SUBSCREEN_AREAS        = ' '</font>
+    TABLES
+      dynpfields           = lt_dynfield
+    EXCEPTIONS
+      invalid_abapworkarea = 1
+      invalid_dynprofield  = 2
+      invalid_dynproname   = 3
+      invalid_dynpronummer = 4
+      invalid_request      = 5
+      no_fielddescription  = 6
+      invalid_parameter    = 7
+      undefind_error       = 8
+      double_conversion    = 9
+      stepl_not_found      = 10
+      OTHERS               = 11.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  READ TABLE lt_dynfield INTO ls_dynfield WITH KEY fieldname = 'PA_YR'.
+
+  IF sy-subrc = 0.
+
+    IF ls_dynfield IS NOT INITIAL.
+
+      lv_gjahr = ls_dynfield-fieldvalue.
+
+    ENDIF.
+
+  ENDIF.
+
+  IF lv_gjahr IS INITIAL.
+
+    SELECT budat
+      FROM ztbfi0030
+      INTO CORRESPONDING FIELDS OF TABLE lt_budat.
+
+  ELSE.
+
+    SELECT budat
+      FROM ztbfi0030
+      INTO CORRESPONDING FIELDS OF TABLE lt_budat
+      WHERE gjahr = lv_gjahr.
+
+  ENDIF.
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+      retfield        = 'BUDAT'
+      dynpprog        = sy-cprog
+      dynpnr          = sy-dynnr
+      dynprofield     = pv_dynfield
+      window_title    = '전기일 선택'
+      value_org       = 'S'
+    TABLES
+      value_tab       = lt_budat
+      return_tab      = lt_return
+    EXCEPTIONS
+      parameter_error = 1
+      no_values_found = 2
+      OTHERS          = 3.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form blart_f4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM blart_f4 .
+
+  DATA: lt_return TYPE TABLE OF ddshretval.
+
+  DATA: BEGIN OF ls_blart.
+  DATA: blart TYPE ztbfi0020-blart,
+        bltxt TYPE ztbfi0020-bltxt,
+        END OF ls_blart.
+
+  DATA: lt_blart LIKE TABLE OF ls_blart.
+
+  SELECT *
+    FROM ztbfi0020
+    INTO CORRESPONDING FIELDS OF TABLE lt_blart.
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+<font color ="#0000FF">*     DDIC_STRUCTURE  = ' '</font>
+      retfield        = 'BLART'
+<font color ="#0000FF">*     PVALKEY         = ' '</font>
+      dynpprog        = sy-cprog
+      dynpnr          = sy-dynnr
+      dynprofield     = 'PA_BELTY'
+<font color ="#0000FF">*     STEPL           = 0</font>
+      window_title    = '전표 유형 선택'
+<font color ="#0000FF">*     VALUE           = ' '</font>
+      value_org       = 'S'
+<font color ="#0000FF">*     MULTIPLE_CHOICE = ' '</font>
+<font color ="#0000FF">*     DISPLAY         = ' '</font>
+<font color ="#0000FF">*     CALLBACK_PROGRAM       = ' '</font>
+<font color ="#0000FF">*     CALLBACK_FORM   = ' '</font>
+<font color ="#0000FF">*     CALLBACK_METHOD =</font>
+<font color ="#0000FF">*     MARK_TAB        =</font>
+<font color ="#0000FF">*   IMPORTING</font>
+<font color ="#0000FF">*     USER_RESET      =</font>
+    TABLES
+      value_tab       = lt_blart
+<font color ="#0000FF">*     FIELD_TAB       =</font>
+      return_tab      = lt_return
+<font color ="#0000FF">*     DYNPFLD_MAPPING =</font>
+    EXCEPTIONS
+      parameter_error = 1
+      no_values_found = 2
+      OTHERS          = 3.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form show_nam</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM show_nam .
+
+  DATA: lt_dynfield TYPE TABLE OF dynpread,
+        ls_dynfield LIKE LINE OF lt_dynfield.
+
+  CALL FUNCTION 'DYNP_VALUES_READ'
+    EXPORTING
+      dyname               = sy-cprog
+      dynumb               = sy-dynnr
+      translate_to_upper   = 'X'
+      request              = 'A'
+<font color ="#0000FF">*     PERFORM_CONVERSION_EXITS             = ' '</font>
+<font color ="#0000FF">*     PERFORM_INPUT_CONVERSION             = ' '</font>
+<font color ="#0000FF">*     DETERMINE_LOOP_INDEX = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_CURRENT_SCREEN       = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_MAIN_SCREEN          = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_STACKED_SCREEN       = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_ON_SCR_STACKPOS         = ' '</font>
+<font color ="#0000FF">*     SEARCH_OWN_SUBSCREENS_FIRST          = ' '</font>
+<font color ="#0000FF">*     SEARCHPATH_OF_SUBSCREEN_AREAS        = ' '</font>
+    TABLES
+      dynpfields           = lt_dynfield
+    EXCEPTIONS
+      invalid_abapworkarea = 1
+      invalid_dynprofield  = 2
+      invalid_dynproname   = 3
+      invalid_dynpronummer = 4
+      invalid_request      = 5
+      no_fielddescription  = 6
+      invalid_parameter    = 7
+      undefind_error       = 8
+      double_conversion    = 9
+      stepl_not_found      = 10
+      OTHERS               = 11.
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  READ TABLE lt_dynfield INTO ls_dynfield WITH KEY fieldname = 'PA_BELTY'.
+
+  IF sy-subrc = 0.
+
+<font color ="#0000FF">*    pa_belna = ls_dynfield-fieldvalue.</font>
+
+  ENDIF.
+
+<font color ="#0000FF">*  LOOP AT SCREEN INTO data(wa).</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    IF wa-name = 'PA_BELNA'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      pa_belna = ls_dynfield-fieldvalue.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    MODIFY SCREEN FROM wa.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  endloop.</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form belnr_f4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM belnr_f4  USING pv_low_high TYPE help_info-dynprofld.
+
+  data: lt_dynfield TYPE TABLE of dynpread,
+        ls_dynfield like LINE OF lt_dynfield.
+
+  data: BEGIN OF ls_belnr.
+        data: belnr TYPE ztbfi0030-belnr,
+        end of ls_belnr.
+
+  data: lt_belnr LIKE TABLE OF ls_belnr.
+
+  data: lt_return TYPE TABLE of ddshretval.
+
+  data: lv_belty TYPE ztbfi0030-blart.
+
+  CALL FUNCTION 'DYNP_VALUES_READ'
+    EXPORTING
+      dyname                               = sy-cprog
+      dynumb                               = sy-dynnr
+     TRANSLATE_TO_UPPER                   = 'X'
+     REQUEST                              = 'A'
+<font color ="#0000FF">*     PERFORM_CONVERSION_EXITS             = ' '</font>
+<font color ="#0000FF">*     PERFORM_INPUT_CONVERSION             = ' '</font>
+<font color ="#0000FF">*     DETERMINE_LOOP_INDEX                 = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_CURRENT_SCREEN       = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_MAIN_SCREEN          = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_IN_STACKED_SCREEN       = ' '</font>
+<font color ="#0000FF">*     START_SEARCH_ON_SCR_STACKPOS         = ' '</font>
+<font color ="#0000FF">*     SEARCH_OWN_SUBSCREENS_FIRST          = ' '</font>
+<font color ="#0000FF">*     SEARCHPATH_OF_SUBSCREEN_AREAS        = ' '</font>
+    TABLES
+      dynpfields                           = lt_dynfield
+   EXCEPTIONS
+     INVALID_ABAPWORKAREA                 = 1
+     INVALID_DYNPROFIELD                  = 2
+     INVALID_DYNPRONAME                   = 3
+     INVALID_DYNPRONUMMER                 = 4
+     INVALID_REQUEST                      = 5
+     NO_FIELDDESCRIPTION                  = 6
+     INVALID_PARAMETER                    = 7
+     UNDEFIND_ERROR                       = 8
+     DOUBLE_CONVERSION                    = 9
+     STEPL_NOT_FOUND                      = 10
+     OTHERS                               = 11
+            .
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  READ TABLE lt_dynfield INTO ls_dynfield WITH key fieldname = 'PA_BELTY'.
+
+  IF sy-subrc = 0.
+
+    IF ls_dynfield is not INITIAL.
+
+      lv_belty = ls_dynfield-fieldvalue.
+
+    ENDIF.
+
+  ENDIF.
+
+  IF lv_belty is INITIAL.
+
+    SELECT belnr
+      FROM ztbfi0030
+      INTO CORRESPONDING FIELDS OF TABLE lt_belnr.
+
+  else.
+
+  SELECT belnr
+    FROM ztbfi0030
+    INTO CORRESPONDING FIELDS OF TABLE lt_belnr
+    WHERE blart = lv_belty.
+
+  ENDIF.
+
+  CALL FUNCTION 'F4IF_INT_TABLE_VALUE_REQUEST'
+    EXPORTING
+<font color ="#0000FF">*     DDIC_STRUCTURE         = ' '</font>
+      retfield     = 'BELNR'
+<font color ="#0000FF">*     PVALKEY      = ' '</font>
+      dynpprog     = sy-cprog
+      dynpnr       = sy-dynnr
+      dynprofield  = pv_low_high
+<font color ="#0000FF">*     STEPL        = 0</font>
+      window_title = '전표 번호 선택'
+<font color ="#0000FF">*     VALUE        = ' '</font>
+      value_org    = 'S'
+<font color ="#0000FF">*     MULTIPLE_CHOICE        = ' '</font>
+<font color ="#0000FF">*     DISPLAY      = ' '</font>
+<font color ="#0000FF">*     CALLBACK_PROGRAM       = ' '</font>
+<font color ="#0000FF">*     CALLBACK_FORM          = ' '</font>
+<font color ="#0000FF">*     CALLBACK_METHOD        =</font>
+<font color ="#0000FF">*     MARK_TAB     =</font>
+<font color ="#0000FF">*   IMPORTING</font>
+<font color ="#0000FF">*     USER_RESET   =</font>
+    TABLES
+      value_tab    = lt_belnr
+<font color ="#0000FF">*     FIELD_TAB    =</font>
+     RETURN_TAB   = lt_return
+<font color ="#0000FF">*     DYNPFLD_MAPPING        =</font>
+   EXCEPTIONS
+     PARAMETER_ERROR        = 1
+     NO_VALUES_FOUND        = 2
+     OTHERS       = 3
+    .
+  IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout1 .
+
+  gs_layout1-zebra = 'X'.
+  gs_layout1-cwidth_opt = 'A'.
+  gs_layout1-grid_title = '전표 조회'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat1 .
+
+  PERFORM fill_fcat1 USING:
+        '1' 'BELNR' 'ZTBFI0030' '' '',
+        '2' 'COMCODE' 'ZTBFI0030' '' '',
+        '3' 'GJAHR' 'ZTBFI0030' '' '',
+        '4' 'BLART' 'ZTBFI0030' '' '',
+        '5' 'BUDAT' 'ZTBFI0030' '' '',
+        '6' 'BKTXT' 'ZTBFI0030' '' '',
+        '7' 'BLDAT' 'ZTBFI0030' '' '',
+        '8' 'XBLNR' 'ZTBFI0030' '' '',
+        '9' 'REVRS' 'ZTBFI0030' '' '',
+        '10' 'USNAM' 'ZTBFI0030' '' ''.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat1  USING    pv_colpos TYPE lvc_s_fcat-col_pos
+                          pv_fieldname TYPE lvc_s_fcat-fieldname
+                          pv_reftable TYPE lvc_s_fcat-ref_table
+                          pv_reffield TYPE lvc_s_fcat-ref_field
+                          pv_coltext TYPE lvc_s_fcat-coltext.
+
+  data: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname = pv_fieldname.
+  ls_fcat-ref_table = pv_reftable.
+  ls_fcat-ref_field = pv_reffield.
+  ls_fcat-coltext = pv_coltext.
+
+  IF ls_fcat-fieldname = 'BELNR'.
+
+    ls_fcat-hotspot = 'X'.
+
+  ENDIF.
+
+  IF ls_fcat-fieldname = 'REVRS'.
+
+    ls_fcat-checkbox = 'X'.
+
+  ENDIF.
+
+  APPEND ls_fcat to gt_fcat1.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout2 .
+
+  gs_layout2-cwidth_opt = 'A'.
+  gs_layout2-zebra = 'X'.
+  gs_layout2-grid_title = '전표 상세 조회'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat2 .
+
+  PERFORM fill_fcat2 USING:
+        '1' 'BELNR' 'ZTBFI0031' '' '',
+        '2' 'BUZEI' 'ZTBFI0031' '' '',
+        '3' 'SHKZG' 'ZTBFI0031' '' '',
+        '4' 'ACODE' 'ZTBFI0031' '' '',
+        '5' 'ANAME' 'ZTBFI0031' '' '',
+        '6' 'WRBTR' 'ZTBFI0031' '' '',
+        '7' 'CURRENCY' 'ZTBFI0031' '' '',
+        '8' 'ITTXT' 'ZTBFI0031' '' '',
+        '9' 'BPCODE' 'ZTBFI0031' '' '',
+        '10' 'ZTERM' 'ZTBFI0031' '' '',
+        '11' 'HWRBTR' 'ZTBFI0031' '' '',
+        '12' 'CURRENCY_F' 'ZTBFI0031' '' '',
+        '13' 'AUGBL' 'ZTBFI0031' '' '',
+        '14' 'AUGDT' 'ZTBFI0031' '' '',
+        '15' 'STBLG' 'ZTBFI0031' '' '',
+        '16' 'STODT' 'ZTBFI0031' '' '',
+        '17' 'STGRD' 'ZTBFI0031' '' ''.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat2  USING    pv_colpos TYPE lvc_s_fcat-col_pos
+                          pv_fieldname TYPE lvc_s_fcat-fieldname
+                          pv_reftable TYPE lvc_s_fcat-ref_table
+                          pv_reffield TYPE lvc_s_fcat-ref_field
+                          pv_coltext TYPE lvc_s_fcat-coltext.
+
+  data: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname = pv_fieldname.
+  ls_fcat-ref_table = pv_reftable.
+  ls_fcat-ref_field = pv_reffield.
+  ls_fcat-coltext = pv_coltext.
+
+  IF ls_fcat-fieldname = 'WRBTR'.
+
+    ls_fcat-cfieldname = 'CURRENCY'.
+
+  ENDIF.
+
+  IF ls_fcat-fieldname = 'HWRBTR'.
+
+    ls_fcat-cfieldname = 'CURRENCY_F'.
+
+  ENDIF.
+
+  APPEND ls_fcat to gt_fcat2.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form re_pbo_pai</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM re_pbo_pai .
+
+  cl_gui_cfw=&gt;set_new_ok_code(
+    EXPORTING
+      new_code = 'ENTER'                 " New OK_CODE
+<font color ="#0000FF">*    IMPORTING</font>
+<font color ="#0000FF">*      rc       =                  " Return code</font>
+  ).
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form refresh_alv2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM refresh_alv2 .
+
+  go_alv2-&gt;refresh_table_display(
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*      i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+    EXCEPTIONS
+      finished       = 1                " Display was Ended (by Export)
+      others         = 2
+  ).
+  IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*     WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form refresh_alv1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM refresh_alv1 .
+
+  go_alv1-&gt;refresh_table_display(
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*      i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+    EXCEPTIONS
+      finished       = 1                " Display was Ended (by Export)
+      others         = 2
+  ).
+  IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*     WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+  ENDIF.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

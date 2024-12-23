@@ -1,0 +1,140 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0020_C01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0020_C01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRFI0020_C01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRFI0020_C01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form REFRESH_GRID</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBSD0080_C01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*SET HANDLER 꼭 해주기</font>
+CLASS LCL_EVENT_HANDLER DEFINITION.
+  PUBLIC SECTION.
+    CLASS-METHODS:
+      ON_HOTSPOT_CLICK FOR EVENT HOTSPOT_CLICK OF CL_GUI_ALV_GRID
+        IMPORTING ES_ROW_NO E_COLUMN_ID." 클릭한 셀이 몇번째 로우인지 알려주는 거
+ENDCLASS.
+
+CLASS LCL_EVENT_HANDLER IMPLEMENTATION.
+
+  METHOD ON_HOTSPOT_CLICK.
+
+    READ TABLE GT_ZTBFI0050 INTO GS_ZTBFI0050 INDEX ES_ROW_NO-ROW_ID.
+    IF SY-SUBRC = 0.
+      " 선택된 단건의 데이터 조회
+
+<font color ="#0000FF">*      GV_TTB = GS_ZTBFI0050-TTB * 1000.</font>
+<font color ="#0000FF">*      GV_CHG_TTB = GS_ZTBFI0050-AVG_FB * 1000.</font>
+<font color ="#0000FF">*      GV_RES_TTB = GV_TTB - GV_CHG_TTB.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      IF GV_RES_TTB &gt; 0.</font>
+<font color ="#0000FF">*        GV_TEXT = '손익이 발생합니다'.</font>
+<font color ="#0000FF">*        GV_FLAG = '+'.</font>
+<font color ="#0000FF">*      ELSEIF GV_RES_TTB &lt; 0.</font>
+<font color ="#0000FF">*        GV_TEXT = '손차가 발생합니다.'.</font>
+<font color ="#0000FF">*        GV_FLAG = '-'.</font>
+<font color ="#0000FF">*      ENDIF.</font>
+
+      CALL SCREEN 130
+        STARTING AT 5 5.
+    ENDIF.
+
+  ENDMETHOD.
+
+ENDCLASS.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0100 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0100 OUTPUT.
+  SET PF-STATUS 'S100'.
+  SET TITLEBAR 'T100'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_ICON</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_ICON .
+  IF GV_FLAG = '+'.
+    CALL FUNCTION 'ICON_CREATE'
+      EXPORTING
+        NAME                  = 'ICON_LED_GREEN'
+      IMPORTING
+        RESULT                = SH3_ICON
+      EXCEPTIONS
+        ICON_NOT_FOUND        = 1
+        OUTPUTFIELD_TOO_SHORT = 2
+        OTHERS                = 3.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+    ENDIF.
+  ELSEIF GV_FLAG = '-'.
+    CALL FUNCTION 'ICON_CREATE'
+      EXPORTING
+        NAME                  = 'ICON_LED_RED'
+      IMPORTING
+        RESULT                = SH3_ICON
+      EXCEPTIONS
+        ICON_NOT_FOUND        = 1
+        OUTPUTFIELD_TOO_SHORT = 2
+        OTHERS                = 3.
+    IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+    ENDIF.
+  ENDIF.
+
+
+
+  CALL FUNCTION 'ICON_CREATE'
+    EXPORTING
+      NAME                  = 'ICON_LED_GREEN'
+    IMPORTING
+      RESULT                = SH_ICON
+    EXCEPTIONS
+      ICON_NOT_FOUND        = 1
+      OUTPUTFIELD_TOO_SHORT = 2
+      OTHERS                = 3.
+  IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+
+  CALL FUNCTION 'ICON_CREATE'
+    EXPORTING
+      NAME                  = 'ICON_LED_RED'
+    IMPORTING
+      RESULT                = SH2_ICON
+    EXCEPTIONS
+      ICON_NOT_FOUND        = 1
+      OUTPUTFIELD_TOO_SHORT = 2
+      OTHERS                = 3.
+  IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">* Implement suitable error handling here</font>
+  ENDIF.
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

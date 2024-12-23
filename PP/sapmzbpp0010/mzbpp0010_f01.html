@@ -1,0 +1,732 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBPP0010_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBPP0010_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBPP0010_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBPP0010_F01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout .
+
+  gs_layout-zebra = 'X'.
+  gs_layout-cwidth_opt = 'A'.
+  gs_layout-grid_title = 'ROUTING 리스트'. "&& GS_COUNT && '건' .
+  gs_layout-sel_mode = 'B'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat .
+
+  PERFORM fill_fcat USING:
+        '1' 'ROUTID' 'ZTBPP0060' '' '라우팅ID',
+        '2' 'ROUTTYPE' 'ZTBPP0060' '' '',
+        '3' 'PRCTIME' 'ZTBPP0060' '' '',
+        '4' 'LABCOST' 'ZTBPP0060' '' '',
+        '5' 'CURRENCY' 'ZTBPP0060' '' '',
+        '6' 'PRDQUAN' 'ZTBPP0060' '' '생산단위 수량',
+        '7' 'UNITCODE' 'ZTBPP0060' '' '',
+        '8' 'STAMP_DATE_F' 'ZTBPP0060' '' '',
+        '9' 'STAMP_TIME_F' 'ZTBPP0060' '' '',
+        '10' 'STAMP_USER_F' 'ZTBPP0060' '' '',
+        '11' 'STAMP_DATE_L' 'ZTBPP0060' '' '',
+        '12' 'STAMP_TIME_L' 'ZTBPP0060' '' '',
+        '13' 'STAMP_USER_L' 'ZTBPP0060' '' '',
+        '14' 'DELFLG' 'ZTBPP0060' '' ''.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form FILL_FCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat  USING  pv_colpos TYPE lvc_s_fcat-col_pos
+                       pv_fieldname TYPE lvc_s_fcat-fieldname
+                       pv_reftable TYPE lvc_s_fcat-ref_table
+                       pv_reffield TYPE lvc_s_fcat-ref_field
+                       pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat TYPE lvc_s_fcat.
+
+  ls_fcat-col_pos = pv_colpos.
+  ls_fcat-fieldname = pv_fieldname.
+  ls_fcat-ref_table = pv_reftable.
+  ls_fcat-ref_field = pv_reffield.
+  ls_fcat-coltext = pv_coltext.
+
+  IF ls_fcat-fieldname = 'ROUTID'.
+
+    ls_fcat-key = 'X'.
+
+  ENDIF.
+
+  IF ls_fcat-fieldname = 'LABCOST'.
+
+    ls_fcat-cfieldname = 'CURRENCY'.
+
+  ENDIF.
+
+  IF ls_fcat-fieldname = 'PRDQUAN'.
+
+    ls_fcat-qfieldname = 'UNITCODE'.
+
+  ENDIF.
+
+  APPEND ls_fcat TO gt_fcat.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout2 .
+
+  gs_layout2-zebra = 'X'.
+  gs_layout2-cwidth_opt = 'A'.
+  gs_layout2-grid_title = '라우팅ID에 따른 자재 리스트'.
+  gs_layout2-sel_mode = 'B'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat2 .
+
+  PERFORM fill_fcat2 USING:
+        '1' 'MATCODE' 'ZTBPP0061' '' '',
+        '2' 'ROUTID' 'ZTBPP0061' '' '',
+        '3' 'DELFLG' 'ZTBPP0061' '' ''.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form fill_fcat2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat2  USING pv_colpos TYPE lvc_s_fcat-col_pos
+                       pv_fieldname TYPE lvc_s_fcat-fieldname
+                       pv_reftable TYPE lvc_s_fcat-ref_table
+                       pv_reffield TYPE lvc_s_fcat-ref_field
+                       pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat2 TYPE lvc_s_fcat.
+
+  ls_fcat2-col_pos = pv_colpos.
+  ls_fcat2-fieldname = pv_fieldname.
+  ls_fcat2-ref_table = pv_reftable.
+  ls_fcat2-ref_field = pv_reffield.
+  ls_fcat2-coltext = pv_coltext.
+
+  IF ls_fcat2-fieldname = 'ROUTID' OR ls_fcat2-fieldname = 'MATCODE'.
+
+    ls_fcat2-key = 'X'.
+
+  ENDIF.
+
+  APPEND ls_fcat2 TO gt_fcat2.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_TOOLBAR_EXCLUDING</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_toolbar_excluding .
+
+<font color ="#0000FF">*  APPEND cl_gui_alv_grid=&gt;mc_fc_excl_all TO GT_TOOLBAR.</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_toolbar_excluding2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_toolbar_excluding2 .
+
+<font color ="#0000FF">*  APPEND cl_gui_alv_grid=&gt;mc_fc_excl_all TO GT_TOOLBAR2.</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout3 .
+
+  gs_layout3-sel_mode = 'B'.
+  gs_layout3-zebra = 'X'.
+  gs_layout3-cwidth_opt = 'A'.
+  gs_layout3-edit = 'X'.
+  gs_layout3-grid_title = '자재코드 입력란   ※값 입력시 적용 버튼을 눌러주세요!'.
+<font color ="#0000FF">*  GS_LAYOUT3-sel_mode = 'B'.</font>
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat3 .
+
+  PERFORM fill_fcat3 USING:
+        '1' 'MATCODE' 'ZTBPP0061' '' '',
+        '2' 'ROUTID' 'ZTBPP0061' '' '',
+        '3' 'DELFLG' 'ZTBPP0061' '' ''.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form FILL_FCAT3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat3  USING   pv_colpos TYPE lvc_s_fcat-col_pos
+                         pv_fieldname TYPE lvc_s_fcat-fieldname
+                         pv_reftable TYPE lvc_s_fcat-ref_table
+                         pv_reffield TYPE lvc_s_fcat-ref_field
+                         pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA: ls_fcat3 TYPE lvc_s_fcat.
+
+  ls_fcat3-col_pos = pv_colpos.
+  ls_fcat3-fieldname = pv_fieldname.
+  ls_fcat3-ref_table = pv_reftable.
+  ls_fcat3-ref_field = pv_reffield.
+  ls_fcat3-coltext = pv_coltext.
+
+  IF ls_fcat3-fieldname = 'DELFLG'.
+    ls_fcat3-no_out = 'X'.
+  ENDIF.
+
+  IF ls_fcat3-fieldname = 'ROUTID'.
+    ls_fcat3-no_out = 'X'.
+  ENDIF.
+
+  APPEND ls_fcat3 TO gt_fcat3.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_layout4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_layout4 .
+
+<font color ="#0000FF">*  gs_layout4-edit = 'X'.</font>
+  gs_layout4-stylefname = 'IT_CELL'.
+  gs_layout4-sel_mode = 'B'.
+  gs_layout4-cwidth_opt = 'A'.
+  gs_layout4-grid_title = '자재코드 입력란   ※값 입력시 적용 버튼을 눌러주세요!'.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_fcat4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_fcat4 .
+
+  PERFORM fill_fcat4 USING:
+        '1' 'MATCODE' 'ZTBPP0061' '' '',
+        '2' 'ROUTID' 'ZTBPP0061' '' '',
+        '3' 'DELFLG' 'ZTBPP0061' '' ''.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form FILL_FCAT4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&      --&gt; P_</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM fill_fcat4  USING  pv_colpos TYPE lvc_s_fcat-col_pos
+                        pv_fieldname TYPE lvc_s_fcat-fieldname
+                        pv_reftable TYPE lvc_s_fcat-ref_table
+                        pv_reffield TYPE lvc_s_fcat-ref_field
+                        pv_coltext TYPE lvc_s_fcat-coltext.
+
+  DATA ls_fcat4 TYPE lvc_s_fcat.
+
+  ls_fcat4-col_pos = pv_colpos.
+  ls_fcat4-fieldname = pv_fieldname.
+  ls_fcat4-ref_table = pv_reftable.
+  ls_fcat4-ref_field = pv_reffield.
+  ls_fcat4-coltext = pv_coltext.
+
+  IF ls_fcat4-fieldname = 'DELFLG'.
+    ls_fcat4-no_out = 'X'.
+  ENDIF.
+
+  IF ls_fcat4-fieldname = 'ROUTID'.
+    ls_fcat4-no_out = 'X'.
+  ENDIF.
+
+  APPEND ls_fcat4 TO gt_fcat4.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form TOOLBAR_EXCLUDING4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM toolbar_excluding4 .
+
+  APPEND cl_gui_alv_grid=&gt;mc_fc_excl_all TO gt_toolbar4.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_TOOLBAR_EXCLUDING3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_toolbar_excluding3 .
+
+  APPEND cl_gui_alv_grid=&gt;mc_fc_excl_all TO gt_toolbar3.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_sort</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_sort .
+
+  DATA: ls_sort TYPE lvc_s_sort.
+
+  ls_sort-fieldname = 'ROUTID'.
+  ls_sort-down = 'X'.
+
+  APPEND ls_sort TO gt_sort1.
+
+  CLEAR ls_sort.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_sort2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_sort2 .
+
+  DATA: ls_sort TYPE lvc_s_sort.
+
+  ls_sort-fieldname = 'MATCODE'.
+  ls_sort-down = 'X'.
+
+  APPEND ls_sort TO gt_sort2.
+
+  CLEAR ls_sort.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_sort3</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_sort3 .
+
+  DATA: ls_sort TYPE lvc_s_sort.
+
+  ls_sort-fieldname = 'MATCODE'.
+  ls_sort-down = 'X'.
+
+  APPEND ls_sort TO gt_sort3.
+
+  CLEAR ls_sort.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form set_sort4</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM set_sort4 .
+
+  DATA: ls_sort TYPE lvc_s_sort.
+
+  ls_sort-fieldname = 'MATCODE'.
+  ls_sort-down = 'X'.
+
+  APPEND ls_sort TO gt_sort4.
+
+  CLEAR ls_sort.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form ztbpp0060_head_up</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM ztbpp0060_head_up .
+
+
+
+  UPDATE ztbpp0060 FROM ztbpp0060. "헤더 업뎃
+  IF sy-subrc = 0.
+
+    MODIFY gt_ztbpp0060 FROM ztbpp0060 INDEX gs_rows2-index. "업뎃 후 바로 보이게
+
+  ENDIF.
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_time_and_user</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_time_and_user .
+
+  ztbpp0060-stamp_date_l = sy-datum.
+  ztbpp0060-stamp_time_l = sy-uzeit.
+
+  SELECT SINGLE empid
+    FROM ztbsd1030
+    INTO lv_empid4
+    WHERE logid = sy-uname.
+
+  ztbpp0060-stamp_user_l = lv_empid4.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form get_time_and_user2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM get_time_and_user2 .
+
+  ztbpp0060-stamp_date_l = sy-datum.
+  ztbpp0060-stamp_time_l = sy-uzeit.
+
+  SELECT SINGLE empid
+  FROM ztbsd1030
+  INTO lv_empid5
+  WHERE logid = sy-uname.
+
+  ztbpp0060-stamp_user_l = lv_empid5.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form header_up</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM header_up .
+
+  UPDATE ztbpp0060 FROM ztbpp0060.
+  IF sy-subrc = 0.
+
+    MODIFY gt_ztbpp0060 FROM ztbpp0060 INDEX gs_rows2-index. "헤더 업뎃 후 바로 보이게
+
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form item_up</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM item_up .
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  LOOP AT gt_ztbpp00613 INTO gs_ztbpp00613. "아이템 업뎃  "WHERE routid = ztbpp0060-routid.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    gs_ztbpp00613-routid = ztbpp0060-routid.</font>
+<font color ="#0000FF">*    gs_ztbpp00613-mandt = sy-mandt.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*   INSERT ztbpp0061 FROM gs_ztbpp00613. " 업뎃시 키값은 안변함.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    IF sy-subrc IS NOT INITIAL. "insert ㄴㄴ 즉 중복이 있다 이미 아이템에 삭제 플레그에 x인 값이 있다</font>
+<font color ="#0000FF">*      "그러므로 걍 빈값넣어서 그거를 원래 동그라미 상태로</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      UPDATE ztbpp0061 SET delflg = '' WHERE matcode = gs_ztbpp00613-matcode.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    MODIFY gt_ztbpp00613 FROM gs_ztbpp00613. "바로 120 아이템 alv 업뎃 보이게</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  ENDLOOP.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*  MOVE-CORRESPONDING gt_ztbpp00613 TO gt_ztbpp0061.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*</font>
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form data_init</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM data_init .
+
+  DATA: lv_empid3 TYPE char15,
+        ls_scol   TYPE lvc_s_styl.
+<font color ="#0000FF">*</font>
+  IF gv_app_clear = 'X'.""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    CLEAR gv_app_clear.
+
+  ELSE.
+
+    READ TABLE gt_ztbpp0060 INTO gs_ztbpp0060 INDEX gs_rows2-index.
+
+    IF sy-subrc = 0.
+
+
+      MOVE-CORRESPONDING gs_ztbpp0060 TO ztbpp0060. "헤더
+
+      IF gs_ztbpp0060-routtype = 'C'.
+
+        half = ''.
+        comp = 'X'.
+      ELSE.
+        half = 'X'.
+        comp = ''.
+
+      ENDIF.
+
+
+      SELECT *                                      "아이템
+      FROM ztbpp0061
+      INTO CORRESPONDING FIELDS OF TABLE gt_ztbpp00613
+      WHERE routid =  gs_ztbpp0060-routid
+        AND delflg = ''.
+
+
+      IF go_cont4 IS NOT INITIAL. " alv에서 빈값들 add row 하고 입력안한 것들 사라지게
+        go_alv4-&gt;refresh_table_display(
+         EXCEPTIONS
+           finished       = 1                " Display was Ended (by Export)
+           OTHERS         = 2
+       ).
+        IF sy-subrc &lt;&gt; 0.
+        ENDIF.
+      ENDIF.
+
+<font color ="#0000FF">*    clear gv_app_clear. """""""""""""""""""""""""""""""""""</font>
+
+    ENDIF.
+
+  ENDIF. """""""""""""""""""""""""""""""""""""""""""""""""""""
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form on_data_changed1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; ER_DATA_CHANGED</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM on_data_changed1  USING    er_data_changed TYPE REF TO cl_alv_changed_data_protocol.
+
+  DATA: ls_changed TYPE lvc_s_modi.
+
+
+  DATA: BEGIN OF ls_matcode.
+  DATA: matcode TYPE ztbpp0061-matcode,
+        END OF ls_matcode.
+
+<font color ="#0000FF">*  DATA: lt_matcode LIKE TABLE OF ls_matcode.</font>
+
+  LOOP AT er_data_changed-&gt;mt_good_cells INTO ls_changed.
+
+    CALL METHOD er_data_changed-&gt;get_cell_value "값 변경된 cell 의 데이터 읽어옴
+      EXPORTING
+        i_row_id    = ls_changed-row_id
+        i_fieldname = 'MATCODE'
+      IMPORTING
+        e_value     = ls_matcode-matcode.
+
+      APPEND ls_matcode to gt_matcode.
+
+  ENDLOOP.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form class_event1</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM class_event1 .
+
+  CALL METHOD go_alv3-&gt;register_edit_event
+  EXPORTING
+    i_event_id = cl_gui_alv_grid=&gt;mc_evt_enter.
+
+CALL METHOD go_alv3-&gt;register_edit_event
+  EXPORTING
+    i_event_id = cl_gui_alv_grid=&gt;mc_evt_modified.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form on_data_changed2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      --&gt; ER_DATA_CHANGED</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM on_data_changed2  USING   er_data_changed TYPE REF TO cl_alv_changed_data_protocol.
+
+  DATA: ls_changed TYPE lvc_s_modi.
+
+
+  DATA: BEGIN OF ls_matcode.
+  DATA: matcode TYPE ztbpp0061-matcode,
+        index TYPE int4,
+        END OF ls_matcode.
+
+<font color ="#0000FF">*  DATA: lt_matcode LIKE TABLE OF ls_matcode.</font>
+
+  LOOP AT er_data_changed-&gt;mt_good_cells INTO ls_changed.
+
+    CALL METHOD er_data_changed-&gt;get_cell_value "값 변경된 cell 의 데이터 읽어옴
+      EXPORTING
+        i_row_id    = ls_changed-row_id
+        i_fieldname = 'MATCODE'
+      IMPORTING
+        e_value     = ls_matcode-matcode.
+
+        ls_matcode-index = ls_changed-row_id.
+
+      APPEND ls_matcode to gt_matcode2.
+
+  ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form class_event2</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM class_event2 .
+
+  CALL METHOD go_alv4-&gt;register_edit_event
+  EXPORTING
+    i_event_id = cl_gui_alv_grid=&gt;mc_evt_enter.
+
+CALL METHOD go_alv4-&gt;register_edit_event
+  EXPORTING
+    i_event_id = cl_gui_alv_grid=&gt;mc_evt_modified.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

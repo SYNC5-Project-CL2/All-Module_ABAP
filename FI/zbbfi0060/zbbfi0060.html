@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBBFI0060</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBBFI0060</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  [FI] 실시간 환율 반영 배치 프로그램</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&    [FI]</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&    개발자                : CL2 kdt-b-24 최현지</font>
+<font color ="#0000FF">*&    프로그램 개요           : 환율 일배치 프로그램</font>
+<font color ="#0000FF">*&    개발 시작일            : '2024.10.29'</font>
+<font color ="#0000FF">*&    개발 완료일            : '2024.10.29'</font>
+<font color ="#0000FF">*&    개발 상태             : 개발완료</font>
+<font color ="#0000FF">*&    단위테스트 여부</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&</font>
+REPORT ZBBFI0060.
+
+<font color ="#0000FF">**INCLUDE ZBBFI0060_TOP.</font>
+<font color ="#0000FF">**INCLUDE ZBBFI0060_S01.</font>
+<font color ="#0000FF">**INCLUDE ZBBFI0060_C01.</font>
+<font color ="#0000FF">**INCLUDE ZBBFI0060_I01.</font>
+<font color ="#0000FF">**INCLUDE ZBBFI0060_F01.</font>
+
+TYPES: BEGIN OF TS_CURR,
+         D_RESULT        TYPE STRING,
+         CUR_UNIT        TYPE STRING,
+         CUR_NM          TYPE STRING,
+         TTB             TYPE STRING,
+         TTS             TYPE STRING,
+         DEAL_BAS_R      TYPE STRING,
+         BKPR            TYPE STRING,
+         YY_EFEE_R       TYPE STRING,
+         TEN_DD_EFEE_R   TYPE STRING,
+         KFTC_DEAL_BAS_R TYPE STRING,
+         KFTC_BKPR       TYPE STRING,
+       END OF TS_CURR.
+
+DATA: GT_CURR TYPE TABLE OF TS_CURR.
+
+DATA: GT_ZTBFI0050 TYPE TABLE OF ZTBFI0050.
+DATA: GS_ZTBFI0050 LIKE LINE OF GT_ZTBFI0050.
+
+TRY.
+
+    DATA(LV_TODAY) = SY-DATUM.
+
+    DATA: URL TYPE CHAR50.
+    DATA: AUTHKEY TYPE CHAR50.
+    DATA: DATA_TYPE TYPE CHAR50.
+    DATA: SEARCH_DATE TYPE CHAR50.
+
+    DATA: LV_YEAR  TYPE STRING,
+          LV_MONTH TYPE STRING,
+          LV_DAY   TYPE STRING.
+
+
+    DATA: LV_USER_ID TYPE SY-UNAME.
+
+    LV_USER_ID = SY-UNAME.
+
+<font color ="#0000FF">* 연도, 월, 일 추출</font>
+    LV_YEAR  = LV_TODAY+0(4).
+    LV_MONTH = LV_TODAY+4(2).
+    LV_DAY   = LV_TODAY+6(2).
+
+<font color ="#0000FF">*    JSON</font>
+    DATA: LV_JSON_DATA   TYPE STRING,
+          LT_ABAP_TABLE  TYPE TABLE OF ZTBFI0050,
+          LO_JSON_READER TYPE REF TO /UI2/CL_JSON.
+
+
+    DATA(LV_URL) = |https://www.koreaexim.go.kr/site/program/financial/exchangeJSON?authkey=lsk3XS9QGGvDeiGbu5emMnwOUDOwgDMa&data=AP01|.
+    CONCATENATE LV_URL '&searchdate=' LV_YEAR LV_MONTH LV_DAY INTO LV_URL.
+    DATA: O_CLIENT TYPE REF TO IF_HTTP_CLIENT.
+
+<font color ="#0000FF">* Create Http Object</font>
+    CL_HTTP_CLIENT=&gt;CREATE_BY_URL( EXPORTING
+    URL = LV_URL
+    IMPORTING
+    CLIENT = O_CLIENT
+    EXCEPTIONS
+    ARGUMENT_NOT_FOUND = 1
+    PLUGIN_NOT_ACTIVE = 2
+    INTERNAL_ERROR = 3
+    OTHERS = 4 ).
+
+    IF SY-SUBRC &lt;&gt; 0.
+      O_CLIENT-&gt;CLOSE( ).
+    ENDIF.
+
+    IF O_CLIENT IS BOUND.
+
+<font color ="#0000FF">* set http method</font>
+      O_CLIENT-&gt;REQUEST-&gt;SET_METHOD( IF_HTTP_REQUEST=&gt;CO_REQUEST_METHOD_GET ).
+
+<font color ="#0000FF">* set header fields</font>
+<font color ="#0000FF">*o_client-&gt;request-&gt;set_header_field( name = '' value = '' ).</font>
+<font color ="#0000FF">*o_client-&gt;request-&gt;set_header_field( name = '' value = '' ).</font>
+
+      O_CLIENT-&gt;SEND( TIMEOUT = IF_HTTP_CLIENT=&gt;CO_TIMEOUT_DEFAULT )..
+
+<font color ="#0000FF">* read response, http_status, payload</font>
+      O_CLIENT-&gt;RECEIVE( ).
+      DATA: LV_HTTP_STATUS TYPE I,
+            LV_STATUS_TEXT TYPE STRING.
+
+      O_CLIENT-&gt;RESPONSE-&gt;GET_STATUS( IMPORTING
+      CODE = LV_HTTP_STATUS
+      REASON = LV_STATUS_TEXT ).
+
+      WRITE: / 'HTTP_STATUS_CODE:', LV_HTTP_STATUS.
+      WRITE: / 'SATUS_TEXT: ', LV_STATUS_TEXT.
+
+      IF LV_HTTP_STATUS = 200.
+        DATA(LV_RESULT) = O_CLIENT-&gt;RESPONSE-&gt;GET_CDATA( ).
+<font color ="#0000FF">*        WRITE: /'Response:'.</font>
+<font color ="#0000FF">*        WRITE: / LV_RESULT.</font>
+
+        /UI2/CL_JSON=&gt;DESERIALIZE(
+  EXPORTING
+    JSON             = LV_RESULT
+  CHANGING
+    DATA             = GT_CURR
+).
+        MOVE-CORRESPONDING GT_CURR TO GT_ZTBFI0050.
+
+        LOOP AT GT_ZTBFI0050 INTO GS_ZTBFI0050.
+          GS_ZTBFI0050-CUR_DATE = SY-DATUM.
+          MODIFY GT_ZTBFI0050 FROM GS_ZTBFI0050.
+        ENDLOOP.
+
+        INSERT ZTBFI0050 FROM TABLE GT_ZTBFI0050.
+        IF SY-SUBRC = 0.
+          WRITE: / '성공'.
+        ELSE.
+          WRITE: / '에러'.
+        ENDIF.
+
+      ENDIF.
+
+<font color ="#0000FF">* close http connection</font>
+      O_CLIENT-&gt;CLOSE( ).
+    ENDIF.
+
+  CATCH CX_ROOT INTO DATA(E_TXT).
+    WRITE: / E_TXT-&gt;GET_TEXT( ).
+ENDTRY.
+
+include <a href ="zbbfi0060_user_command_0100i01.html">zbbfi0060_user_command_0100i01</a>.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0100 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0100 OUTPUT.
+ SET PF-STATUS 'S100'.
+ SET TITLEBAR 'T100'.
+ENDMODULE.
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* T100 --&gt; 환율 실시간 배치 프로그램</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

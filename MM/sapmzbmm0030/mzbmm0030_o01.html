@@ -1,0 +1,243 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBMM0030_O01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBMM0030_O01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBMM0030_O01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBMM0030_O01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+MODULE STATUS_0100 OUTPUT.
+
+  SET PF-STATUS 'S100'.
+  SET TITLEBAR 'T100'.
+
+  IF ZSBMM1030-VALID IS INITIAL AND ZSBMM1030-ALL IS INITIAL AND ZSBMM1030-DELETED IS INITIAL.
+    ZSBMM1030-VALID = 'X'.
+  ENDIF.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module CLEAR_OK_CODE OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE CLEAR_OK_CODE OUTPUT.
+  CLEAR: OK_CODE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module INIT_ALV OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE INIT_ALV OUTPUT.
+
+  IF GO_CONT IS INITIAL.
+    CREATE OBJECT GO_CONT
+      EXPORTING
+        CONTAINER_NAME              = 'AREA'
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        OTHERS                      = 6.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+
+    CREATE OBJECT GO_ALV
+      EXPORTING
+        I_PARENT          = GO_CONT
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+    PERFORM ZBMM_SET_LAYOUT.
+    PERFORM ZBMM_SET_SORT.
+    PERFORM ZBMM_SET_FCAT.
+
+    SET HANDLER LCL_EVENT_HANDLER=&gt;ON_HOTSPOT_CLICK FOR GO_ALV.
+
+
+
+
+    CALL METHOD GO_ALV-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+<font color ="#0000FF">*       I_BUFFER_ACTIVE               =</font>
+<font color ="#0000FF">*       I_BYPASSING_BUFFER            =</font>
+<font color ="#0000FF">*       I_CONSISTENCY_CHECK           =</font>
+        I_STRUCTURE_NAME              = 'ZTBMM1030'
+<font color ="#0000FF">*       IS_VARIANT                    =</font>
+<font color ="#0000FF">*       I_SAVE                        =</font>
+<font color ="#0000FF">*       I_DEFAULT                     = 'X'</font>
+        IS_LAYOUT                     = LS_LAYO
+<font color ="#0000FF">*       IS_PRINT                      =</font>
+<font color ="#0000FF">*       IT_SPECIAL_GROUPS             =</font>
+<font color ="#0000FF">*       IT_TOOLBAR_EXCLUDING          =</font>
+<font color ="#0000FF">*       IT_HYPERLINK                  =</font>
+<font color ="#0000FF">*       IT_ALV_GRAPHICS               =</font>
+<font color ="#0000FF">*       IT_EXCEPT_QINFO               =</font>
+<font color ="#0000FF">*       IR_SALV_ADAPTER               =</font>
+      CHANGING
+        IT_OUTTAB                     = GT_ZTBMM1030_PLUS
+        IT_FIELDCATALOG               = GT_FCAT
+        IT_SORT                       = GT_SORT
+<font color ="#0000FF">*       IT_FILTER                     =</font>
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+  ELSE.
+
+
+    CALL METHOD GO_ALV-&gt;REFRESH_TABLE_DISPLAY
+      EXCEPTIONS
+        FINISHED = 1
+        OTHERS   = 2.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+  ENDIF.
+
+
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module GET_STRDATA OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE GET_STRDATA OUTPUT.
+  SELECT *
+    FROM ZTBMM1030
+    INTO TABLE GT_ZTBMM1030.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0110 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0110 OUTPUT.
+  SET PF-STATUS 'S110'.
+  SET TITLEBAR 'T110'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module INIT_FIELD OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE INIT_FIELD OUTPUT.
+
+<font color ="#0000FF">*  로그인 ID로 사원마스터에 사원ID 가져오기</font>
+  SELECT SINGLE EMPID
+    FROM ZTBSD1030
+    INTO ZTBMM1030-EMPID
+    WHERE LOGID = SY-UNAME.
+
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0120 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0120 OUTPUT.
+  SET PF-STATUS 'S120'.
+  SET TITLEBAR 'T120'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module SET_FIELD OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE SET_FIELD OUTPUT.
+
+<font color ="#0000FF">*  ZTBMM1030-WHCODE = GS_ZTBMM1030-WHCODE.</font>
+  MOVE-CORRESPONDING GS_ZTBMM1030 TO ZTBMM1030.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module STATUS_0130 OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE STATUS_0130 OUTPUT.
+  SET PF-STATUS 'S130'.
+  SET TITLEBAR 'T130'.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module GET_EMPDATA OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE GET_EMPDATA OUTPUT.
+
+  SELECT SINGLE *
+    FROM ZTBSD1030
+    WHERE EMPID = GV_EMPID.
+
+  SELECT SINGLE *
+    FROM ZTBSD1020
+    WHERE DEPCODE = ZTBSD1030-DEPCODE.
+
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Module SET_TYPE OUTPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+MODULE SET_TYPE OUTPUT.
+
+ DATA: LT_D TYPE TABLE OF DD07V,
+          LS_D TYPE DD07V.
+
+    CALL FUNCTION 'GET_DOMAIN_VALUES'
+      EXPORTING
+        DOMNAME               = 'ZDB_WHTYPE'
+<font color ="#0000FF">*       TEXT                  = 'X'</font>
+<font color ="#0000FF">*       FILL_DD07L_TAB        = ' '</font>
+     TABLES
+       VALUES_TAB            = LT_D
+<font color ="#0000FF">*       VALUES_DD07L          =</font>
+     EXCEPTIONS
+       NO_VALUES_FOUND       = 1
+       OTHERS                = 2
+              .
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+
+  LOOP AT GT_ZTBMM1030_PLUS INTO GS_ZTBMM1030_PLUS.
+    READ TABLE LT_D WITH KEY DOMVALUE_L = GS_ZTBMM1030_PLUS-WHTYPE INTO LS_D.
+
+    GS_ZTBMM1030_PLUS-WHTYPE_TXT = LS_D-DDTEXT.
+    MODIFY GT_ZTBMM1030_PLUS FROM GS_ZTBMM1030_PLUS TRANSPORTING WHTYPE_TXT.
+  ENDLOOP.
+
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

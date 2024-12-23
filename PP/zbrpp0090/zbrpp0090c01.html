@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRPP0090C01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRPP0090C01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRPP0090C01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRPP0090C01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+CLASS lcl_event_handler DEFINITION.
+
+  PUBLIC SECTION.
+    CLASS-METHODS:
+
+      on_toolbar1 for EVENT toolbar of cl_gui_alv_grid
+        IMPORTING e_object,
+      on_user_command1 for EVENT USER_COMMAND of cl_gui_alv_grid
+        IMPORTING e_ucomm,
+
+      on_toolbar2 for EVENT toolbar of cl_gui_alv_grid
+        IMPORTING e_object,
+      on_user_command2 for EVENT USER_COMMAND of cl_gui_alv_grid
+        IMPORTING e_ucomm.
+
+ENDCLASS.
+
+CLASS lcl_event_handler IMPLEMENTATION.
+
+  METHOD on_toolbar1.
+
+    data: ls_button TYPE stb_button.
+
+    ls_button-butn_type = 3.
+
+    APPEND ls_button to e_object-&gt;mt_toolbar.
+
+    clear: ls_button.
+    ls_button-function = 'SEARCH'.
+    ls_button-text = '상세정보 조회'.
+    ls_button-butn_type = 0.
+    ls_button-icon = icon_zoom_in.
+    ls_button-quickinfo = '상세정보 조회'.
+
+    APPEND ls_button to e_object-&gt;mt_toolbar.
+
+   ENDMETHOD.
+
+   METHOD on_user_command1.
+
+     CASE e_ucomm.
+     	WHEN 'SEARCH'.
+
+        data: lt_row TYPE lvc_t_row,
+              ls_row TYPE lvc_s_row.
+
+        go_alv1-&gt;get_selected_rows(
+          IMPORTING
+            et_index_rows =   lt_row               " Indexes of Selected Rows
+<font color ="#0000FF">*            et_row_no     =                  " Numeric IDs of Selected Rows</font>
+        ).
+
+        READ TABLE lt_row into ls_row INDEX 1.
+
+        IF  sy-subrc = 0.
+
+          READ TABLE gt_alv1 into gs_alv1 INDEX ls_row-index.
+
+          IF sy-subrc = 0.
+
+            SELECT *
+              from ztbsd0011
+              into CORRESPONDING FIELDS OF TABLE gt_alv2
+              WHERE SOPNUM = gs_alv1-sopnum.
+
+            go_alv2-&gt;refresh_table_display(
+<font color ="#0000FF">*              EXPORTING</font>
+<font color ="#0000FF">*                is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*                i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+              EXCEPTIONS
+                finished       = 1                " Display was Ended (by Export)
+                others         = 2
+            ).
+            IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*             MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*               WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+            ENDIF.
+
+          ENDIF.
+
+        ENDIF.
+
+     ENDCASE.
+
+   ENDMETHOD.
+
+
+   METHOD on_toolbar2.
+
+    data: ls_button TYPE stb_button.
+
+    ls_button-butn_type = 3.
+
+    APPEND ls_button to e_object-&gt;mt_toolbar.
+
+    clear: ls_button.
+    ls_button-function = 'SEARCH'.
+    ls_button-text = '상세정보 조회'.
+    ls_button-butn_type = 0.
+    ls_button-icon = icon_zoom_in.
+    ls_button-quickinfo = '상세정보 조회'.
+
+    APPEND ls_button to e_object-&gt;mt_toolbar.
+
+   ENDMETHOD.
+
+   METHOD on_user_command2.
+
+     CASE e_ucomm.
+     	WHEN 'SEARCH'.
+
+        data: lt_row TYPE lvc_t_row,
+              ls_row TYPE lvc_s_row.
+
+        go_alv3-&gt;get_selected_rows(
+          IMPORTING
+            et_index_rows =   lt_row               " Indexes of Selected Rows
+<font color ="#0000FF">*            et_row_no     =                  " Numeric IDs of Selected Rows</font>
+        ).
+
+        READ TABLE lt_row into ls_row INDEX 1.
+
+        IF  sy-subrc = 0.
+
+          READ TABLE gt_alv3 into gs_alv3 INDEX ls_row-index.
+
+          IF sy-subrc = 0.
+
+            SELECT *
+              from ztbpp0011
+              into CORRESPONDING FIELDS OF TABLE gt_alv4
+              WHERE SOPWNUM = gs_alv3-sopwnum.
+
+            go_alv4-&gt;refresh_table_display(
+<font color ="#0000FF">*              EXPORTING</font>
+<font color ="#0000FF">*                is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*                i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+              EXCEPTIONS
+                finished       = 1                " Display was Ended (by Export)
+                others         = 2
+            ).
+            IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*             MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*               WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+            ENDIF.
+
+          ENDIF.
+
+        ENDIF.
+
+     ENDCASE.
+
+   ENDMETHOD.
+
+ENDCLASS.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

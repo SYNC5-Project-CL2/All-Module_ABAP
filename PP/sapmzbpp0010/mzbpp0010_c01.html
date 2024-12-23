@@ -1,0 +1,393 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBPP0010_C01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBPP0010_C01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBPP0010_C01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBPP0010_C01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+
+CLASS lcl_event_handler DEFINITION.
+
+  PUBLIC SECTION.
+    CLASS-METHODS:
+<font color ="#0000FF">*      on_double_click FOR EVENT double_click OF cl_gui_alv_grid</font>
+<font color ="#0000FF">*        IMPORTING es_row_no e_column,</font>
+
+      on_toolbar FOR EVENT toolbar OF cl_gui_alv_grid
+        IMPORTING e_object,
+      on_user_command FOR EVENT user_command OF cl_gui_alv_grid
+        IMPORTING e_ucomm,
+
+      on_toolbar2 FOR EVENT toolbar OF cl_gui_alv_grid
+        IMPORTING e_object,
+      on_user_command2 FOR EVENT user_command OF cl_gui_alv_grid
+        IMPORTING e_ucomm,
+
+      on_toolbar3 FOR EVENT toolbar OF cl_gui_alv_grid
+        IMPORTING e_object,
+      on_user_command3 FOR EVENT user_command OF cl_gui_alv_grid
+        IMPORTING e_ucomm,
+
+
+      on_data_changed1 FOR EVENT data_changed OF cl_gui_alv_grid
+        IMPORTING er_data_changed,
+
+      on_data_changed2 FOR EVENT data_changed OF cl_gui_alv_grid
+        IMPORTING er_data_changed.
+
+
+
+ENDCLASS.
+
+CLASS lcl_event_handler IMPLEMENTATION.
+
+<font color ="#0000FF">*  METHOD on_double_click.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    gv_hotrow = es_row_no-row_id.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    MESSAGE 'hot' && gv_hotrow TYPE 'I'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    READ TABLE gt_ZTBPP0060 INTO gs_ztbpp0060 INDEX gv_hotrow.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    IF sy-subrc = 0.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      SELECT *</font>
+<font color ="#0000FF">*        FROM ztbpp0061</font>
+<font color ="#0000FF">*        INTO CORRESPONDING FIELDS OF TABLE gt_ztbpp0061</font>
+<font color ="#0000FF">*        WHERE routid = gs_ztbpp0060-routid.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    ENDIF.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">**    cl_gui_cfw=&gt;set_new_ok_code(</font>
+<font color ="#0000FF">**      EXPORTING</font>
+<font color ="#0000FF">**        new_code =  'ENTER'                " New OK_CODE</font>
+<font color ="#0000FF">***      IMPORTING</font>
+<font color ="#0000FF">***        rc       =                  " Return code</font>
+<font color ="#0000FF">**    ).</font>
+
+<font color ="#0000FF">*  ENDMETHOD.</font>
+
+  METHOD on_toolbar.
+
+    DATA: ls_button TYPE stb_button.
+
+    ls_button-butn_type = 3.
+
+    APPEND ls_button TO e_object-&gt;mt_toolbar.
+
+    CLEAR: ls_button.
+    ls_button-function = 'SEARCH'.
+    ls_button-text = '라우팅ID 상세정보 조회'.
+<font color ="#0000FF">*    ls_button-</font>
+    ls_button-butn_type = 0.
+    ls_button-icon = icon_zoom_in.
+    ls_button-quickinfo = 'SEARCH'.
+
+    APPEND ls_button TO e_object-&gt;mt_toolbar.
+
+
+
+  ENDMETHOD.
+
+  METHOD on_user_command.
+
+    CASE e_ucomm.
+      WHEN 'SEARCH'.
+
+        DATA: lt_rows TYPE lvc_t_row.
+        DATA: ls_rows LIKE LINE OF lt_rows.
+
+        go_alv1-&gt;get_selected_rows(
+          IMPORTING
+            et_index_rows = lt_rows                " Indexes of Selected Rows
+<font color ="#0000FF">*      et_row_no     =                  " Numeric IDs of Selected Rows</font>
+        ).
+
+        READ TABLE lt_rows INTO ls_rows INDEX 1.
+
+        IF sy-subrc = 0.
+
+
+
+          READ TABLE gt_ZTBPP0060 INTO gs_ztbpp0060 INDEX ls_rows-index.
+
+        ENDIF.
+
+        SELECT *
+        FROM ztbpp0061
+        INTO CORRESPONDING FIELDS OF TABLE gt_ZTBPP0061
+        WHERE routid = gs_ztbpp0060-routid.
+
+        go_alv2-&gt;refresh_table_display(
+<font color ="#0000FF">*      EXPORTING</font>
+<font color ="#0000FF">*        is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*        i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+          EXCEPTIONS
+            finished       = 1                " Display was Ended (by Export)
+            OTHERS         = 2
+        ).
+        IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*     MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*       WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+        ENDIF.
+
+
+    ENDCASE.
+
+  ENDMETHOD.
+
+  METHOD on_toolbar2.
+
+    DATA: ls_button2 TYPE stb_button.
+
+    CLEAR: ls_button2.
+    ls_button2-function = 'ADD'.
+    ls_button2-text = 'ADD'.
+    ls_button2-butn_type = 0.
+    ls_button2-icon = icon_insert_row.
+    ls_button2-quickinfo = 'ADD'.
+
+
+    APPEND ls_button2 TO e_object-&gt;mt_toolbar.
+
+    CLEAR: ls_button2.
+    ls_button2-function = 'DEL'.
+    ls_button2-text = 'DEL'.
+    ls_button2-butn_type = 0.
+    ls_button2-icon = icon_delete_row.
+    ls_button2-quickinfo = 'DELETE'.
+
+    APPEND ls_button2 TO e_object-&gt;mt_toolbar.
+
+<font color ="#0000FF">*    clear ls_button2.</font>
+<font color ="#0000FF">*    ls_button2-function = 'APP'.</font>
+<font color ="#0000FF">*    ls_button2-text = '적용'.</font>
+<font color ="#0000FF">*    ls_button2-butn_type = 0.</font>
+<font color ="#0000FF">*    ls_button2-quickinfo = '적용'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    APPEND ls_button2 TO e_object-&gt;mt_toolbar.</font>
+
+<font color ="#0000FF">*    clear ls_button2.</font>
+<font color ="#0000FF">*    ls_button2-function = 'CHG'.</font>
+<font color ="#0000FF">*    ls_button2-text = '이미 까만거 하얗게'.</font>
+<font color ="#0000FF">*    ls_button2-butn_type = 0.</font>
+<font color ="#0000FF">*    ls_button2-quickinfo = '이미 까만거 하얗게'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    APPEND ls_button2 TO e_object-&gt;mt_toolbar.</font>
+
+  ENDMETHOD.
+
+  METHOD on_user_command2.
+
+    DATA: lt_rows2 TYPE lvc_t_row,
+          ls_rows2 TYPE lvc_s_row.
+
+    CASE e_ucomm.
+      WHEN 'ADD'.
+        CLEAR gs_ztbpp00612.
+
+        INSERT gs_ztbpp00612 INTO gt_ZTBPP00612 INDEX 1.
+
+      WHEN 'DEL'.
+
+<font color ="#0000FF">*        clear: ls_rows, lt_rows.</font>
+
+        go_alv3-&gt;get_selected_rows(
+          IMPORTING
+            et_index_rows =  lt_rows2                " Indexes of Selected Rows
+<font color ="#0000FF">*            et_row_no     =                  " Numeric IDs of Selected Rows</font>
+        ).
+
+        READ TABLE lt_rows2 INTO ls_rows2 INDEX 1.
+
+        IF sy-subrc = 0.
+
+          DELETE gt_ztbpp00612 INDEX ls_rows2-index.
+
+        ENDIF.
+
+<font color ="#0000FF">*       WHEN 'APP'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*         gv_app_check2 = 'X'. """"""""""""""""""""""""""""""""""""""""""""""</font>
+<font color ="#0000FF">*         gv_app_clear2 = 'X'. """"""""""""""""""""""""""""""""""""""""""""</font>
+
+
+    ENDCASE.
+
+    go_alv3-&gt;refresh_table_display(
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*      i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+     EXCEPTIONS
+       finished       = 1                " Display was Ended (by Export)
+       OTHERS         = 2
+   ).
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*     WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+  ENDMETHOD.
+
+  METHOD on_toolbar3.
+
+    DATA: ls_button3 TYPE stb_button.
+
+    CLEAR: ls_button3.
+    ls_button3-function = 'ADD'.
+    ls_button3-text = 'ADD'.
+    ls_button3-butn_type = 0.
+    ls_button3-icon = icon_insert_row.
+    ls_button3-quickinfo = 'ADD'.
+
+
+    APPEND ls_button3 TO e_object-&gt;mt_toolbar.
+
+    CLEAR: ls_button3.
+    ls_button3-function = 'DEL'.
+    ls_button3-text = 'DEL'.
+    ls_button3-butn_type = 0.
+    ls_button3-icon = icon_delete_row.
+    ls_button3-quickinfo = 'DELETE'.
+
+    APPEND ls_button3 TO e_object-&gt;mt_toolbar.
+
+    clear ls_button3.
+    ls_button3-function = 'APP'.
+    ls_button3-text = '적용'.
+    ls_button3-butn_type = 0.
+    ls_button3-quickinfo = '적용'.
+
+    APPEND ls_button3 TO e_object-&gt;mt_toolbar.
+
+<font color ="#0000FF">*     clear ls_button3.</font>
+<font color ="#0000FF">*    ls_button3-function = 'CHG'.</font>
+<font color ="#0000FF">*    ls_button3-text = '이미 까만거 하얗게'.</font>
+<font color ="#0000FF">*    ls_button3-butn_type = 0.</font>
+<font color ="#0000FF">*    ls_button3-quickinfo = '이미 까만거 하얗게'.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    APPEND ls_button3 TO e_object-&gt;mt_toolbar.</font>
+
+  ENDMETHOD.
+
+  METHOD on_user_command3.
+
+    DATA: lt_rows3       TYPE lvc_t_row,
+          ls_rows3       TYPE lvc_s_row,
+
+          lt_upztbpp0061 TYPE TABLE OF ztbpp0061,
+          ls_upztbpp0061 LIKE LINE OF lt_upztbpp0061,
+
+          ls_cell        TYPE lvc_s_styl.
+
+    CASE e_ucomm.
+      WHEN 'ADD'.
+        CLEAR gs_ztbpp00613. " 전게 자꾸 들어가서 클리어
+        gv_add = 1.
+
+<font color ="#0000FF">*        LOOP AT gt_ztbpp00613 INTO gs_ztbpp00613.</font>
+          ls_cell-fieldname = 'MATCODE'.
+          ls_cell-style = cl_gui_alv_grid=&gt;mc_style_enabled.
+          INSERT ls_cell INTO TABLE gs_ztbpp00613-it_cell.
+
+          clear ls_cell.
+          ls_cell-fieldname = 'DELFLG'.
+          ls_cell-style = cl_gui_alv_grid=&gt;mc_style_enabled.
+          insert ls_cell into TABLE gs_ztbpp00613-it_cell.
+
+<font color ="#0000FF">*          MODIFY gt_ztbpp00613 FROM gs_ztbpp00613 TRANSPORTING it_cell.</font>
+
+<font color ="#0000FF">*          clear: gs_ztbpp00613, ls_cell.</font>
+
+<font color ="#0000FF">*        ENDLOOP.</font>
+
+        INSERT gs_ztbpp00613 INTO gt_ZTBPP00613 INDEX 1.
+
+         clear: gs_ztbpp00613, ls_cell.
+
+
+      WHEN 'DEL'.
+        gv_del = 1.
+
+<font color ="#0000FF">*        clear: ls_rows, lt_rows.</font>
+
+        go_alv4-&gt;get_selected_rows(
+          IMPORTING
+            et_index_rows =  lt_rows3                " Indexes of Selected Rows
+<font color ="#0000FF">*            et_row_no     =                  " Numeric IDs of Selected Rows</font>
+        ).
+
+        READ TABLE lt_rows3 INTO ls_rows3 INDEX 1.
+
+        IF sy-subrc = 0.
+
+          READ TABLE gt_ztbpp00613 INTO gs_ztbpp00613 INDEX ls_rows3-index.
+
+          IF sy-subrc = 0.
+
+              gs_ztbpp00613-delflg = 'X'.
+
+<font color ="#0000FF">*              UPDATE ztbpp0061 set delflg = gs_ztbpp00613-delflg. "FROM gs_ztbpp00613 .</font>
+
+              MOVE-CORRESPONDING gs_ztbpp00613 TO ls_upztbpp0061.
+
+              UPDATE ztbpp0061 FROM ls_upztbpp0061 .
+
+              DELETE gt_ztbpp00613 INDEX ls_rows3-index.
+
+
+
+            ENDIF.
+
+          ENDIF.
+
+      WHEN 'APP'.
+
+          gv_app_check = 'X'. """"""""""""""""""""""""""""""""""""""""""""""
+          gv_app_clear = 'X'. """"""""""""""""""""""""""""""""""""""""""""""
+
+    ENDCASE.
+
+    go_alv4-&gt;refresh_table_display(
+<font color ="#0000FF">*    EXPORTING</font>
+<font color ="#0000FF">*      is_stable      =                  " With Stable Rows/Columns</font>
+<font color ="#0000FF">*      i_soft_refresh =                  " Without Sort, Filter, etc.</font>
+     EXCEPTIONS
+       finished       = 1                " Display was Ended (by Export)
+       OTHERS         = 2
+   ).
+    IF sy-subrc &lt;&gt; 0.
+<font color ="#0000FF">*   MESSAGE ID SY-MSGID TYPE SY-MSGTY NUMBER SY-MSGNO</font>
+<font color ="#0000FF">*     WITH SY-MSGV1 SY-MSGV2 SY-MSGV3 SY-MSGV4.</font>
+    ENDIF.
+
+<font color ="#0000FF">*    CALL METHOD CL_GUI_CFW=&gt;SET_NEW_OK_CODE</font>
+<font color ="#0000FF">*      EXPORTING</font>
+<font color ="#0000FF">*        NEW_CODE = 'ENTER'.</font>
+
+  ENDMETHOD.
+
+  METHOD on_data_changed1.
+    PERFORM on_data_changed1 USING er_data_changed.
+  ENDMETHOD.
+
+  METHOD on_data_changed2.
+    PERFORM on_data_changed2 USING er_data_changed.
+  ENDMETHOD.
+
+
+ENDCLASS.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

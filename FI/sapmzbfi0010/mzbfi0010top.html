@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBFI0010TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBFI0010TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBFI0010TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include MZBFI0010TOP                             - Module Pool      SAPMZBFI0010</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+PROGRAM SAPMZBFI0010.
+
+TABLES: zsbfi0010, ZSBFI00102, zsbfi00103.
+
+data: ok_code TYPE sy-ucomm.
+
+data: BEGIN OF gs_alv.
+      include structure <a href ="ztbfi0010/dictionary-ztbfi0010.html">ZTBFI0010</a>.
+      data: aname TYPE ZTBFI0011-aname,
+            rtname TYPE char10,
+            gname TYPE char5,
+            catname TYPE char50,
+      END OF gs_alv.
+
+data: gv_chk_gco_catco TYPE char1,
+      gv_chk_dup_anam TYPE char1.
+
+data: gv_radcon TYPE char1,
+      gv_empid TYPE ztbsd1030-empid,
+      gs_row TYPE lvc_s_row.
+data: gt_alv like TABLE of gs_alv.
+
+data: rt_acode TYPE RANGE OF ZTBFI0010-acode,
+      rs_acode like LINE OF rt_acode,
+
+      rt_gcode TYPE RANGE OF ZTBFI0010-gcode,
+      rs_gcode like LINE OF rt_gcode,
+
+      rt_catcode TYPE RANGE OF ztbfi0010-catcode,
+      rs_catcode like LINE OF rt_catcode.
+
+data: go_cont TYPE REF TO cl_gui_custom_container,
+      go_alv TYPE REF TO cl_gui_alv_grid,
+
+      gs_layout TYPE lvc_s_layo,
+      gt_fcat TYPE lvc_t_fcat.
+
+
+data: gv_create_refresh_once TYPE char1.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRPP0060TOP</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRPP0060TOP</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRPP0060TOP</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRPP0060TOP</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+TABLES: zsbpp0040.
+
+DATA: gs_ztbpp0031 TYPE ztbpp0031,
+      gs_zsbpp0031 TYPE zsbpp0031," srch help struc
+
+      gs_ztbpp0030 TYPE ztbpp0030.
+
+DATA ok_code TYPE sy-ucomm.
+
+data: BEGIN OF gs_alv1.
+      include structure <a href ="ztbpp0031/dictionary-ztbpp0031.html">ztbpp0031</a>.
+      data: color TYPE char4,
+      END OF gs_alv1.
+
+DATA: gt_alv1 like TABLE OF gs_alv1.
+
+
+<font color ="#0000FF">*DATA: gt_alv1 TYPE TABLE OF ztbpp0031,</font>
+<font color ="#0000FF">*      gs_alv1 LIKE LINE OF gt_alv1,</font>
+
+
+data: gt_alv2 TYPE TABLE OF ztbpp0040,
+      gs_alv2 LIKE LINE OF gt_alv2.
+
+DATA: go_cont1   TYPE REF TO cl_gui_custom_container,
+      go_alv1    TYPE REF TO cl_gui_alv_grid,
+
+      gs_layout1 TYPE lvc_s_layo,
+      gt_fcat1   TYPE lvc_t_fcat,
+
+      gt_sort1   TYPE lvc_t_sort,
+
+      go_cont2   TYPE REF TO cl_gui_custom_container,
+      go_alv2    TYPE REF TO cl_gui_alv_grid,
+
+      gs_layout2 TYPE lvc_s_layo,
+      gt_fcat2   TYPE lvc_t_fcat.
+
+DATA: gs_row TYPE lvc_s_row.
+
+DATA: gv_refresh_temp_hum TYPE char1.
+
+data: gv_salesyr TYPE ztbpp0040-salesyr.
+data: gv_whcode TYPE ZTBPP0040-whcode.
+data: gv_docnum40 TYPE char10.
+data: gv_ultsum TYPE int4. " fi 기반으로 구한 완제품 값
+
+  DATA: BEGIN OF GS_DEFECT.
+        DATA: MATCODE TYPE ztbpp0031-matcode,
+              PRICE TYPE int4,
+        END OF GS_DEFECT.
+
+  DATA: GT_DEFECT LIKE TABLE OF GS_DEFECT.
+
+
+<font color ="#0000FF">*gs_ztbpp0030-prdendat</font>
+
+DATA: rt_dats1 TYPE RANGE OF ztbpp0030-prdstdat,
+      rt_dats2 TYPE RANGE OF ztbpp0030-PRDENDAT,
+      rs_dats like LINE OF rt_dats1.
+data: rt_pron TYPE RANGE OF ZTBPP0030-pordnum,
+      rs_pron LIKE LINE OF rt_pron.
+
+data: rt_pronsrch TYPE RANGE OF ztbpp0030-pordnum,
+        rs_pronsrch like LINE OF rt_pron.
+
+SELECTION-SCREEN BEGIN OF BLOCK blk1 WITH FRAME TITLE TEXT-t01.
+
+<font color ="#0000FF">*    SELECTION-SCREEN skip 1.</font>
+
+    SELECT-OPTIONS: so_pron FOR gs_ztbpp0031-pordnum.
+
+<font color ="#0000FF">*    SELECTION-SCREEN skip 1.</font>
+
+<font color ="#0000FF">*    SELECTION-SCREEN BEGIN OF LINE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      SELECTION-SCREEN COMMENT 1(31) text-c01 for FIELD pa_stdat.</font>
+<font color ="#0000FF">*      PARAMETERS: pa_stdat TYPE ztbpp0030-prdstdat OBLIGATORY.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*      SELECTION-SCREEN COMMENT 47(10) text-c02 for FIELD pa_endat.</font>
+<font color ="#0000FF">*      PARAMETERS: pa_endat TYPE ztbpp0030-prdendat.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    SELECTION-SCREEN end of LINE.</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">*    SELECTION-SCREEN skip 1.</font>
+
+SELECTION-SCREEN END OF BLOCK blk1.
+
+
+SELECTION-SCREEN BEGIN OF BLOCK blk2 WITH FRAME TITLE text-t02.
+<font color ="#0000FF">*  SELECTION-SCREEN skip 1.</font>
+
+  SELECTION-SCREEN BEGIN OF LINE.
+
+      SELECTION-SCREEN COMMENT 1(31) text-c01 for FIELD pa_stdat.
+      PARAMETERS: pa_stdat TYPE ztbpp0030-prdstdat .
+
+      SELECTION-SCREEN COMMENT 47(10) text-c02 for FIELD pa_endat.
+      PARAMETERS: pa_endat TYPE ztbpp0030-prdendat.
+
+    SELECTION-SCREEN end of LINE.
+
+<font color ="#0000FF">*  SELECTION-SCREEN skip 1.</font>
+
+<font color ="#0000FF">*  SELECT-OPTIONS: so_whc for gs_ztbpp0030-whcode.</font>
+
+<font color ="#0000FF">*  SELECTION-SCREEN skip 1.</font>
+
+  SELECT-OPTIONS: so_matc for gs_ztbpp0031-matcode.
+
+<font color ="#0000FF">*  SELECTION-SCREEN skip 1.</font>
+
+SELECTION-SCREEN END OF BLOCK blk2.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

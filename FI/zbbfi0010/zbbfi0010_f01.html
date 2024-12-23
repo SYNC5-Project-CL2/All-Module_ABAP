@@ -1,0 +1,494 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBBFI0010_F01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBBFI0010_F01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBBFI0010_F01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form READ_FROM_FILE</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM FILE_OPEN_DIALOG.
+  DATA: LT_FILE TYPE FILETABLE,             "파일 테이블
+        LS_FILE LIKE LINE OF LT_FILE, "파일 테이블의 한 행
+        LV_RC   TYPE I.                     "RETURN CODE 선언
+
+    CALL METHOD CL_GUI_FRONTEND_SERVICES=&gt;FILE_OPEN_DIALOG
+      EXPORTING
+        DEFAULT_EXTENSION       = CL_GUI_FRONTEND_SERVICES=&gt;FILETYPE_EXCEL "excel
+        FILE_FILTER             = CL_GUI_FRONTEND_SERVICES=&gt;FILETYPE_EXCEL "excel
+      CHANGING
+        FILE_TABLE              = LT_FILE
+        RC                      = LV_RC                  " Return Code
+      EXCEPTIONS
+        FILE_OPEN_DIALOG_FAILED = 1
+        CNTL_ERROR              = 2
+        ERROR_NO_GUI            = 3
+        NOT_SUPPORTED_BY_GUI    = 4
+        OTHERS                  = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+      MESSAGE I022 DISPLAY LIKE 'E'.
+    ELSE.
+      READ TABLE LT_FILE INTO LS_FILE INDEX 1.
+      PA_FILE = LS_FILE-FILENAME. "선택한 파일 경로를 PA_FILE에 저장
+    ENDIF.
+
+
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form UPLOAD_EXCEL</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM READ_FROM_FILE .
+
+  "PARAMETER에 파일을 선택하지 않았을 때 알람.
+  DATA : LV_FILE LIKE RLGRAP-FILENAME.
+
+  LV_FILE = PA_FILE+3.
+
+  IF LV_FILE = SPACE.
+    MESSAGE I022 DISPLAY LIKE 'E'.
+    LEAVE LIST-PROCESSING.
+  ENDIF.
+
+  " 내부테이블을 동적으로 참조.
+<font color ="#0000FF">*  FIELD-SYMBOLS: &lt;FS_ITAB&gt; TYPE STANDARD TABLE.</font>
+  FIELD-SYMBOLS: &lt;FS_ITAB&gt; TYPE ANY.
+
+  "Internal Table에 값 옮기기.
+  CALL FUNCTION 'ALSM_EXCEL_TO_INTERNAL_TABLE'
+    EXPORTING
+      FILENAME                = PA_FILE   " 받아온 파일
+      I_BEGIN_COL             = 1         " 시작 할 열번호
+      I_BEGIN_ROW             = 3         " 시작 할 행번호
+      I_END_COL               = 5        " 명시한 필드갯수
+      I_END_ROW               = 100000    " 최대 행갯수
+    TABLES
+      INTERN                  = GT_EXCEL  "엑셀 데이터 담을 테이블
+    EXCEPTIONS
+      INCONSISTENT_PARAMETERS = 1
+      UPLOAD_OLE              = 2
+      OTHERS                  = 3.
+
+  " EXCEL DATA 가져오기에 실패했을 때.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE I029 DISPLAY LIKE 'E'.
+    LEAVE LIST-PROCESSING.
+  ENDIF.
+
+  " EXCEL DATA 에 DATA가 없을 때.
+  IF GT_EXCEL IS INITIAL.
+    MESSAGE I030 DISPLAY LIKE 'E'.
+    LEAVE LIST-PROCESSING.
+    ROLLBACK WORK.
+  ENDIF.
+
+
+  "엑셀 데이터 넣기.
+<font color ="#0000FF">*  LOOP AT GT_EXCEL INTO GS_EXCEL.</font>
+<font color ="#0000FF">*    ASSIGN COMPONENT GS_EXCEL-COL OF STRUCTURE GS_MASTER TO &lt;FS_ITAB&gt;.</font>
+<font color ="#0000FF">*    &lt;FS_ITAB&gt; = GS_EXCEL-VALUE.</font>
+<font color ="#0000FF">*    AT END OF ROW.</font>
+<font color ="#0000FF">*      APPEND GS_MASTER TO GT_MASTER.</font>
+<font color ="#0000FF">*      CLEAR: GS_MASTER.</font>
+<font color ="#0000FF">*    ENDAT.</font>
+<font color ="#0000FF">*  ENDLOOP.</font>
+
+  "엑셀 데이터를 GS_DATA로
+  LOOP AT GT_EXCEL INTO GS_EXCEL.
+
+    IF GS_EXCEL-COL &lt;= 4.
+      ASSIGN COMPONENT GS_EXCEL-COL OF STRUCTURE GS_DATA TO &lt;FS_ITAB&gt;.
+      &lt;FS_ITAB&gt; = GS_EXCEL-VALUE.
+
+    ELSEIF GS_EXCEL-COL = 5.
+      GS_DATA-ANAME = GS_EXCEL-VALUE.
+
+      APPEND GS_DATA TO GT_DATA.
+      CLEAR GS_DATA.
+    ENDIF.
+
+  ENDLOOP.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form FILE_DOWNLOAD</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM FILE_DOWNLOAD .
+
+  DATA : LV_FILENAME    TYPE STRING,
+         LV_PATH        TYPE STRING,
+         LV_FULLPATH    TYPE STRING,
+         LV_USER_ACTION TYPE I,
+         LV_RC          TYPE SY-SUBRC.
+
+  DATA : LS_KEY  TYPE WWWDATATAB.
+
+  " SMW0 에 등록한 EXCEL에 대한 WWWDATA DATA를 LS_KEY에 할당.
+  SELECT SINGLE * FROM WWWDATA
+    INTO CORRESPONDING FIELDS OF LS_KEY
+   WHERE OBJID = 'ZBBFI0010_EXCEL'. " 'SMW0에 있는 오브젝트명'.
+
+  CONCATENATE '계정과목 MASTER_' SY-DATUM SY-UZEIT INTO LV_FILENAME.
+
+  " 확장자명, 파일명 받기.
+  CALL METHOD CL_GUI_FRONTEND_SERVICES=&gt;FILE_SAVE_DIALOG
+    EXPORTING
+      DEFAULT_EXTENSION         = 'XLSX'
+      DEFAULT_FILE_NAME         = LV_FILENAME
+    CHANGING
+      FILENAME                  = LV_FILENAME
+      PATH                      = LV_PATH
+      FULLPATH                  = LV_FULLPATH
+      USER_ACTION               = LV_USER_ACTION
+    EXCEPTIONS
+      CNTL_ERROR                = 1
+      ERROR_NO_GUI              = 2
+      NOT_SUPPORTED_BY_GUI      = 3
+      INVALID_DEFAULT_FILE_NAME = 4
+      OTHERS                    = 5.
+
+  "다운로드 중 취소하면
+  IF LV_USER_ACTION = CL_GUI_FRONTEND_SERVICES=&gt;ACTION_CANCEL.
+    EXIT.
+  ENDIF.
+
+  CALL FUNCTION 'DOWNLOAD_WEB_OBJECT'
+    EXPORTING
+      KEY         = LS_KEY
+      DESTINATION = CONV LOCALFILE( LV_FULLPATH ).
+
+  " LV_FULLPATH 에 할당한 SMW0 EXCEL 실행.
+  CALL METHOD CL_GUI_FRONTEND_SERVICES=&gt;EXECUTE
+    EXPORTING
+      DOCUMENT               = LV_FULLPATH
+    EXCEPTIONS
+      CNTL_ERROR             = 1
+      ERROR_NO_GUI           = 2
+      BAD_PARAMETER          = 3
+      FILE_NOT_FOUND         = 4
+      PATH_NOT_FOUND         = 5
+      FILE_EXTENSION_UNKNOWN = 6
+      ERROR_EXECUTE_FAILED   = 7
+      SYNCHRONOUS_FAILED     = 8
+      NOT_SUPPORTED_BY_GUI   = 9
+      OTHERS                 = 10.
+
+  IF SY-SUBRC = 0.
+    MESSAGE S027.
+  ELSE.
+    MESSAGE I026 DISPLAY LIKE 'E'.
+  ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_FCAT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_FCAT .
+
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'RTYPE'.
+  GS_FCAT-COLTEXT = 'G/L'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'GCODE'.
+  GS_FCAT-COLTEXT = '계정그룹'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'CATCODE'.
+  GS_FCAT-COLTEXT = '계정유형'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+  CLEAR GS_FCAT.
+  GS_FCAT-FIELDNAME = 'ANAME'.
+  GS_FCAT-COLTEXT = '계정과목명'.
+  APPEND GS_FCAT TO GT_FCAT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SAVE_DATA</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SAVE_DATA.
+
+  DATA : LV_ERROR TYPE I VALUE 0. "에러 카운터.
+
+  DATA : LV_ANSWER TYPE C. "Confirm popup 응답 받는 변수.
+
+  DATA: LV_ACODE TYPE ZTBFI0010-ACODE, "자동 생성된 계정과목코드
+        LV_RANGE TYPE NRNR, "넘버레인지 번호 (Number range number 타입)
+        LV_COUNT TYPE I.  "중복 데이터(계정과목명 )개수 저장 변수
+
+  DATA: LV_EMPID TYPE CHAR15. "사원번호 .
+
+  " CONFIRM POPUP.
+  CALL FUNCTION 'POPUP_TO_CONFIRM'
+    EXPORTING
+      TITLEBAR              = 'Excel 데이터 확인'
+      TEXT_QUESTION         = 'Excel 데이터를 저장하시겠습니까?'
+      TEXT_BUTTON_1         = 'YES'
+      ICON_BUTTON_1         = 'ICON_OKAY'
+      TEXT_BUTTON_2         = 'NO'
+      ICON_BUTTON_2         = 'ICON_CANCEL'
+      DEFAULT_BUTTON        = '1'
+      DISPLAY_CANCEL_BUTTON = ''
+    IMPORTING
+      ANSWER                = LV_ANSWER
+    EXCEPTIONS
+      TEXT_NOT_FOUND        = 1
+      OTHERS                = 2.
+  IF SY-SUBRC &lt;&gt; 0.
+    MESSAGE E016.
+  ENDIF.
+
+  "CONFIRM POPUP 에서 선택 .
+  CASE LV_ANSWER.
+      "YES 선택 시.
+    WHEN  1.
+      LOOP AT GT_DATA INTO GS_DATA.
+        " 1. GCODE(계정그룹)에 따른 넘버 레인지 번호 선택.
+        CASE GS_DATA-GCODE.
+          WHEN 'AS'.
+            LV_RANGE = '1'.
+          WHEN 'LI'.
+            LV_RANGE = '2'.
+          WHEN 'EQ'.
+            LV_RANGE = '3'.
+          WHEN 'RV'.
+            LV_RANGE = '4'.
+          WHEN 'EXP'.
+            LV_RANGE = '5'.
+          WHEN OTHERS.
+            MESSAGE '잘못된 계정그룹입니다.' TYPE 'E'.
+            CONTINUE.   "잘못된 GCODE는 건너뜀.
+        ENDCASE.
+
+        " 2.계정과목명(ANAME) 중복 여부 확인
+        SELECT COUNT(*)
+          INTO LV_COUNT
+        FROM ZTBFI0011
+        WHERE ANAME = GS_DATA-ANAME.
+
+        IF LV_COUNT &gt; 0.
+          "중복된 경우 에러메시지 출력.
+          MESSAGE I034 WITH GS_DATA-ANAME DISPLAY LIKE 'E'.
+          RETURN. "FORM 종료, DB 업로드 중단
+        ENDIF.
+
+        " 3. 넘버 레인지에서 새로운 ACODE 가져오기
+        CALL FUNCTION 'NUMBER_GET_NEXT'
+          EXPORTING
+            NR_RANGE_NR = LV_RANGE         "선택된 넘버레인지 번호.
+            OBJECT      = 'ZBBFI0010'       " Name of number range object
+            QUANTITY    = '1'              " 하나의 번호만 가져오기.
+          IMPORTING
+            NUMBER      = LV_ACODE           " 가져온 번호 저장.
+          EXCEPTIONS
+<font color ="#0000FF">*           INTERVAL_NOT_FOUND      = 1                " Interval not found</font>
+<font color ="#0000FF">*           NUMBER_RANGE_NOT_INTERN = 2                " Number range is not internal</font>
+<font color ="#0000FF">*           OBJECT_NOT_FOUND        = 3                " Object not defined in TNRO</font>
+<font color ="#0000FF">*           QUANTITY_IS_0           = 4                " Number of numbers requested must be &gt; 0</font>
+<font color ="#0000FF">*           QUANTITY_IS_NOT_1       = 5                " Number of numbers requested must be 1</font>
+<font color ="#0000FF">*           INTERVAL_OVERFLOW       = 6                " Interval used up. Change not possible.</font>
+<font color ="#0000FF">*           BUFFER_OVERFLOW         = 7                " Buffer is full</font>
+            OTHERS      = 8.
+        IF SY-SUBRC &lt;&gt; 0.
+          MESSAGE I033 DISPLAY LIKE 'E'.
+        ENDIF.
+
+        " 4. 마스터 테이블 데이터 매핑.
+        CLEAR GS_MASTER.
+        GS_MASTER-ACODE        = LV_ACODE. "생성된 ACODE 사용.
+        GS_MASTER-RTYPE        = GS_DATA-RTYPE.
+        GS_MASTER-GCODE        = GS_DATA-GCODE.
+        GS_MASTER-CATCODE      = GS_DATA-CATCODE.
+        GS_MASTER-STAMP_DATE_F = SY-DATUM.
+        GS_MASTER-STAMP_TIME_F = SY-UZEIT.
+        SELECT SINGLE EMPID
+            FROM ZTBSD1030
+            INTO LV_EMPID
+            WHERE LOGID = SY-UNAME.
+        GS_MASTER-STAMP_USER_F = LV_EMPID.
+
+        "마스터 테이블에 데이터 삽입
+        MODIFY ZTBFI0010 FROM GS_MASTER.
+
+        IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*          MESSAGE S010 DISPLAY LIKE 'E'.</font>
+<font color ="#0000FF">*          EXIT.</font>
+          LV_ERROR = LV_ERROR + 1.
+        ENDIF.
+
+        " 5. 텍스트 테이블 데이터 매핑.
+        CLEAR GS_TEXT.
+        GS_TEXT-ACODE        = LV_ACODE. "생성된 ACODE 사용.
+        GS_TEXT-ANAME        = GS_DATA-ANAME.
+        GS_TEXT-SPRAS        = SY-LANGU.
+        GS_TEXT-STAMP_DATE_F = SY-DATUM.
+        GS_TEXT-STAMP_TIME_F = SY-UZEIT.
+        GS_TEXT-STAMP_USER_F = LV_EMPID.
+
+        " 텍스트 테이블에 데이터 삽입
+        MODIFY ZTBFI0011 FROM GS_TEXT.
+
+        IF SY-SUBRC &lt;&gt; 0.
+<font color ="#0000FF">*          MESSAGE S010 DISPLAY LIKE 'E'.</font>
+<font color ="#0000FF">*          EXIT.</font>
+          LV_ERROR = LV_ERROR + 1.
+        ENDIF.
+
+      ENDLOOP.
+
+      IF LV_ERROR = 0.
+        MESSAGE I031 DISPLAY LIKE 'S'.
+      ELSE.
+        MESSAGE I032 DISPLAY LIKE 'E'.
+      ENDIF.
+
+  ENDCASE.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_LAYOUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_LAYOUT .
+  GS_LAYOUT-GRID_TITLE = 'Excel 계정과목 리스트'.
+  GS_LAYOUT-CWIDTH_OPT = 'A'.
+  GS_LAYOUT-COUNTFNAME = 'ANAME'.
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form SET_SORT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM SET_SORT .
+
+  " 재무제표 필드를 기준으로 정렬.
+  GS_SORT-SPOS = 1.
+  GS_SORT-FIELDNAME = 'RTYPE'.
+  GS_SORT-UP = 'X'.
+  APPEND GS_SORT TO GT_SORT.
+  CLEAR GS_SORT.
+
+  " 계정그룹 필드를 기준으로 정렬.
+  GS_SORT-SPOS = 2.
+  GS_SORT-FIELDNAME = 'GCODE'.
+  GS_SORT-UP = 'X'.
+  APPEND GS_SORT TO GT_SORT.
+  CLEAR GS_SORT.
+
+  " 계정분류 필드를 기준으로 정렬.
+  GS_SORT-SPOS = 3.
+  GS_SORT-FIELDNAME = 'CATCODE'.
+  GS_SORT-UP = 'X'.
+  APPEND GS_SORT TO GT_SORT.
+  CLEAR GS_SORT.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form CREATE_CONT_ALV</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM CREATE_CONT_ALV .
+
+  CREATE OBJECT GO_CONT
+      EXPORTING
+        CONTAINER_NAME              = 'AREA'
+      EXCEPTIONS
+        CNTL_ERROR                  = 1
+        CNTL_SYSTEM_ERROR           = 2
+        CREATE_ERROR                = 3
+        LIFETIME_ERROR              = 4
+        LIFETIME_DYNPRO_DYNPRO_LINK = 5
+        OTHERS                      = 6.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+    CREATE OBJECT GO_ALV
+      EXPORTING
+        I_PARENT          = GO_CONT
+      EXCEPTIONS
+        ERROR_CNTL_CREATE = 1
+        ERROR_CNTL_INIT   = 2
+        ERROR_CNTL_LINK   = 3
+        ERROR_DP_CREATE   = 4
+        OTHERS            = 5.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+ENDFORM.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Form DISPLAY_ALV</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& --&gt;  p1        text</font>
+<font color ="#0000FF">*& &lt;--  p2        text</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+FORM DISPLAY_ALV .
+
+  CALL METHOD GO_ALV-&gt;SET_TABLE_FOR_FIRST_DISPLAY
+      EXPORTING
+        IS_LAYOUT                     = GS_LAYOUT
+      CHANGING
+        IT_OUTTAB                     = GT_DATA
+        IT_FIELDCATALOG               = GT_FCAT
+        IT_SORT                       = GT_SORT
+      EXCEPTIONS
+        INVALID_PARAMETER_COMBINATION = 1
+        PROGRAM_ERROR                 = 2
+        TOO_MANY_LINES                = 3
+        OTHERS                        = 4.
+    IF SY-SUBRC &lt;&gt; 0.
+    ENDIF.
+
+ENDFORM.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

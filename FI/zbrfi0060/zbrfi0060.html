@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0060</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0060</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  [FI] 매출내역 반제처리 프로그램</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Report ZBRFI0060</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&  [FI]</font>
+<font color ="#0000FF">*&  개발자         : CL2 KDT-B-25 하정훈</font>
+<font color ="#0000FF">*&  프로그램 개요    : 매출내역 반제처리 프로그램</font>
+<font color ="#0000FF">*&  개발 시작일     : 2024.11.16</font>
+<font color ="#0000FF">*&  개발 완료일     : 2024.11.17</font>
+<font color ="#0000FF">*&  개발상태       : 개발 완료.</font>
+<font color ="#0000FF">*&  단위테스트 여부  :</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+REPORT ZBRFI0060 MESSAGE-ID ZCOMMON_MSG.
+
+include <a href ="zbrfi0060_top.html">ZBRFI0060_TOP</a>.
+include <a href ="zbrfi0060_c01.html">ZBRFI0060_C01</a>.
+include <a href ="zbrfi0060_s01.html">ZBRFI0060_S01</a>.
+include <a href ="zbrfi0060_o01.html">ZBRFI0060_O01</a>.
+include <a href ="zbrfi0060_i01.html">ZBRFI0060_I01</a>.
+include <a href ="zbrfi0060_f01.html">ZBRFI0060_F01</a>.
+
+INITIALIZATION.
+
+AT SELECTION-SCREEN.
+
+START-OF-SELECTION.
+  PERFORM CHECK_DATA. " 조회 조건에 해당하는 미결전표가 존재하는지 확인.
+  CALL SCREEN 100.
+
+<font color ="#0000FF">*GUI Texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* T100 --&gt; [FI] 매출내역 반제처리 프로그램</font>
+<font color ="#0000FF">* T110 --&gt; 반제처리 확인</font>
+<font color ="#0000FF">* T120 --&gt; 반제처리 확인</font>
+<font color ="#0000FF">* T100 --&gt; [FI] 매출내역 반제처리 프로그램</font>
+<font color ="#0000FF">* T110 --&gt; 반제처리 확인</font>
+<font color ="#0000FF">* T120 --&gt; 반제처리 확인</font>
+
+<font color ="#0000FF">*Text elements</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* Q01 미결전표 조회를 하시겠습니까?</font>
+<font color ="#0000FF">* Q02 반제처리를 진행하시겠습니까?</font>
+<font color ="#0000FF">* Q03 반제처리를 하시겠습니까?</font>
+<font color ="#0000FF">* T01 미결전표 조회 확인</font>
+<font color ="#0000FF">* T02 반제처리 확인</font>
+<font color ="#0000FF">* T03 반제처리 확인</font>
+
+
+<font color ="#0000FF">*Selection texts</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">* SO_BPCO         고객사 코드</font>
+<font color ="#0000FF">* SO_BUDT D       .</font>
+
+
+<font color ="#0000FF">*Messages</font>
+<font color ="#0000FF">*----------------------------------------------------------</font>
+<font color ="#0000FF">*</font>
+<font color ="#0000FF">* Message class: ZCOMMON_MSG</font>
+<font color ="#0000FF">*205   ALV 생성에 실패했습니다.</font>
+<font color ="#0000FF">*431   조회할 고객사를 선택해주세요.</font>
+<font color ="#0000FF">*432   성공적으로 조회하였습니다.</font>
+<font color ="#0000FF">*434   미결전표를 선택해주세요.</font>
+<font color ="#0000FF">*435   반제처리를 취소하였습니다.</font>
+<font color ="#0000FF">*436   반제처리 내용을 확인해주세요.</font>
+<font color ="#0000FF">*437   반제전표 & 가 성공적으로 생성되었습니다.</font>
+<font color ="#0000FF">*440   조회조건에 해당하는 미결매출전표가 없습니다.</font>
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

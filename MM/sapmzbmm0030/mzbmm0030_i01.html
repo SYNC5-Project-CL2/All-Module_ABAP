@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>MZBMM0030_I01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: MZBMM0030_I01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include MZBMM0030_I01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          MZBMM0030_I01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+
+
+MODULE USER_COMMAND_0100 INPUT.
+  CASE OK_CODE.
+    WHEN 'BACK' OR 'CANCEL' OR 'EXIT'.
+      LEAVE TO SCREEN 0.
+
+    WHEN 'CREATE'. " 생성 버튼 클릭 시
+      CALL SCREEN 110
+        STARTING AT 5 5.
+
+    WHEN 'MODIFY' OR 'DELETE'. " 수정 / 삭제 버튼 클릭 시
+      PERFORM ZBMM_GET_SEL_ROW.
+
+    WHEN 'BTN'.  " 조회 버튼 클릭 시
+      PERFORM ZBMM_GET_STRDATA. " 조회 서브루틴 실행
+
+    WHEN 'REFRESH'.
+      PERFORM ZBMM_CLEAR_ALL.
+
+  ENDCASE.
+ENDMODULE.
+
+
+<font color ="#0000FF">*    RS_CUST-SIGN = 'I'.</font>
+<font color ="#0000FF">*    RS_CUST-OPTION = 'EQ'.</font>
+<font color ="#0000FF">*    RS_CUST-LOW = ZTBMM1030-WHCODE.</font>
+<font color ="#0000FF">*    APPEND RS_CUST TO RT_CUST.</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0110  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0110 INPUT.
+  CASE OK_CODE.
+    WHEN 'OKAY'.
+      PERFORM ZBMM_SAVE_STR. "데이터 저장 서브루틴
+<font color ="#0000FF">*      PERFORM ZBMM_GET_STRDATA.</font>
+  ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE EXIT INPUT.
+  CASE OK_CODE.
+    WHEN 'CANCEL'.
+      CLEAR: ZTBMM1030.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT_C  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE EXIT_C INPUT.
+  CASE OK_CODE.
+    WHEN 'CANCEL'.
+      MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '043' DISPLAY LIKE 'W' WITH '생성'.
+      CLEAR: ZTBMM1030.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  EXIT_M  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE EXIT_M INPUT.
+  CASE OK_CODE.
+    WHEN 'CANCEL'.
+      MESSAGE ID 'ZCOMMON_MSG' TYPE 'S' NUMBER '043' DISPLAY LIKE 'W' WITH '수정'.
+      CLEAR: ZTBMM1030.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0120  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0120 INPUT.
+  CASE OK_CODE.
+    WHEN 'OKAY'.
+      PERFORM ZBMM_MODIFY_STR. "데이터 수정 서브루틴
+<font color ="#0000FF">*      LEAVE TO SCREEN 0.</font>
+  ENDCASE.
+ENDMODULE.
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*&      Module  USER_COMMAND_0130  INPUT</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*       text</font>
+<font color ="#0000FF">*----------------------------------------------------------------------*</font>
+MODULE USER_COMMAND_0130 INPUT.
+  CASE OK_CODE.
+    WHEN 'OKAY' OR 'CANCEL'.
+      CLEAR: ZTBSD1030.
+      LEAVE TO SCREEN 0.
+  ENDCASE.
+ENDMODULE.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html>
+<head>
+<title>ZBRFI0010_C01</title>
+</head>
+<body bgcolor="#FFFFE0">
+<font size="3" face = "Arial" color="#000000"><b>Code listing for: ZBRFI0010_C01</b></font>
+<br>
+<font size="3" face = "Arial" color="#000000"><b>Description:  Include ZBRFI0010_C01</b></font>
+<hr>
+<pre width="100">
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+<font color ="#0000FF">*& Include          ZBRFI0010_C01</font>
+<font color ="#0000FF">*&---------------------------------------------------------------------*</font>
+CLASS LCL_EVENT_HANDLER DEFINITION.
+  PUBLIC SECTION.
+    CLASS-METHODS:
+      ON_DOUBLE_CLICK FOR EVENT DOUBLE_CLICK OF CL_GUI_ALV_GRID
+        IMPORTING ES_ROW_NO.
+ENDCLASS.
+
+CLASS LCL_EVENT_HANDLER IMPLEMENTATION.
+
+
+  METHOD ON_DOUBLE_CLICK.
+    "
+    DATA: LV_INDEX TYPE SY-TABIX.
+    DATA: BEGIN OF LS_BUDAT.
+    DATA: BUDAT  TYPE ZTBFI0030-BUDAT, "전기일자 20141119
+          DAYLIM TYPE ZTBFI0040-DAYLIM, "지급지한 일자 030
+          END OF LS_BUDAT.
+
+    LV_INDEX = ES_ROW_NO-ROW_ID.
+
+    "반제 Item
+    MOVE-CORRESPONDING GT_40_DATA TO GT_40_DETAIL_DATA.
+
+    READ TABLE GT_40_DATA INTO GS_40_DATA INDEX LV_INDEX.
+
+    IF GS_40_DATA-WRBTR &gt; 0.
+      "전표 금액
+      IF SY-SUBRC = 0.
+        CLEAR: LV_SUM, LV_ACCOUNT.
+        SELECT COUNT(*) FROM ZTBFI0031 AS A
+          WHERE A~BPCODE = @GS_40_DATA-BPCODE
+          AND A~ACODE = '20002'
+          AND A~AUGBL IS INITIAL
+          AND A~AUGDT IS INITIAL
+          INTO @LV_SUM. "LV_SUM = 총 건수
+
+        SELECT SUM( WRBTR ) FROM ZTBFI0031 AS A
+          WHERE A~BPCODE = @GS_40_DATA-BPCODE
+          AND A~ACODE = '20002'
+          AND A~AUGBL IS INITIAL
+          AND A~AUGDT IS INITIAL
+          INTO @LV_ACCOUNT. "LV_ACCOUNT = 총 금액
+      ENDIF.
+
+      "거래처 상세
+      READ TABLE GT_40_DETAIL_DATA INTO GS_40_DETAIL_DATA INDEX LV_INDEX.
+      IF SY-SUBRC = 0.
+        "전표 헤더
+        "
+        CL_GUI_CFW=&gt;SET_NEW_OK_CODE(
+          EXPORTING
+            NEW_CODE = 'ENTER'
+<font color ="#0000FF">*        IMPORTING</font>
+<font color ="#0000FF">*          RC       =                  " Return code</font>
+        ).
+      ENDIF.
+
+      "전표 헤더
+      SELECT * INTO CORRESPONDING FIELDS OF TABLE GT_ZTBFI0031
+        FROM ZTBFI0031 AS A
+        INNER JOIN ZTBFI0030 AS B ON B~BELNR = A~BELNR
+        INNER JOIN ZTBFI0040 AS C ON C~ZTERM = A~ZTERM
+        INNER JOIN  ZTBSD1050 AS D ON D~BPCODE = A~BPCODE
+        INNER JOIN ZTBSD1051 AS E ON D~BPCODE = E~BPCODE
+        WHERE A~BPCODE = GS_40_DATA-BPCODE.
+
+      LOOP AT GT_ZTBFI0031 INTO GS_ZTBFI0031.
+        SELECT SINGLE * INTO CORRESPONDING FIELDS OF LS_BUDAT
+          FROM ZTBFI0031 AS A INNER JOIN ZTBFI0040 AS B
+          ON A~ZTERM = B~ZTERM WHERE A~ZTERM = GS_40_DETAIL_DATA-ZTERM.
+
+        LS_BUDAT-BUDAT = GS_ZTBFI0031-BUDAT.
+        GS_ZTBFI0031-C_BUDAT = LS_BUDAT-BUDAT + LS_BUDAT-DAYLIM.
+
+        GS_ZTBFI0031-EXCP = '1'.
+
+        MODIFY GT_ZTBFI0031 FROM GS_ZTBFI0031 INDEX SY-TABIX TRANSPORTING C_BUDAT.
+
+        "전기일 + 지급일(지급코드)
+      ENDLOOP.
+      ELSE.
+        MESSAGE ID 'ZCOMMON_MSG' TYPE 'E' NUMBER '008'.
+    ENDIF.
+
+  ENDMETHOD.
+ENDCLASS.
+</pre>
+<hr>
+<font size="2" face = "Sans Serif">Extracted by Direct Download Enterprise version 1.3.1 - E.G.Mellodew. 1998-2005 UK. Sap Release 754
+</font>
+</body>
+</html>
