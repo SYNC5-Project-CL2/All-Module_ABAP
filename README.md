@@ -1,4 +1,4 @@
-# All-Module_ABAP
+# All-Module_ABAP <a href="https://www.youtube.com/watch?v=wFSbAhaV2nI" target="_blank"><img src="https://img.shields.io/badge/Youtube-ff0000?style=flat&logo=youtube" style="height: 30px;">
 
 ## MM
 
@@ -18,7 +18,3 @@
 # ERD
 
 ![ERD_241001](./img/ERD_241001.png)
-
-# 시연 영상
-
-[전체 시연 영상](https://www.youtube.com/watch?v=wFSbAhaV2nI)
