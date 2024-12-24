@@ -1,5 +1,7 @@
 # All-Module_ABAP <a href="https://www.youtube.com/watch?v=wFSbAhaV2nI" target="_blank"><img src="https://img.shields.io/badge/Youtube-ff0000?style=flat&logo=youtube" style="height: 30px;">
 
+ABAPGIT은 권한 이슈로 ZDOWN 이용해 html 파일 down
+
 ## MM
 
 ![image-20241224150804777](./img/image-20241224150804777.png)
